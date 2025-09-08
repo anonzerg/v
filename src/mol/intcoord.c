@@ -21,6 +21,12 @@ double intcoord_calc(int r_units_a, int check_n, int z[5], double * r){
       r3x(v5,v3,v2);
       r3x(v1x3,v1,v3);
       t = r3dot(v4,v5) / sqrt( r3dot(v4,v4)*r3dot(v5,v5) );
+      if(t>1.0){
+        t = 1.0;
+      }
+      else if(t<-1.0){
+        t = -1.0;
+      }
       return acos(t)*M_1_PI*180.0 * SIGN( r3dot(v2,v1x3) );
     case 2 :
       r3diff(v4, a2, a1);
