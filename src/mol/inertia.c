@@ -38,7 +38,11 @@ void center_mol(int n, double * r, int * q){
   return;
 }
 
-void position(mol * m, double d[3]){
+void position(mol * m, double d[3], int preserve_chirality){
+  if(d==NULL){
+    double d1[3];
+    d = d1;
+  }
   center_mol(m->n, m->r, m->q);
   double I_t[6]={};
   for(int i=0; i<m->n; i++){
@@ -65,6 +69,10 @@ void position(mol * m, double d[3]){
   if(d[1]<d[2]) SWITCH(1,2);
   if(d[0]<d[1]) SWITCH(0,1);
   SWITCH(0,2);
+  // make improper rotations proper
+  if(preserve_chirality && mat3det(I_b)<0.0){
+    SWITCH(0,1);
+  }
   // rotate the molecule around y-axis by π
   r3scal(I_b,   -1.0);
   r3scal(I_b+6, -1.0);

@@ -84,6 +84,7 @@ static drawpars dp_init(void){
   dp.xy0[0] = dp.xy0[1] = 0.0;
   mx_id(3, dp.ac3rmx);
   // from command-line
+  dp.inertia = 0;
   dp.center = 1;
   dp.b = 1;
   dp.bmax = 0.0;

@@ -28,8 +28,9 @@ printf("\
   cell:%%lf,%%lf,%%lf,%%lf,%%lf,%%lf,%%lf,%%lf,%%lf     cell parameters in Å \n\
   shell:b%%lf,%%lf                               spheres radii in a.u. \n\
   shell:%%lf,%%lf                                spheres radii in Å \n\
-  center:%%d                                    origin is geometric center (1, default) / center of mass (2) / as is (0)\n\
-  gui:%%d`                                      normal (1) / headless (0) mode\n\
+  center:%%d                                    origin is geometric center (1, default) / center of mass (2) / as is (0) \n\
+  inertia:1                                    rotate molecules wrt axis of inertia \n\
+  gui:%%d`                                      normal (1) / headless (0) mode \n\
   \n\
  KEYBOARD REFERENCE:\n\
   \n\

@@ -9,7 +9,7 @@ typedef struct {
   int      n;
 } mol;
 
-void   position(mol * m, double d[3]);
+void   position(mol * m, double d[3], int preserve_chirality);
 void   center_mol(int n, double * r, int * q);
 
 int    intcoord_check(int n, int z[5]);

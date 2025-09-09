@@ -88,7 +88,8 @@ typedef struct {
   int    num;           // 0: do not show; 1: show numbers;  -1: show atom types
   int    vert;          // 0: nothing;     1: show cell;      2: show shell
 
-  int    center;        // 0: nothing;     1: center each molecule upon reading
+  int    center;        // 0: nothing;     1: center each molecule upon reading ; 2: center wrt center of mass
+  int    inertia;       // 0: nothing;     1: rotate each molecule upon reading wrt axis of inertia
   int    bohr;          // 0: Å            1: Bohr
 } drawpars;
 
@@ -98,7 +99,7 @@ typedef struct {
 } txyz;
 
 // load.c
-void acs_readmore  (FILE * f, int b, int center, int bohr, atcoords * acs, const char * fname);
+void acs_readmore  (FILE * f, int b, int center, int inertia, int bohr, atcoords * acs, const char * fname);
 void * read_files(int fn, char ** flist, drawpars * dp);
 // scale.c
 double ac3_scale(atcoord * ac);
@@ -106,7 +107,7 @@ double acs_scale(atcoords * acs);
 // mode_read.c
 modestr * mode_read(FILE * f, int na);
 // ac3_read*.c
-atcoord * ac3_read(FILE * f, int b, int center, int bohr, const char * fname, format_t * format);
+atcoord * ac3_read(FILE * f, int b, int center, int inertia, int bohr, const char * fname, format_t * format);
 txyz * ac3_read_in (int * n_p, int * zmat, FILE * f);
 txyz * ac3_read_out(int * n_p, FILE * f);
 txyz * ac3_read_xyz(int * n_p, FILE * f);
