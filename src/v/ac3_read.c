@@ -4,7 +4,7 @@
 
 #define END(S,X) ( (S)->X + (X##_size)/sizeof(*((S)->X)) )
 
-atcoord * ac3_read(FILE * f, int b, int center, int bohr, const char * fname, format_t * format){
+atcoord * ac3_read(FILE * f, int b, int center, int inertia, int bohr, const char * fname, format_t * format){
 
   int n;
   int zmat=0;
@@ -82,17 +82,17 @@ atcoord * ac3_read(FILE * f, int b, int center, int bohr, const char * fname, fo
     }
     r3cp(m->r+i*3, a[i].r);
   }
-  if(center){
-    center_mol(n, m->r, NULL);
-  }
-  if(zmat){
-    double d[3];
+  if(inertia){
     mol M = {.n=m->n, .q=m->q, .r=m->r};
-    position(&M, d);
+    position(&M, NULL, 1);
+  }
+  if(center){
+    center_mol(n, m->r, center==2 ? m->q : NULL);
   }
   m->fname = fname;
 
 #if 0
+  printf("%d\n\n", n);
   for(int i=0; i<n; i++){
     printf("%d\t%lf\t%lf\t%lf\n", m->q[i], m->r[i*3  ], m->r[i*3+1], m->r[i*3+2]);
   }

@@ -363,7 +363,7 @@ molsym * pointgroup(mol * m, double eps){
   ms->e = (elsym  *)(ms->o + MSSIZE);
 
   double d[3];
-  position(m, d);
+  position(m, d, 0);
   /* Kh, D*h, C*v */
   int i = 0.0;
   if(d[0]<eps) i++;
