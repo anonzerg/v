@@ -62,6 +62,7 @@ Show the reference:
 | `cell:%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf`  | cell parameters in Å                                     |
 | `shell:b%lf,%lf`                            | spheres radii in a.u.                                    |
 | `shell:%lf,%lf`                             | spheres radii in Å                                       |
+| `center:%d`                                 | origin is geometric center (`1`, default) / center of mass (`2`) / as is (`0`) |
 | `gui:%d`                                    | normal (default `1`) / headless (`0`) mode               |
 
 </details>
