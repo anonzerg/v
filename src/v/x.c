@@ -45,23 +45,26 @@ static void setcolors(){
     [  16] .red = 0xFFFF, [  16] .green = 0xEEEE, [  16] .blue = 0x1111, /* S  */
     [  17] .red = 0xCCCC, [  17] .green = 0xFFFF, [  17] .blue = 0x9999, /* Cl */
     [  18] .red = 0xAAAA, [  18] .green = 0xFFFF, [  18] .blue = 0xFFFF, /* Ar */
-    [  29] .red = 0xBBBB, [  29] .green = 0x7777, [  29] .blue = 0x3333, /* Se */
+    [  28] .red = 0x9999, [  28] .green = 0x5555, [  28] .blue = 0xFFFF, /* Ni */
+    [  29] .red = 0xBBBB, [  29] .green = 0x7777, [  29] .blue = 0x3333, /* Cu */
     [  34] .red = 0xFFFF, [  34] .green = 0xAAAA, [  34] .blue = 0x1111, /* Se */
     [  35] .red = 0xAAAA, [  35] .green = 0x4444, [  35] .blue = 0x0000, /* Br */
     [  36] .red = 0xAAAA, [  36] .green = 0xFFFF, [  36] .blue = 0xFFFF, /* Kr */
-    [  47] .red = 0xAAAA, [  47] .green = 0xAAAA, [  47] .blue = 0xAAAA, /* I  */
+    [  46] .red = 0x0000, [  46] .green = 0x6666, [  46] .blue = 0x7777, /* Pd */
+    [  47] .red = 0xAAAA, [  47] .green = 0xAAAA, [  47] .blue = 0xAAAA, /* Ag */
     [  53] .red = 0xAAAA, [  53] .green = 0x0000, [  53] .blue = 0xFFFF, /* I  */
     [  54] .red = 0xAAAA, [  54] .green = 0xFFFF, [  54] .blue = 0xFFFF, /* Xe */
+    [  78] .red = 0x3333, [  78] .green = 0x9999, [  78] .blue = 0xDDDD, /* Pt */
     [  79] .red = 0xFFFF, [  79] .green = 0xCCCC, [  79] .blue = 0x0000, /* Au */
   };
 
   for(int i=3;  i<5;  i++){ col[i] = col[0]; }
   for(int i=11; i<14; i++){ col[i] = col[0]; }
-  for(int i=19; i<29; i++){ col[i] = col[0]; }
+  for(int i=19; i<28; i++){ col[i] = col[0]; }
   for(int i=30; i<34; i++){ col[i] = col[0]; }
-  for(int i=37; i<47; i++){ col[i] = col[0]; }
+  for(int i=37; i<46; i++){ col[i] = col[0]; }
   for(int i=48; i<53; i++){ col[i] = col[0]; }
-  for(int i=55; i<79; i++){ col[i] = col[0]; }
+  for(int i=55; i<78; i++){ col[i] = col[0]; }
 
   Colormap colmap = DefaultColormap(dis, DefaultScreen(dis));
   for(int i=0; i<NCOLORS; i++){
