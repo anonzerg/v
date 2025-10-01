@@ -1,19 +1,22 @@
 # v
 
-A simple viewer for
-[Priroda](http://rad.chem.msu.ru/~laikov) outputs,
-[`.xyz`](https://en.wikipedia.org/wiki/XYZ_file_format) files,
-and beyond.
+A simple X11 molecular viewer.
 
 ![Animation of 128 molecules](figures/intro.gif)
 
 ## Contents
+* [Supported formats](#formats-)
 * [Download](#download-)
 * [Build](#build-)
 * [Usage](#usage-)
 * [Examples](#examples-)
 
 ---
+
+## Supported formats [↑](#download)
+- [Priroda](http://rad.chem.msu.ru/~laikov) input and output files
+- [`.xyz`](https://en.wikipedia.org/wiki/XYZ_file_format) files
+- [extended `.xyz`](https://github.com/libAtoms/extxyz) files (currently the extra columns are ignored)
 
 ## Download [↑](#download)
 ```

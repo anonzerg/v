@@ -16,10 +16,11 @@ txyz * ac3_read_xyz(int * n_p, FILE * f){
     }
   } while(c!='\n');
 
+  char tmp_str[BIGSTRLEN];
   for(int i=0; i<n; i++){
     styp type;
-    if (fscanf (f, "%7s%lf%lf%lf",
-          type, a[i].r, a[i].r+1, a[i].r+2) != 4) {
+    if (fscanf (f, "%7s%lf%lf%lf%[^\n]",
+          type, a[i].r, a[i].r+1, a[i].r+2, tmp_str) < 4) {
       free(a);
       return NULL;
     }
