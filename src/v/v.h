@@ -6,6 +6,7 @@
 #define BONDS_MAX 32
 #define POINTER_SPEED 2.0
 #define STRLEN 256
+#define BIGSTRLEN 4096
 
 typedef void (* ptf )();
 
