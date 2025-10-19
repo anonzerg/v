@@ -108,11 +108,10 @@ static inline void sort3(double d[3], double b[2]){
 }
 
 static int findc3(mol * m, double axis[30], double eps2){
-  int i,j,k,p;
-  int n = 0;
-  for(i=0; i<m->n; i++){
-    for(j=i+1; j<m->n; j++){
-      for(k=j+1; k<m->n; k++){
+  int p=0, n = 0;
+  for(int i=0; i<m->n; i++){
+    for(int j=i+1; j<m->n; j++){
+      for(int k=j+1; k<m->n; k++){
         double a[3], b[3], h[3];
         r3diff(a, m->r+3*i, m->r+3*j);
         r3diff(b, m->r+3*k, m->r+3*j);
@@ -369,6 +368,7 @@ molsym * pointgroup(mol * m, double eps){
   if(d[0]<eps) i++;
   if(d[1]<eps) i++;
   if(d[2]<eps) i++;
+
   if(i==3){
     snprintf(ms->s, sizeof(styp), "Kh");
     return ms;
@@ -385,14 +385,24 @@ molsym * pointgroup(mol * m, double eps){
   }
 
   double dm[2];
-  sort3(d,dm);
-  if((dm[1]-dm[0])/dm[0]<EPS4){
+  sort3(d, dm);
+  if((dm[1]-dm[0])/dm[0]<eps){
     double c3[30]={0.0};
-    int p = findc3(m, c3, eps2);
-    if((p>1)&&(p!=4)&&(p!=10)){
-      snprintf(ms->s, sizeof(styp), "???");
-      return ms;
+    int p = 0;
+
+    double this_eps2 = eps2;
+    for(int i=0; i<16; i++){
+      p = findc3(m, c3, this_eps2);
+      if(!((p>1)&&(p!=4)&&(p!=10))){
+        break;
+      }
+      this_eps2 *= 2.0;
     }
+
+    if(p==0){
+      PRINT_WARN("The point group might be T*/O*/I*. Try different 'symtol' options\n")
+    }
+
     ms->e[0] = CN;
     ms->o[0] = 3;
     r3cp(ms->r+0*3, c3+0*3);
