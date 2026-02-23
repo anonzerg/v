@@ -48,24 +48,16 @@ INCL=\
 
 OBJDIR=./obj
 SRCDIR=./src
+src=$(wildcard $(SRCDIR)/*/*.c)
+obj=$(src:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
+allobj=$(obj) $(OBJDIR)/v.o
 
-molsrc=$(wildcard $(SRCDIR)/mol/*.c)
-molobj=$(molsrc:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
-
-mathsrc=$(wildcard $(SRCDIR)/math/*.c)
-mathobj=$(mathsrc:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
-
-vsrc=$(wildcard $(SRCDIR)/v/*.c)
-vobj=$(vsrc:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
-
-symsrc=$(wildcard $(SRCDIR)/sym/*.c)
-symobj=$(symsrc:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 
 default : v
 
 all : v
 
-v  : $(vobj) $(molobj) $(mathobj) $(symobj) $(OBJDIR)/v.o
+v  : $(allobj)
 	$(CC) $^ -o $@ $(OFLAGS) -lX11 -lXpm
 
 $(OBJDIR)/%.o : $(SRCDIR)/%.c
@@ -74,8 +66,27 @@ $(OBJDIR)/%.o : $(SRCDIR)/%.c
 $(OBJDIR)/v.o : $(SRCDIR)/v.c
 	$(CC) $(CFLAGS) $< -o $@ $(INCL) -I$(SRCDIR)/v $(VERSION_FLAGS)
 
+# clean object files that can cause trouble if built without -fPIC
+clean_no_fpic_o:
+	@for o in $(allobj) ; do \
+		if [[ -f $$o ]] ; then \
+		dump=$$(objdump --reloc $$o); \
+		if echo "$${dump}" | egrep -q '\.rodata\.|\.rodata$$' ; then \
+		rm -vf $$o ; \
+		fi ; \
+		if echo "$${dump}" | grep 'dis-' | grep -q 'R_X86_64_PC32' ; then \
+		rm -vf $$o ; \
+		fi ; \
+		fi ; \
+		done
+v.so : clean_no_fpic_o v.so_inner
+v.so_inner: CFLAGS += -fPIC
+v.so_inner: $(allobj)
+	$(CC) $^ -shared -Wl,-soname,$@ -lX11 -lXpm -o v.so
+
+
 clean:
-	rm -f $(OBJDIR)/*/*/*.o $(OBJDIR)/*/*.o $(OBJDIR)/*.o v
+	rm -f $(OBJDIR)/*/*/*.o $(OBJDIR)/*/*.o $(OBJDIR)/*.o v v.so
 
 cleand:
 	rm -f $(OBJDIR)/*/*/*.d $(OBJDIR)/*/*.d $(OBJDIR)/*.d
