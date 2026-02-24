@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 
-echo '.' | python -c "import vmol; print(vmol.main.run(['../../mol/rotation0.in', 'gui:0'])[1], end='')"
+MOLS="$(dirname $(realpath "$0"))/../../mol"
+echo '.' | python -c "import os; import vmol; print(vmol.main.run(['${MOLS}/neopentane.xyz', 'symtol:1e-2', 'gui:0'])[1], end='')"
