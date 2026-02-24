@@ -7,48 +7,105 @@ on: # triggered by push tagged commits to main
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
 
   build_wheels:
-    name: 'Build wheels on ${{ matrix.os }}'
-    runs-on: '${{ matrix.os }}'
+    name: Build wheels on ${{ matrix.os }} for python ${{ matrix.py }}
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        os:
-          - ubuntu-latest
+        os: [ubuntu-latest]
+        py: ['3.11', '3.12', '3.13']
 
     steps:
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.17.0
+
+      - name: install X11 dependencies
+        if: ${{ runner.os == 'Linux' }}
+        run: |
+          sudo apt-get update
+          sudo apt install -y libx11-dev libxpm-dev x11proto-dev
+
+      - uses: actions/checkout@v6
         with:
-          path: ./python/
-      - uses: actions/upload-artifact@v4
+          persist-credentials: false
+
+      - uses: actions/setup-python@v6
         with:
-          name: 'cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}'
-          path: ./wheelhouse/*.whl
-          
+          python-version: ${{ matrix.py }}
+
+      - name: install python
+        run: pip install setuptools
+
+      - name: build wheels
+        working-directory: ./python
+        run: python setup.py bdist_wheel
+        ## we don't need the wheel name actually, the artifact name just has to be unique
+        #run: python setup.py bdist_wheel | grep "creating 'dist" | sed -n "s/^creating 'dist\//WHEEL_NAME='/;s/\s.*$//p" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v6
+        with:
+          path: ./python/dist/*.whl
+          name: ${{ matrix.os }}.${{ matrix.py }}
+
+
+  build_exe:
+    name: Build the executable file and shared library for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+
+      - name: install X11 dependencies
+        if: ${{ runner.os == 'Linux' }}
+        run: |
+          sudo apt-get update
+          sudo apt install -y libx11-dev libxpm-dev x11proto-dev
+
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - run: make v v.so
+
+      - uses: actions/upload-artifact@v6
+        with:
+          path: |
+            ./v
+            ./v.so
+          name: ${{ matrix.os }}.exe
+
+
   release:
-    needs: build_wheels
+
+    needs: [build_wheels, build_exe]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
 
       - uses: actions/download-artifact@v4
         with:
           path: ./wheelhouse
 
-      - name: Create Release
+      - name: create release
         uses: softprops/action-gh-release@v2
         with:
-          files: ./wheelhouse/**/*.whl
+          files: |
+            ./wheelhouse/**/*.whl
+            ./wheelhouse/**/v
+            ./wheelhouse/**/v.so
+
           body_path: .github/CHANGELOG.md
         env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
