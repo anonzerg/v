@@ -6,7 +6,7 @@ import shutil
 from pathlib import Path
 
 
-VERSION="3.0rc2"
+VERSION="3.0rc3"
 
 def get_git_version_hash():
     """Get tag/hash of the latest commit.
