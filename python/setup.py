@@ -44,7 +44,6 @@ def check_compilation():
 if __name__ == '__main__':
     # TODO
     #check_compilation()
-    # offer to download or provide a binary?
 
     all_c_files = [os.path.join(root, file) for root, dirs, files in os.walk('../src') for file in files if file.endswith('.c')]
 
