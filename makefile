@@ -40,7 +40,7 @@ export VERSION_FLAGS=-DGIT_HASH="\"$(GIT_HASH)\""\
 		     -DBUILD_DIRECTORY="\"$(PWD)\""
 
 CFLAGS= -c -std=gnu11 -MMD $(OPT) $(GPROF) $(W) $(GDB) $(ASM)
-OFLAGS= -lm $(GPROF)
+OFLAGS= -lm $(GPROF) -lX11 -lXpm
 
 INCL=\
 -I$(SRCDIR)/mol  -I$(SRCDIR)/math \
@@ -58,13 +58,13 @@ default : v
 all : v
 
 v  : $(allobj)
-	$(CC) $^ -o $@ $(OFLAGS) -lX11 -lXpm
+	$(CC) $^ -o $@ $(OFLAGS)
 
 $(OBJDIR)/%.o : $(SRCDIR)/%.c
 	$(CC) $(CFLAGS) $< -o $@ $(INCL)
 
 $(OBJDIR)/v.o : $(SRCDIR)/v.c
-	$(CC) $(CFLAGS) $< -o $@ $(INCL) -I$(SRCDIR)/v $(VERSION_FLAGS)
+	$(CC) $(CFLAGS) $< -o $@ $(INCL) $(VERSION_FLAGS)
 
 # clean object files that can cause trouble if built without -fPIC
 clean_no_fpic_o:
@@ -82,7 +82,7 @@ clean_no_fpic_o:
 v.so : clean_no_fpic_o v.so_inner
 v.so_inner: CFLAGS += -fPIC
 v.so_inner: $(allobj)
-	$(CC) $^ -shared -Wl,-soname,$@ -lX11 -lXpm -o v.so
+	$(CC) $^ -shared -Wl,-soname,$@ $(OFLAGS) -o v.so
 
 
 clean:

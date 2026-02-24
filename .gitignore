@@ -3,5 +3,7 @@
 .tags
 .types.vim
 /v
-/v.so
+*.so
+
 *.pyc
+vmol.egg-info/
