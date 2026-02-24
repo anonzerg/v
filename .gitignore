@@ -4,3 +4,4 @@
 .types.vim
 /v
 /v.so
+*.pyc
