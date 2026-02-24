@@ -7,3 +7,5 @@
 
 *.pyc
 vmol.egg-info/
+python/src
+python/dist

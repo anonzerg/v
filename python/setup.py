@@ -49,8 +49,12 @@ if __name__ == '__main__':
     all_c_files = [os.path.join(root, file) for root, dirs, files in os.walk('../src') for file in files if file.endswith('.c')]
 
     INCL=['-I../src/'+i for i in ['mol', 'math', 'v', 'sym']]
-    GIT_HASH = subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip().decode()
-    GIT_BRANCH = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD']).strip().decode()
+    try:
+        GIT_HASH = subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip().decode()
+        GIT_BRANCH = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD']).strip().decode()
+    except subprocess.CalledProcessError:
+        GIT_HASH = "unknown"
+        GIT_BRANCH = "unknown"
     VERSION_FLAGS = [f'-DGIT_HASH="{GIT_HASH}"',
                      f'-DGIT_BRANCH="{GIT_BRANCH}"',
                      f'-DBUILD_USER="{os.getenv('USER')}@{os.getenv('HOSTNAME')}"',
