@@ -7,6 +7,7 @@
 #define POINTER_SPEED 2.0
 #define STRLEN 256
 #define BIGSTRLEN 4096
+#define PRINTBUFLEN (1024*128)
 
 typedef void (* ptf )();
 

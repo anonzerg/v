@@ -2,45 +2,39 @@
 #include <stdarg.h>
 
 
-#if 0
-
-#define PRINTOUT printf
-
-#else
-
 extern char * out_str;
 
-//#define PRINTOUT(...) printf(__VA_ARGS__);
-#define PRINTOUT my_print
 
-
-static void my_print(char * format, ...){
-
-  static size_t n = 0;
-  static size_t N = 1024 * 128; // 128 KiB
-
-  if(!out_str){
-    out_str = calloc(N, 1);
-  }
+static void PRINTOUT(char * format, ...){
 
   va_list args;
-  va_start(args, format);
-  size_t size = N-n;
-  size_t m = vsnprintf(out_str+n, size, format, args);
-  va_end(args);
+  static size_t n = 0;
+  static size_t N = PRINTBUFLEN;
 
-  if(m >= size){
-    N = m < N ? N * 2 : N + 2*m;
-    out_str = realloc(out_str, N);
+  if(!out_str){
     va_start(args, format);
-    vsnprintf(out_str+n, N-n, format, args);
+    vfprintf(stdout, format, args);
     va_end(args);
   }
+  else{
 
-  n += m;
+    va_start(args, format);
+    size_t size = N-n;
+    size_t m = vsnprintf(out_str+n, size, format, args);
+    va_end(args);
+
+    if(m >= size){
+      N = m < N ? N * 2 : N + 2*m;
+      out_str = realloc(out_str, N);
+      va_start(args, format);
+      vsnprintf(out_str+n, N-n, format, args);
+      va_end(args);
+    }
+
+    n += m;
+  }
 }
 
-#endif
 
 
 

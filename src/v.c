@@ -12,6 +12,9 @@ XFontStruct * fontInfo;
 int       W,H;
 int (*myDrawString)();
 
+char * out_str;
+
+
 static void init_keys(ptf kp[NKP]){
   memset(kp, 0, sizeof(ptf)*NKP);
   kp[ XKeysymToKeycode(dis, XK_Escape    ) ] = kp_exit      ;
@@ -102,7 +105,7 @@ static drawpars dp_init(void){
   return dp;
 }
 
-int main (int argc, char * argv[]) {
+int main_internal (int argc, char * argv[]) {
 
   if(argc == 1){
     printman(argv[0]);
@@ -189,3 +192,15 @@ int main (int argc, char * argv[]) {
   return 0;
 }
 
+
+int main (int argc, char * argv[]) {
+
+
+  out_str = calloc(PRINTBUFLEN, 1);
+  main_internal(argc, argv);
+
+  printf(out_str);
+
+  free(out_str);
+
+}
