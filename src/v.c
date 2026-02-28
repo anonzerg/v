@@ -12,8 +12,6 @@ XFontStruct * fontInfo;
 int       W,H;
 int (*myDrawString)();
 
-char * out_str;
-
 
 static void init_keys(ptf kp[NKP]){
   memset(kp, 0, sizeof(ptf)*NKP);
@@ -105,7 +103,7 @@ static drawpars dp_init(void){
   return dp;
 }
 
-int main_internal (int argc, char * argv[]) {
+int main (int argc, char * argv[]) {
 
   if(argc == 1){
     printman(argv[0]);
@@ -190,17 +188,4 @@ int main_internal (int argc, char * argv[]) {
   main_loop(ent, &dp, kp);
 
   return 0;
-}
-
-
-int main (int argc, char * argv[]) {
-
-
-  out_str = calloc(PRINTBUFLEN, 1);
-  main_internal(argc, argv);
-
-  printf(out_str);
-
-  free(out_str);
-
 }

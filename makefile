@@ -49,7 +49,7 @@ INCL=$(SRCDIRS:%=-I./%)
 allsrc=$(shell find $(SRCDIR) -type f -name '*.c')
 allobj=$(allsrc:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 allpic=$(allsrc:$(SRCDIR)/%.c=$(PICDIR)/%.o)
-allmmd=$(allsrc:$(SRCDIR)/%.c=$(OBJDIR)/%.d)
+allmmd=$(shell find $(OBJDIR) -type f -name '*.d')
 
 OBJDIRS=$(SRCDIRS:$(SRCDIR)%=$(OBJDIR)%)
 PICDIRS=$(SRCDIRS:$(SRCDIR)%=$(PICDIR)%)
