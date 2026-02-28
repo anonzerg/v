@@ -1,9 +1,53 @@
 #include "v.h"
+#include <stdarg.h>
+
+
+#if 0
+
+#define PRINTOUT printf
+
+#else
+
+extern char * out_str;
+
+//#define PRINTOUT(...) printf(__VA_ARGS__);
+#define PRINTOUT my_print
+
+
+static void my_print(char * format, ...){
+
+  static size_t n = 0;
+  static size_t N = 1024 * 128; // 128 KiB
+
+  if(!out_str){
+    out_str = calloc(N, 1);
+  }
+
+  va_list args;
+  va_start(args, format);
+  size_t size = N-n;
+  size_t m = vsnprintf(out_str+n, size, format, args);
+  va_end(args);
+
+  if(m >= size){
+    N = m < N ? N * 2 : N + 2*m;
+    out_str = realloc(out_str, N);
+    va_start(args, format);
+    vsnprintf(out_str+n, N-n, format, args);
+    va_end(args);
+  }
+
+  n += m;
+}
+
+#endif
+
+
 
 void ac3_print(atcoord * ac, double xy0[2], int b){
-  printf("$molecule\ncart\n");
+  PRINTOUT("$molecule\ncart\n");
   for(int k=0; k<ac->n; k++){
-    printf("%3d   % lf   % lf   % lf",
+    PRINTOUT("%3d   % lf   % lf   % lf",
         ac->q[k],
         xy0[0] + ac->r[k*3  ],
         xy0[1] + ac->r[k*3+1],
@@ -14,27 +58,27 @@ void ac3_print(atcoord * ac, double xy0[2], int b){
         if(k1 == -1 ){
           break;
         }
-        printf("%s%d", j?",":"    k=", k1+1);
+        PRINTOUT("%s%d", j?",":"    k=", k1+1);
       }
     }
-    printf("\n");
+    PRINTOUT("\n");
   }
-  printf("$end\n");
+  PRINTOUT("$end\n");
   return;
 }
 
 void ac3_print_xyz(atcoord * ac, double xy0[2]){
-  printf("%d\n\n", ac->n);
+  PRINTOUT("%d\n\n", ac->n);
   for(int k=0; k<ac->n; k++){
     const char * s = getname(ac->q[k]);
     int ok = s && s[0];
     if(ok){
-      printf(" %-3s", s);
+      PRINTOUT(" %-3s", s);
     }
     else{
-      printf(" %3d", ac->q[k]);
+      PRINTOUT(" %3d", ac->q[k]);
     }
-    printf("   % lf   % lf   % lf\n",
+    PRINTOUT("   % lf   % lf   % lf\n",
         xy0[0] + ac->r[k*3  ],
         xy0[1] + ac->r[k*3+1],
                  ac->r[k*3+2]);
@@ -46,7 +90,7 @@ void ac3_print2fig(atcoord * ac, double xy0[2], int b, double * v){
 
   int n = ac->n;
   for(int i=0; i<n; i++){
-    printf("atom %3d% 13.7lf% 13.7lf% 13.7lf\n", ac->q[i],
+    PRINTOUT("atom %3d% 13.7lf% 13.7lf% 13.7lf\n", ac->q[i],
         xy0[0] + ac->r[i*3  ],
         xy0[1] + ac->r[i*3+1],
                  ac->r[i*3+2]);
@@ -54,7 +98,7 @@ void ac3_print2fig(atcoord * ac, double xy0[2], int b, double * v){
 
   if(v){
     for(int i=0; i<8; i++){
-      printf("atom %3d% 13.7lf% 13.7lf% 13.7lf\n", 0,
+      PRINTOUT("atom %3d% 13.7lf% 13.7lf% 13.7lf\n", 0,
           xy0[0] + v[i*3  ],
           xy0[1] + v[i*3+1],
                    v[i*3+2]);
@@ -69,14 +113,14 @@ void ac3_print2fig(atcoord * ac, double xy0[2], int b, double * v){
           break;
         }
         if(k1 < k){
-          printf("bond %3d %3d\n", k1+1, k+1);
+          PRINTOUT("bond %3d %3d\n", k1+1, k+1);
         }
       }
     }
   }
 
   if(v){
-#define LINE(I,J)   printf("bond %3d %3d % 3d\n", (J)+n+1, (I)+n+1, -1)
+#define LINE(I,J)   PRINTOUT("bond %3d %3d % 3d\n", (J)+n+1, (I)+n+1, -1)
     LINE(0,1);
     LINE(0,2);
     LINE(0,3);
