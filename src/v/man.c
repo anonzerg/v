@@ -1,7 +1,7 @@
 #include "v.h"
 
 void printman(char * exename){
-printf("\
+fprintf(stderr, "\
   \n\
  USAGE:\n\
   \n\

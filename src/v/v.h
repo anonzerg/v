@@ -7,7 +7,6 @@
 #define POINTER_SPEED 2.0
 #define STRLEN 256
 #define BIGSTRLEN 4096
-#define PRINTBUFLEN (1024*128)
 
 typedef void (* ptf )();
 
@@ -160,3 +159,8 @@ void ac3_text(atcoord * ac, drawpars * dp);
 void vibro_text(modestr * ms, drawpars * dp);
 void pg(atcoord * a, styp s, double symtol);
 
+// main.c
+int main (int argc, char * argv[]);
+
+// api.c
+void PRINTOUT(FILE * f, char * format, ...);

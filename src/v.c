@@ -61,11 +61,11 @@ static void init_keys(ptf kp[NKP]){
 }
 
 static void version(FILE * f){
-  fprintf(f, "built on "__TIMESTAMP__"\n"
-             "user:      "BUILD_USER"\n"
-             "directory: "BUILD_DIRECTORY"\n"
-             "commit:    "GIT_HASH" ("GIT_BRANCH")\n"
-             "\n");
+  PRINTOUT(f, "built on "__TIMESTAMP__"\n"
+              "user:      "BUILD_USER"\n"
+              "directory: "BUILD_DIRECTORY"\n"
+              "commit:    "GIT_HASH" ("GIT_BRANCH")\n"
+              "\n");
 }
 
 static drawpars dp_init(void){
@@ -160,7 +160,7 @@ int main (int argc, char * argv[]) {
           {
             styp sym;
             pg(ac, sym, dp.symtol);
-            printf("%s\n", sym);
+            PRINTOUT(stdout, "%s\n", sym);
           }; break;
       }
     }
