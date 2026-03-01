@@ -141,9 +141,7 @@ void * read_files(drawpars * dp){
       }
     }
     dp->scale = acs_scale(acs);
-    dp->N = 0;
     newmol_prep(acs, dp);
-    dp->N = acs->n;
     intcoord_check(INT_MAX, dp->z);
   }
   else{
@@ -154,4 +152,34 @@ void * read_files(drawpars * dp){
   dp->input_files = NULL;
 
   return ent;
+}
+
+atcoords * get_in_str(in_str_t in_str, drawpars * dp){
+
+  if(dp->task==VIBRO){
+    PRINT_WARN("cannot read vibrations from input variable\n");
+  }
+  dp->task = AT3COORDS;
+  dp->fname = in_str.name;
+
+  int n = in_str.n;
+  txyz * xyz = malloc(sizeof(txyz)*n);
+  for(int i=0; i<n; i++){
+    xyz[i].t = in_str.q[i];
+    r3cp(xyz[i].r, in_str.r+i*3);
+  }
+
+  atcoords * acs = malloc(sizeof(atcoords));
+
+  acs->Nmem = 1;
+  acs->n = 0;
+  acs->m = malloc(acs->Nmem*sizeof(atcoord *));
+  acs->m[acs->n++] = atcoord_fill(n, xyz, in_str.name, dp->b, dp->center, dp->inertia, dp->bohr);
+
+  fill_nf(acs, 0);
+  dp->scale = acs_scale(acs);
+  newmol_prep(acs, dp);
+  intcoord_check(INT_MAX, dp->z);
+
+  return acs;
 }

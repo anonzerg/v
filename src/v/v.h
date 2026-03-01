@@ -106,7 +106,16 @@ typedef struct {
   double r[3];
 } txyz;
 
+typedef struct {
+  int      n;
+  int    * q;
+  double * r;
+  char   * name;
+} in_str_t;
+
+
 // load.c
+atcoords * get_in_str(in_str_t in_str, drawpars * dp);
 void acs_readmore  (FILE * f, int b, int center, int inertia, int bohr, atcoords * acs, const char * fname);
 void * read_files(drawpars * dp);
 // scale.c
@@ -115,6 +124,7 @@ double acs_scale(atcoords * acs);
 // mode_read.c
 modestr * mode_read(FILE * f, int na);
 // ac3_read*.c
+atcoord * atcoord_fill(int n, txyz * a, const char * fname, int b, int center, int inertia, int bohr);
 atcoord * ac3_read(FILE * f, int b, int center, int inertia, int bohr, const char * fname, format_t * format);
 txyz * ac3_read_in (int * n_p, int * zmat, FILE * f);
 txyz * ac3_read_out(int * n_p, FILE * f);
@@ -172,3 +182,4 @@ int main (int argc, char * argv[]);
 
 // api.c
 void PRINTOUT(FILE * f, char * format, ...);
+void * READ_FILES(drawpars * dp);

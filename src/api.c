@@ -4,11 +4,13 @@
 #define PRINTBUFLEN (1024*128)
 
 char * out_str;
+in_str_t in_str;
 
 int main_wrapper1 (int argc, char * argv[]) {
   out_str = calloc(PRINTBUFLEN, 1);
-  main(argc, argv);
+  int ret = main(argc, argv);
   free(out_str);
+  return ret;
 }
 
 char * main_wrapper2 (int argc, char * argv[]) {
@@ -50,4 +52,32 @@ void PRINTOUT(FILE * f, char * format, ...){
 
     n += m;
   }
+}
+
+
+void * READ_FILES(drawpars * dp){
+
+  ////////////////////////////////////////////
+  // this should be set up by a wrapper that calls main
+  //in_str.n = 2;
+  //int q[] = {1, 1};
+  //double r[] = {0, 0, 0, 1, 0, 0};
+  //char * const name = "molname";
+  //in_str.q = q;
+  //in_str.r = r;
+  //in_str.name = name;
+  ////////////////////////////////////////////
+
+  void * ret;
+  if(!in_str.n){
+    ret = read_files(dp);
+  }
+  else{
+    ret = get_in_str(in_str, dp);
+  }
+
+  free(dp->input_files);
+  dp->input_files = NULL;
+  return ret;
+
 }
