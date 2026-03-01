@@ -76,6 +76,7 @@ static drawpars dp_init(void){
   memset(dp.input_text, 0, STRLEN);
   dp.dt   = DEFAULT_TIMEOUT;
   memset(dp.fontname, 0, STRLEN);
+  memset(dp.com, 0, STRLEN);
   dp.n   = 0;
   dp.fbw = 0;
   dp.num = 0;
@@ -141,31 +142,7 @@ int main (int argc, char * argv[]) {
   }
 
   if(!dp.gui){
-
-    atcoord * ac = ((atcoords *)ent)->m[dp.n];
-    if(dp.b>0 && !ac->bond_flag){
-      bonds_fill(dp.rl, dp.bmax, ac);
-    }
-
-    int c;
-    while((c = getc(stdin))!=EOF){
-      switch(c){
-        case('p'):
-          kp_print2fig(ent, &dp); break;
-        case('z'):
-          kp_print_xyz(ent, &dp); break;
-        case('x'):
-          kp_print(ent, &dp); break;
-        case('.'):
-          {
-            styp sym;
-            pg(ac, sym, dp.symtol);
-            PRINTOUT(stdout, "%s\n", sym);
-          }; break;
-      }
-    }
-    ent_free(ent, &dp);
-    return 0;
+    return headless(&dp, ent);
   }
 
   /*= X11 init ===============================================================*/

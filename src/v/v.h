@@ -94,6 +94,7 @@ typedef struct {
   int    bohr;          // 0: Å            1: Bohr
                         //
   int    closed;        // 1: time to go
+  char   com[STRLEN];   // command string for gui:0
 } drawpars;
 
 typedef struct {
@@ -158,6 +159,9 @@ void newmol_prep(atcoords * acs, drawpars * dp);
 void ac3_text(atcoord * ac, drawpars * dp);
 void vibro_text(modestr * ms, drawpars * dp);
 void pg(atcoord * a, styp s, double symtol);
+
+// headless.c
+int headless(drawpars * dp, void * ent);
 
 // main.c
 int main (int argc, char * argv[]);

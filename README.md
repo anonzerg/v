@@ -40,6 +40,8 @@ make v
 ```
 ./v file [file2 ... fileN] [options]
 ```
+A filename `-` stands for the standard input.
+
 Show the reference:
 ```
 ./v
@@ -66,8 +68,9 @@ Show the reference:
 | `shell:b%lf,%lf`                            | spheres radii in a.u.                                    |
 | `shell:%lf,%lf`                             | spheres radii in Å                                       |
 | `center:%d`                                 | origin is geometric center (`1`, default) / center of mass (`2`) / as is (`0`) |
-| `inertia:1`                                 | rotate molecules wrt axis of inertia                     |
+| `inertia:%d`                                | if rotate molecules wrt axis of inertia (`1`) or not (`0`, default) |
 | `gui:%d`                                    | normal (default `1`) / headless (`0`) mode               |
+| `com:%d`                                    | command sequence for `gui:0`                             |
 
 </details>
 
@@ -116,11 +119,19 @@ One can also use the mouse to rotate the molecule and zoom in/out.
 
 <details open><summary><strong>Headless mode (in development)</strong></summary>
 
-If run in the headless mode with `gui:0`, the symbols from stdio are processed 
+If run in the headless mode with `gui:0`, the symbols from the standard input are processed 
 as if the corresponding keys were pressed in the normal mode.
-Right now, only `p`, `x`, `z`, and `.` are available. For example,
+Right now, only `p`, `x`, `z`, and `.` are available.
+Command-line option `com:%s` overrides the standard input.
+These examples are equivalent:
 ```
 > echo . | ./v mol/mol0001.xyz gui:0
+D*h
+
+> ./v mol/mol0001.xyz gui:0 com:.
+D*h
+
+> cat mol/mol0001.xyz | ./v - gui:0 com:.
 D*h
 ```
 

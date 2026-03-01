@@ -92,11 +92,12 @@ int cli_parse(char * arg, drawpars * dp){
   int a9  = sscanf (arg, "frame:%d", &frame);
   int a10 = sscanf (arg, "center:%d", &(dp->center));
   int a11 = sscanf (arg, "inertia:%d", &(dp->inertia));
+  int a12  = sscanf (arg, "com:%255s", dp->com);
   int rot_count   = sscan_rot  (arg, rot);
   int cell_count  = sscan_cell (arg, cell);
   int shell_count = sscan_shell(arg, shell);
 
-  int cli = a0||a1||a2||a3||a4||a5||a6||a7||a8||a9||a10||a11 || rot_count||cell_count||shell_count;
+  int cli = a0||a1||a2||a3||a4||a5||a6||a7||a8||a9||a10||a11||a12 || rot_count||cell_count||shell_count;
 
   if(vib==0){
     dp->task = AT3COORDS;
