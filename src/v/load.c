@@ -57,9 +57,15 @@ static vibrstr * mode_read_try(FILE * f, atcoord * ac){
 }
 
 static FILE * acs_read_newfile(atcoords * acs, char * fname, drawpars * dp){
-  FILE * f = fopen(fname, "r");
-  if(!f){
-    return NULL;
+  FILE * f;
+  if(!strcmp(fname, "-")){
+    f = stdin;
+  }
+  else{
+    f = fopen(fname, "r");
+    if(!f){
+      return NULL;
+    }
   }
   acs_readmore(f, dp->b, dp->center, dp->inertia, dp->bohr, acs, fname);
   return f;
