@@ -95,6 +95,10 @@ typedef struct {
                         //
   int    closed;        // 1: time to go
   char   com[STRLEN];   // command string for gui:0
+
+  int  input_files_n;   // number of input files
+  char ** input_files;  // input files
+
 } drawpars;
 
 typedef struct {
@@ -104,7 +108,7 @@ typedef struct {
 
 // load.c
 void acs_readmore  (FILE * f, int b, int center, int inertia, int bohr, atcoords * acs, const char * fname);
-void * read_files(int fn, char ** flist, drawpars * dp);
+void * read_files(drawpars * dp);
 // scale.c
 double ac3_scale(atcoord * ac);
 double acs_scale(atcoords * acs);
@@ -119,7 +123,7 @@ txyz * ac3_read_xyz(int * n_p, FILE * f);
 // man.c
 void printman(char * exename);
 // cli.c
-int cli_parse(char * arg, drawpars * dp);
+drawpars cli_parse(int argc, char ** argv);
 
 // loop.c
 void main_loop(void * ent, drawpars * dp, ptf kp[NKP]);

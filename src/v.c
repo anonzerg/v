@@ -68,42 +68,6 @@ static void version(FILE * f){
               "\n");
 }
 
-static drawpars dp_init(void){
-  drawpars dp;
-  dp.task = UNKNOWN;
-  dp.gui  = 1;
-  dp.input = 0;
-  memset(dp.input_text, 0, STRLEN);
-  dp.dt   = DEFAULT_TIMEOUT;
-  memset(dp.fontname, 0, STRLEN);
-  memset(dp.com, 0, STRLEN);
-  dp.n   = 0;
-  dp.fbw = 0;
-  dp.num = 0;
-  dp.t   = 0;
-  dp.rl  = 1.0;
-  dp.r   = 1.0;
-  dp.xy0[0] = dp.xy0[1] = 0.0;
-  mx_id(3, dp.ac3rmx);
-  // from command-line
-  dp.inertia = 0;
-  dp.center = 1;
-  dp.b = 1;
-  dp.bmax = 0.0;
-  dp.symtol = DEFAULT_SYMTOL;
-  dp.vert = -1;
-  dp.z[0] = dp.z[1] = dp.z[2] = dp.z[3] = dp.z[4] = 0;
-  vecset(3*8, dp.vertices, 0.0);
-  // from data read
-  dp.scale = 1.0;
-  dp.N = 0.0;
-  dp.f = NULL;
-  dp.fname = NULL;
-  dp.bohr = 0;
-  dp.closed = 0;
-  return dp;
-}
-
 int main (int argc, char * argv[]) {
 
   if(argc == 1){
@@ -114,21 +78,9 @@ int main (int argc, char * argv[]) {
 
   /*= Input ==================================================================*/
 
-  drawpars dp   = dp_init();
-  int fn = 0;
-  char ** flist = malloc(argc*sizeof(char*));
-  for(int i=1; i<argc; i++){
-    if(!cli_parse(argv[i], &dp)){
-      flist[fn++] = argv[i];
-    }
-  }
-  if(!fn){
-    PRINT_ERR("no files to read\n");
-    return 1;
-  }
+  drawpars dp = cli_parse(argc, argv);
 
-  void * ent = read_files(fn, flist, &dp);
-  free(flist);
+  void * ent = read_files(&dp);
   if(!ent){
     PRINT_ERR("no files to read\n");
     return 1;

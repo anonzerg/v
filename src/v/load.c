@@ -108,18 +108,20 @@ static void * ent_read(char * fname, drawpars * dp){
   return acs;
 }
 
-void * read_files(int fn, char ** flist, drawpars * dp){
+void * read_files(drawpars * dp){
 
-  void * ent;
+  int fn = dp->input_files_n;
+  char ** flist = dp->input_files;
+  void * ent = NULL;
   int i=0;
+
+  // read the first available file
   while(i<fn && !(ent = ent_read(flist[i], dp))){
     PRINT_WARN("cannot read file '%s'\n", flist[i]);
     i++;
   }
-  if(i==fn){
-    return NULL;
-  }
 
+  // if the first file does not contain normal modes, try to read other files
   if(dp->task == AT3COORDS){
     atcoords * acs = ent;
     int n0 = fill_nf(acs, 0);
@@ -147,5 +149,9 @@ void * read_files(int fn, char ** flist, drawpars * dp){
   else{
     dp->z[0] = 0;
   }
+
+  free(dp->input_files);
+  dp->input_files = NULL;
+
   return ent;
 }
