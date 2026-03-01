@@ -75,16 +75,17 @@ void kp_readmore(void * ent, drawpars * dp){
 
 void kp_readagain(void * ent, drawpars * dp){
   if(dp->task == AT3COORDS){
+
+    if(!dp->f || !(fclose(dp->f), dp->f = fopen(dp->fname, "r"))){
+      PRINT_WARN("cannot reload the file '%s'\n", dp->fname);
+      return;
+    }
+
     atcoords * acs = ent;
     for(int i=0; i<acs->n; i++){
       free(acs->m[i]);
     }
     acs->n = dp->N = dp->n = 0;
-
-    if(!dp->f || !(fclose(dp->f), dp->f = fopen(dp->fname, "r"))){
-      PRINT_ERR("cannot reload the file '%s'\n", dp->fname);
-      return;
-    }
 
     acs_readmore(dp->f, dp->b, dp->center, dp->inertia, dp->bohr, acs, dp->fname);
     newmol_prep(acs, dp);
