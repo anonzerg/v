@@ -7,8 +7,10 @@ import io
 import ctypes
 import ctypes.util
 
+
 class FILE(ctypes.Structure):
     pass
+
 
 FILE_p = ctypes.POINTER(FILE)
 
@@ -22,6 +24,7 @@ csetbuf.argtypes = (FILE_p, ctypes.c_char_p)
 csetbuf.restype = None
 
 cstdout = FILE_p.in_dll(libc, 'stdout')
+
 
 def capture(func, *args, **kwargs):
 

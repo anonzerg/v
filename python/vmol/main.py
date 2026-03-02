@@ -19,7 +19,7 @@ def run(args):
     main.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_char_p)]
     main.restype = ctypes.c_int
 
-    argv = [vmol.SO] + args
+    argv = [vmol.SO, *args]
     argc = len(argv)
     argv = (ctypes.c_char_p * argc)(*[arg.encode('utf-8') for arg in argv])
 
@@ -35,7 +35,7 @@ def run1(args):
     main.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_char_p)]
     main.restype = ctypes.c_char_p
 
-    argv = [vmol.SO] + args
+    argv = [vmol.SO, *args]
     argc = len(argv)
     argv = (ctypes.c_char_p * argc)(*[arg.encode('utf-8') for arg in argv])
 
@@ -79,7 +79,7 @@ def run2(q, r, name=None, args=None):
             name=name,
             )
 
-    argv = [vmol.SO] + args
+    argv = [vmol.SO, *args]
     argc = len(argv)
     argv = (ctypes.c_char_p * argc)(*[arg.encode('utf-8') for arg in argv])
 

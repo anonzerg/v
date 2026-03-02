@@ -85,8 +85,7 @@ To subsitute the `.so`, put in in the same directory or change manually:
 >>> # and a stdout parsing module `stdout`
 >>> dir(vmol)
 ['SO', '__builtins__', '__cached__', '__doc__', '__file__', '__loader__', '__name__',
- '__package__', '__path__', '__spec__', '_exists', '_paths', '_suffix', '_v',
- 'get_config_var', 'get_path', 'main', 'os', 'stdout']
+'__package__', '__path__', '__spec__', '_exists', '_paths', 'main', 'stdout']
 
 >>> # the arguments are the same as the CLI ones:
 >>> args = ['v/mol/MOL_3525.xyz']

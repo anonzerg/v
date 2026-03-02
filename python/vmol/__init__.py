@@ -16,3 +16,6 @@ _paths = [
 _exists = [os.path.isfile(p) for p in _paths]
 
 SO = _paths[_exists.index(True)] if sum(_exists) else None
+
+del _v, _suffix
+del get_config_var, get_path, os

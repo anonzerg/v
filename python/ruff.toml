@@ -1,0 +1,33 @@
+exclude = [
+    "__init__.py",
+]
+
+indent-width = 4
+target-version = "py313"
+
+[format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[lint]
+
+select = [
+  "A", "E", "F", "B",
+  "S", "COM", "C4", "EXE", "ICN", "PIE", "PLR1714", "ARG",
+  "PERF", "FURB", "PLE", "TRY002", "W", "UP", "RUF", "SIM", "NPY",
+  "FIX", "TD",
+]
+ignore = [
+  "E501",     # line length
+]
+
+preview = true
+
+extend-ignore = [
+  # whitespaces
+  "E201", "E202", "E203", "E211",
+  "E221", "E222", "E225", "E226", "E228",
+  "E231", "E241", "E271", "E272",
+]

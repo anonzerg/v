@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import vmol
-import numpy as np
 
 # mol/mol0001.xyz
 name = 'acetylene'
@@ -10,7 +9,7 @@ r = [
         [0.99495,  0.00000, 0.00000],
         [2.19521,  0.00000, 0.00000],
         [-0.07071, 0.00000, 0.00000],
-        [3.26087,  0.00000, 0.00000]
+        [3.26087,  0.00000, 0.00000],
         ]
 
 point_group = vmol.main.run2(q, r, name=name, args=['gui:0', 'com:.'])
