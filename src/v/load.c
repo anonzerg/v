@@ -180,6 +180,7 @@ atcoords * get_in_str(in_str_t in_str, drawpars * dp){
   dp->scale = acs_scale(acs);
   newmol_prep(acs, dp);
   intcoord_check(INT_MAX, dp->z);
+  free(xyz);
 
   return acs;
 }
