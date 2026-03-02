@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-import sys
 import vmol
 
 
 def main():
-    vmol.main.run0(sys.argv)
+    vmol.main.run0()
 
 
 if __name__ == "__main__":

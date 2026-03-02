@@ -7,20 +7,13 @@
 char * out_str;
 in_str_t in_str;
 
-int main_wrapper1 (int argc, char * argv[]) {
-  out_str = calloc(PRINTBUFLEN, 1);
-  int ret = main(argc, argv);
-  FREE0(out_str);
-  return ret;
-}
-
 char * main_wrapper2 (int argc, char * argv[]) {
   out_str = calloc(PRINTBUFLEN, 1);
   main(argc, argv);
   return out_str;
 }
 
-char * main_wrapper3 (in_str_t in_str_, int argc, char * argv[]) {
+char * main_wrapper3 (int argc, char * argv[], in_str_t in_str_) {
   in_str = in_str_;
   out_str = calloc(PRINTBUFLEN, 1);
   main(argc, argv);
