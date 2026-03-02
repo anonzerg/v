@@ -31,6 +31,9 @@ dependencies = [
   'numpy >= 1.24',
 ]
 
+[project.scripts]
+vmol = "vmol.__main__:main"
+
 [project.urls]
 Repository = "https://github.com/briling/v.git"
 "Bug Tracker" = "https://github.com/briling/v/issues"

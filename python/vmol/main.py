@@ -1,5 +1,4 @@
 import ctypes
-import numpy as np
 import vmol
 
 
@@ -10,6 +9,16 @@ class in_str_t(ctypes.Structure):
             ("r", ctypes.POINTER(ctypes.c_double)),
             ("name", ctypes.c_char_p),
             ]
+
+
+def run0(argv):
+    lib = ctypes.cdll.LoadLibrary(vmol.SO)
+    main = lib.main
+    main.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_char_p)]
+    main.restype = ctypes.c_int
+    argc = len(argv)
+    argv = (ctypes.c_char_p * argc)(*[arg.encode('utf-8') for arg in argv])
+    return main(argc, argv)
 
 
 def run(args):
@@ -51,6 +60,8 @@ def run1(args):
 
 
 def run2(q, r, name=None, args=None):
+
+    import numpy as np
 
     lib = ctypes.cdll.LoadLibrary(vmol.SO)
     main = lib.main_wrapper3
