@@ -148,14 +148,14 @@ void * read_files(drawpars * dp){
     dp->z[0] = 0;
   }
 
-  free(dp->input_files);
-  dp->input_files = NULL;
-
   return ent;
 }
 
 atcoords * get_in_str(in_str_t in_str, drawpars * dp){
 
+  for(int i=0; i<dp->input_files_n; i++){
+    PRINT_WARN("ignoring file '%s'\n", dp->input_files[i]);
+  }
   if(dp->task==VIBRO){
     PRINT_WARN("cannot read vibrations from input variable\n");
   }

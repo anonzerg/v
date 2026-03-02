@@ -39,7 +39,7 @@ void center_mol(int n, double * r, int * q){
 }
 
 void position(mol * m, double d[3], int preserve_chirality){
-  if(d==NULL){
+  if(!d){
     double d1[3];
     d = d1;
   }

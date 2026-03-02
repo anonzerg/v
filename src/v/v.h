@@ -183,3 +183,4 @@ int main (int argc, char * argv[]);
 // api.c
 void PRINTOUT(FILE * f, char * format, ...);
 void * READ_FILES(drawpars * dp);
+int SHOULD_PRINT_MAN(int argc);

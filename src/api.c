@@ -2,6 +2,7 @@
 #include "v.h"
 
 #define PRINTBUFLEN (1024*128)
+#define FREE0(PTR) { free(PTR); PTR = NULL; }
 
 char * out_str;
 in_str_t in_str;
@@ -9,7 +10,7 @@ in_str_t in_str;
 int main_wrapper1 (int argc, char * argv[]) {
   out_str = calloc(PRINTBUFLEN, 1);
   int ret = main(argc, argv);
-  free(out_str);
+  FREE0(out_str);
   return ret;
 }
 
@@ -19,9 +20,16 @@ char * main_wrapper2 (int argc, char * argv[]) {
   return out_str;
 }
 
+char * main_wrapper3 (in_str_t in_str_, int argc, char * argv[]) {
+  in_str = in_str_;
+  out_str = calloc(PRINTBUFLEN, 1);
+  main(argc, argv);
+  return out_str;
+}
+
 void free_out_str(void){
-  free(out_str);
-  out_str = NULL;
+  FREE0(out_str);
+  PRINTOUT(NULL, NULL);
 }
 
 void PRINTOUT(FILE * f, char * format, ...){
@@ -29,6 +37,13 @@ void PRINTOUT(FILE * f, char * format, ...){
   va_list args;
   static size_t n = 0;
   static size_t N = PRINTBUFLEN;
+
+  // call to reset n and N
+  if(!format){
+    n = 0;
+    N = PRINTBUFLEN;
+    return;
+  }
 
   if(!out_str){
     va_start(args, format);
@@ -54,20 +69,7 @@ void PRINTOUT(FILE * f, char * format, ...){
   }
 }
 
-
 void * READ_FILES(drawpars * dp){
-
-  ////////////////////////////////////////////
-  // this should be set up by a wrapper that calls main
-  //in_str.n = 2;
-  //int q[] = {1, 1};
-  //double r[] = {0, 0, 0, 1, 0, 0};
-  //char * const name = "molname";
-  //in_str.q = q;
-  //in_str.r = r;
-  //in_str.name = name;
-  ////////////////////////////////////////////
-
   void * ret;
   if(!in_str.n){
     ret = read_files(dp);
@@ -75,9 +77,13 @@ void * READ_FILES(drawpars * dp){
   else{
     ret = get_in_str(in_str, dp);
   }
-
-  free(dp->input_files);
-  dp->input_files = NULL;
+  FREE0(dp->input_files);
   return ret;
+}
 
+int SHOULD_PRINT_MAN(int argc){
+  if((argc==1) && (!in_str.n)){
+    return 1;
+  }
+  return 0;
 }
