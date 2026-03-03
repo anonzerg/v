@@ -71,8 +71,8 @@ static void version(FILE * f){
 int main (int argc, char * argv[]) {
 
   if(SHOULD_PRINT_MAN(argc)){
-    printman(argv[0]);
-    version(stdout);
+    printman(stderr, argv[0]);
+    version(stderr);
     return 0;
   }
 

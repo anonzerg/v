@@ -131,7 +131,7 @@ txyz * ac3_read_out(int * n_p, FILE * f);
 txyz * ac3_read_xyz(int * n_p, FILE * f);
 
 // man.c
-void printman(char * exename);
+void printman(FILE * f, char * exename);
 // cli.c
 drawpars cli_parse(int argc, char ** argv);
 
