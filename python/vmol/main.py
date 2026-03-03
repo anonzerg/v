@@ -8,7 +8,7 @@ import vmol
 
 c_double_p = ctypes.POINTER(c_double)
 c_int_p = ctypes.POINTER(c_int)
-ARGS_T = [c_int, ctypes.POINTER(ctypes.c_char_p)]
+ARGS_T = (c_int, ctypes.POINTER(ctypes.c_char_p))
 
 
 class in_str_t(ctypes.Structure):
@@ -36,12 +36,16 @@ def convert_in_mol(mol):
 
     Returns:
         in_str_t: An instance of `in_str_t` with the fields set according to the input molecule.
+
+    Raises:
+        TypeError: If mol is not a dictionary.
+        ValueError: If the required keys are missing or their values have wrong shapes.
     """
     import numpy as np
 
     if not isinstance(mol, dict):
         msg = f"mol must be a dictionary, but got {type(mol)}"
-        raise ValueError(msg)
+        raise TypeError(msg)
     q = mol.get('q')
     r = mol.get('r')
     name = mol.get('name')
@@ -66,15 +70,8 @@ def convert_in_mol(mol):
                     name=name)
 
 
-def _check_attrs(name, x, attrs):
-    for attr in attrs:
-        if not hasattr(x, attr):
-            msg = f"{name} must have {attr} defined"
-            raise ValueError(msg)
-
-
 def convert_in(func):
-    """Decorate a function to convert a list of Python strings to the expected C types.
+    """Decorate a function to convert Python arguments to the expected C types.
 
     The function is expected to take an integer and a pointer to an array of C strings as its first two arguments,
     which represent the argument count and argument values, respectively, i.e.,
@@ -86,104 +83,75 @@ def convert_in(func):
     ```
     def wrapped_func(argv: list[str], ...)
     ```
-    The function has to have the `argtypes` and `restype` attributes defined and match the above signature.
+
+    If `func.ret_code_ptr_idx` is defined and equals to N>=2, the decorator also passes a pointer to an integer
+    as the Nth argument:
+    ```
+    void func(int argc, char ** argv, ..., int * ret, ...) -> def wrapped_func(argv: list[str], ..., ...)
+              ^0th                         ^Nth
+    ```
+    The `func.errcheck` function is supposed to take care of the return value.
 
     Args:
-        func (callable): The function to wrap, which should take an integer and a pointer to an array of C strings
-                         as its first two arguments.
+        func (callable): The function to wrap.
 
     Returns:
-        callable: A wrapped function that takes a list of Python strings as its first argument and converts
-                  it to the expected C types before calling the original function.
-    """
-    _check_attrs("function", func, ['restype', 'argtypes'])
+        callable: A wrapped function.
 
-    if func.argtypes is None or len(func.argtypes) < 2 or func.argtypes[:2] != ARGS_T:
+    Raises:
+        TypeError: If func is not a ctypes function.
+        ValueError: If its attributes are wrong.
+    """
+    if not isinstance(func, ctypes._CFuncPtr):
+        msg = "function should be a ctypes function"
+        raise TypeError(msg)
+
+    if func.argtypes is None or len(func.argtypes) < len(ARGS_T) or any(x!=y for x, y in zip(func.argtypes, ARGS_T, strict=False)):
         msg = f"function must have a signature that starts with {ARGS_T} for the first arguments to convert the input list of strings"
         raise ValueError(msg)
+
+    if not hasattr(func, 'ret_code_ptr_idx'):
+        func.ret_code_ptr_idx = None
+    if func.ret_code_ptr_idx is not None:
+        if func.ret_code_ptr_idx < len(ARGS_T):
+            msg = f"return code argument index must be at least 2, but got {func.ret_code_ptr_idx}"
+            raise ValueError(msg)
+        if func.argtypes[func.ret_code_ptr_idx] != c_int_p:
+            msg = f"return code argument must be a pointer to an integer ({c_int_p}), but got {func.argtypes[func.ret_code_ptr_idx]}"
+            raise ValueError(msg)
 
     @functools.wraps(func)
     def myinner(argv, *args):
         argc = len(argv)
         argv = (c_char_p * argc)(*[arg.encode('utf-8') for arg in argv])
-        return func(c_int(argc), argv, *args)
-    myinner = declare(myinner, argtypes=[list, *func.argtypes[2:]], restype=func.restype)
+        arguments = [c_int(argc), argv, *args]
+        if func.ret_code_ptr_idx is not None:
+            ret = c_int(0)
+            arguments.insert(func.ret_code_ptr_idx, ctypes.byref(ret))
+        return func(*arguments)
     return myinner
 
 
-def convert_out(func):
-    """Decorate a function to convert its output to a Python string and return it along with the return code.
-
-    The function is expected to return a pointer to a null-terminated C string, which will be decoded as UTF-8
-    and stripped of trailing newlines.
-    It is also expected to take a pointer to an integer as the third or second argument, where it will write the return code.
-
-    We assume that in the former case the function is a _FuncPtr loaded from the shared library
-    and has a signature
-    ```
-    char * func(int argc, char ** argv, int * ret_code, ...)
-    ```
-    and in the latter case it is already decorated with `convert_in()` and has a 'signature'
-    ```
-    char * func(argv: list[str], int * ret_code, ...)
-    ```
-    The function has to have the `argtypes` and `restype` attributes defined and match one of the above signatures.
-
-    In the future, we could also support the case where the return code argument index is passed
-    as an argument to the decorator.
-
-    Args:
-        func (callable): The function to wrap, which has the `argtypes` attribute defined
-                         and should return a pointer to a null-terminated string
-                         and take a pointer to an integer for the return code.
-
-    Returns:
-        callable: A wrapped function that returns a tuple of (return code (int), output (str))
-                  and takes the same arguments as the original function,
-                  except that the argument for the return code is handled internally.
-    """
-    _check_attrs("function", func, ['restype', 'argtypes'])
-
-    argtypes2 = [list, c_int_p]
-    argtypes3 = [*ARGS_T, c_int_p]
-    for argtypes in (argtypes3, argtypes2):
-        if func.argtypes is None or len(func.argtypes) < len(argtypes):
-            continue
-        if func.argtypes[:len(argtypes)] == argtypes:
-            n = len(argtypes)-1
-            break
-    else:
-        msg = f"function has to have a signature that matches\n{12*' '}either {argtypes3}\n{12*' '}or {argtypes2}\n{12*' '}for the first arguments to retrieve the return code via pointer"
-        raise ValueError(msg)
-
-    if func.restype != c_char_p:
-        msg = f"function must return a pointer to a C string (restype={c_char_p})"
-        raise ValueError(msg)
-
-    @functools.wraps(func)
-    def myinner(*args):
-        ret = c_int(0)
-        out = func(*(args[:n]), ctypes.byref(ret), *(args[n:]))
-        out = out.decode('utf-8').rstrip('\n') if out else None
-        return ret.value, out
-
-    myinner = declare(myinner, argtypes=func.argtypes[:n]+func.argtypes[n+1:], restype=[int, str])
-    return myinner
-
-
-def declare(func, argtypes, restype):
+def declare(func, argtypes, restype, errcheck=None, ret_code_ptr_idx=None):
     """Declare a function from the shared library with the given argument and return types.
 
     Args:
         func (callable): The function to declare, typically obtained from the shared library.
         argtypes (list of ctypes types): The argument types of the function.
         restype (ctypes type): The return type of the function.
+        errcheck (callable, optional): A function that takes the result, the function, and the arguments,
+                                       and returns the processed result.
+        ret_code_ptr_idx (int, optional): Position of the `int *` argument to store the return value in.
 
     Returns:
-        callable: The function with the specified argument and return types.
+        callable: The function with the specified arguments and return types.
     """
     func.argtypes = argtypes
     func.restype = restype
+    if errcheck:
+        func.errcheck = errcheck
+    if ret_code_ptr_idx is not None:
+        func.ret_code_ptr_idx = ret_code_ptr_idx
     return func
 
 
@@ -236,13 +204,18 @@ def capture(*, mol=None, args=None, return_code=False):
     if mol:
         main = lib.main_wrap_in_out
         argtypes = [*ARGS_T, c_int_p, in_str_t]
-        arguments = (args, convert_in_mol(mol))
+        arguments = [args, convert_in_mol(mol)]
     else:
         main = lib.main_wrap_out
         argtypes = [*ARGS_T, c_int_p]
-        arguments = (args,)
+        arguments = [args]
 
-    main = convert_out(convert_in(declare(main, argtypes=argtypes, restype=c_char_p)))
+    def errcheck(result, func, args):
+        ret = args[func.ret_code_ptr_idx]._obj.value
+        out = result.decode('utf-8').rstrip('\n') if result else None
+        free()
+        return ret, out
+
+    main = convert_in(declare(main, argtypes=argtypes, restype=c_char_p, errcheck=errcheck, ret_code_ptr_idx=2))
     ret, out = main(*arguments)
-    free()
     return (ret, out) if return_code else out

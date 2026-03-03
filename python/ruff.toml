@@ -16,18 +16,30 @@ line-ending = "auto"
 select = [
   "A", "E", "F", "B",
   "S", "COM", "C4", "EXE", "ICN", "PIE", "PLR1714", "ARG",
-  "PERF", "FURB", "PLE", "TRY002", "W", "UP", "RUF", "SIM", "NPY",
+  "PERF", "FURB", "PLE", "TRY", "W", "UP", "RUF", "SIM", "NPY",
+  "EM", "RET", "PLR",
   "FIX", "TD",
+  "D",
 ]
 ignore = [
   "E501",     # line length
+  "D203",     # incorrect-blank-line-before-class
+  "D213",     # multi-line-summary-second-line
 ]
 
 preview = true
+
+extend-select = ["DOC"]
 
 extend-ignore = [
   # whitespaces
   "E201", "E202", "E203", "E211",
   "E221", "E222", "E225", "E226", "E228",
   "E231", "E241", "E271", "E272",
+  # doc whitespaces
+  "D413", "D204",
 ]
+
+[lint.per-file-ignores]
+"vmol/__main__.py" = ["D"]
+"examples/ex?.py"  = ["D"]
