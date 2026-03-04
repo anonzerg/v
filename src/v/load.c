@@ -122,7 +122,7 @@ void * read_files(drawpars * dp){
   }
 
   // if the first file does not contain normal modes, try to read other files
-  if(dp->task == AT3COORDS){
+  if(ent && (dp->task == AT3COORDS)){
     atcoords * acs = ent;
     int n0 = fill_nf(acs, 0);
     for(i++; i<fn; i++){
