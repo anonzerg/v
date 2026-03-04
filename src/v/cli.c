@@ -180,5 +180,13 @@ drawpars cli_parse(int argc, char ** argv){
   for(int i=1; i<argc; i++){
     cli_parse_arg(argv[i], &dp);
   }
+
+  if(!dp.gui){
+    if(dp.task == VIBRO){
+      PRINT_WARN("normal modes are not supported in the headless regime\n");
+    }
+    dp.task = AT3COORDS;
+  }
+
   return dp;
 }
