@@ -5,7 +5,7 @@ import vmol
 
 
 def main():
-    vmol.main.run(sys.argv)
+    vmol.run(sys.argv)
 
 
 if __name__ == "__main__":

@@ -5,6 +5,7 @@ from ctypes import c_int, c_double, c_char_p
 import functools
 import vmol
 
+__all__ = ["capture", "run"]
 
 c_double_p = ctypes.POINTER(c_double)
 c_int_p = ctypes.POINTER(c_int)
