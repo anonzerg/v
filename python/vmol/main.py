@@ -26,8 +26,8 @@ def convert_in_mol(mol):
     """Convert a molecule represented as a dictionary to the expected C structure for input.
 
     The input molecule should be a dictionary with the following keys
-        - 'q': a 1D array-like of integers representing the charges of the atoms
-        - 'r': a 2D array-like of floats with shape (n, 3) representing the coordinates of the atoms
+        - 'q': a 1D array-like of integers or strings representing the atomic numbers or element symbols
+        - 'r': a 2D array-like of floats with shape (n, 3) representing the atomic coordinates
         - 'name' (optional): a string representing the name of the molecule
     The function converts the 'q' and 'r' arrays to contiguous C arrays of the appropriate types,
     and the 'name' to a C string, and returns an instance of `in_str_t` with the corresponding fields set.
@@ -56,15 +56,31 @@ def convert_in_mol(mol):
 
     if not isinstance(name, bytes):
         name = str(name).encode('utf-8')
-    r = np.ascontiguousarray(r, dtype=c_double)
-    q = np.ascontiguousarray(q, dtype=c_int)
-    n = len(q)
-    if q.ndim != 1:
-        msg = f"q must be a 1D array, but has shape {q.shape}"
+
+    q_ = np.asarray(q)
+    n = len(q_)
+    if q_.ndim != 1:
+        msg = f"q must be a 1D array, but has shape {q_.shape}"
         raise ValueError(msg)
+
+    r = np.ascontiguousarray(r, dtype=c_double)
     if r.shape != (n, 3):
         msg = f"r must be a 2D array with shape ({n}, 3), but has shape {r.shape}"
         raise ValueError(msg)
+
+    try:
+        q = np.ascontiguousarray(q, dtype=c_int)
+    except ValueError as e:
+        lib = ctypes.cdll.LoadLibrary(vmol.so)
+        get_element = declare(lib.get_element, argtypes=[c_char_p], restype=c_int)
+        q = q.copy()
+        for i, qi in enumerate(q):
+            if isinstance(qi, str):
+                q[i] = get_element(qi.encode('utf-8'))
+            elif isinstance(qi, bytes):
+                q[i] = get_element(qi)
+        q = np.ascontiguousarray(q, dtype=c_int)
+
     return in_str_t(n=c_int(n),
                     q=q.ctypes.data_as(c_int_p),
                     r=r.flatten().ctypes.data_as(c_double_p),
