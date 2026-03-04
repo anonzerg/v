@@ -18,6 +18,10 @@ A simple X11 molecular viewer.
 - [`.xyz`](https://en.wikipedia.org/wiki/XYZ_file_format) files
 - [extended `.xyz`](https://github.com/libAtoms/extxyz) files (currently the extra columns are ignored)
 
+## Python package (wrapper / API) available
+
+[see python package page](python/README.md)
+
 ## Download [↑](#download)
 ```
 wget https://github.com/briling/v/releases/download/v2.0/v.2.0 -O v

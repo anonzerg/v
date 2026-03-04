@@ -6,11 +6,16 @@ This package allows to
 
 Inspired by @aligfellow's [xyzrender](https://github.com/aligfellow/xyzrender).
 
-## Installation
+## Requirements
 
-### requirements 
+* X11
+* numpy
+
+### For installation:
 * `libX11-devel libXpm-devel xproto-devel` (`libx11-dev libxpm-dev x11proto-dev` on Ubuntu) for C compilation
 * `setuptools` for Python
+
+## Installation
 
 ```
 VV="3.0rc3" # v version
@@ -61,40 +66,90 @@ wget https://github.com/briling/v/releases/download/v${VV}/v.so && chmod +x v.so
 # OR build in the repo root (see Option 3/download)
 make v.so
 ```
-The package searches for the `v.so` file in its parent directory 
+The package searches for the `v.so` file in its parent directory
 and standard paths.  For example,
 ```
 >>> import vmol
->>> vmol.SO
+>>> vmol.so
 '/home/xe/soft/miniconda3/lib/python3.13/site-packages/vmol/v.cpython-313-x86_64-linux-gnu.so'
 ```
 To subsitute the `.so`, put in in the same directory or change manually:
 ```
->>> vmol.SO='./v.so'
+>>> vmol.so='./v.so'
 ```
 
 
-## Usage example
+## Usage
 
-```
->>> # import the library
+```python
 >>> import vmol
-
->>> # it provides the main function wrapper `main`,
->>> # path to the shared library `SO`,
->>> # and a stdout parsing module `stdout`
+>>> # `vmol` provides the two wrapper functions `capture` and `run`
+>>> # along with the path to the shared library `so`:
 >>> dir(vmol)
-['SO', '__builtins__', '__cached__', '__doc__', '__file__', '__loader__', '__name__',
-'__package__', '__path__', '__spec__', '_exists', '_paths', 'main', 'stdout']
+['__builtins__', '__cached__', '__doc__', '__file__', '__loader__', '__name__',
+ '__package__', '__path__', '__spec__', '_exists', '_paths', 'capture', 'run', 'so']
+>>> vmol.so
+/home/xe/Documents/git/v/python/vmol/v.cpython-313-x86_64-linux-gnu.so
+>>> # one can use a custom .so file:
+>>> vmol.so = '../v.so'
+```
 
->>> # the arguments are the same as the CLI ones:
->>> args = ['v/mol/MOL_3525.xyz']
->>> # they should be an array of strings: 
->>> args = ['v/mol/MOL_3525.xyz', 'bonds:0']
+### 1. Simple wrapper
 
->>> # look at the molecule:
->>> r, o = vmol.main.run(args)
+The package provides a script which can be used exactly as `v` (see [reference](../README.md)).
+The following command are equivalent:
+```bash
+vmol ...
+python -m vmol ...
+vmol/__main__.py ...
+```
+For example,
+```bash
+python -m vmol ../mol/MOL_3525.xyz cell:8.93,0.0,0.0,4.2,8.9,0.0,0.48,2.32,10
+```
 
->>> # check the output:
->>> print(o)
+It can also be run from a script, i.e.
+```python
+import vmol
+vmol.run(['my_exe_name', '../mol/MOL_3525.xyz', 'cell:8.93,0.0,0.0,4.2,8.9,0.0,0.48,2.32,10'])
+```
+The arguments are the same as the CLI ones. They should be an array of strings,
+and the 0th argument stays for the program name and is ignored.
+
+### 2. Capture the output
+See [example 1](examples/ex1.py).
+
+```python
+import vmol
+out = vmol.capture(args=['../mol/MOL_3525.xyz', 'cell:8.93,0.0,0.0,4.2,8.9,0.0,0.48,2.32,10'])
+# look at the molecule, press `x`/`z`/`p` to produce an output, close with `q`/`esc`
+print(out)
+```
+The arguments `args` are the same as the CLI ones and should be an array of strings.
+In this case, the 0th argument is not ignored.
+
+The return code can be captured as well:
+```python
+ret, out = vmol.capture(args=['../mol/MOL_3525.xyz', 'cell:8.93,0.0,0.0,4.2,8.9,0.0,0.48,2.32,10'], return_code=True)
+```
+
+Headless mode also works:
+```python
+>>> vmol.capture(args=['../mol/S8.qm.out', 'gui:0', 'com:.'])
+'D8h'
+>>> vmol.capture(args=['../mol/S8.qm.out', 'gui:0', 'com:.', 'frame:-1'])
+'D4d'
+```
+
+### 3. Pass a structure
+See [example 2](examples/ex2.py).
+
+```python
+import vmol
+name = 'HF'
+q = [1, 9]
+r = [[0,0,0],[0.9,0,0]]
+out = vmol.capture(mol={'q': q, 'r': r, 'name': name}, args=['shell:0.6,0.7'])
+# look at the molecule, press `x`/`z`/`p` to produce an output, close with `q`/`esc`
+print(out)
 ```
