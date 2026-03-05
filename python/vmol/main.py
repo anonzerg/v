@@ -1,11 +1,12 @@
 """Run the viewer with specified command-line arguments and/or molecule data and capture the output."""
 
+from types import SimpleNamespace
 import ctypes
 from ctypes import c_int, c_double, c_char_p
 import functools
-import vmol
 
-__all__ = ["capture", "run"]
+
+__all__ = ["Vmol"]
 
 c_double_p = ctypes.POINTER(c_double)
 c_int_p = ctypes.POINTER(c_int)
@@ -14,6 +15,7 @@ ARGS_T = (c_int, ctypes.POINTER(ctypes.c_char_p))
 
 class in_str_t(ctypes.Structure):
     """C structure for the input molecule data, containing the number of atoms, charge array, coordinate array, and name."""
+
     _fields_ = [
             ("n", c_int),
             ("q", c_int_p),
@@ -22,7 +24,30 @@ class in_str_t(ctypes.Structure):
             ]
 
 
-def convert_in_mol(mol):
+def declare(func, argtypes, restype, errcheck=None, ret_code_ptr_idx=None):
+    """Declare a function from the shared library with the given argument and return types.
+
+    Args:
+        func (callable): The function to declare, typically obtained from the shared library.
+        argtypes (list of ctypes types): The argument types of the function.
+        restype (ctypes type): The return type of the function.
+        errcheck (callable, optional): A function that takes the result, the function, and the arguments,
+                                       and returns the processed result.
+        ret_code_ptr_idx (int, optional): Position of the `int *` argument to store the return value in.
+
+    Returns:
+        callable: The function with the specified arguments and return types.
+    """
+    func.argtypes = argtypes
+    func.restype = restype
+    if errcheck:
+        func.errcheck = errcheck
+    if ret_code_ptr_idx is not None:
+        func.ret_code_ptr_idx = ret_code_ptr_idx
+    return func
+
+
+def dict2struct(get_element, mol):
     """Convert a molecule represented as a dictionary to the expected C structure for input.
 
     The input molecule should be a dictionary with the following keys
@@ -33,6 +58,8 @@ def convert_in_mol(mol):
     and the 'name' to a C string, and returns an instance of `in_str_t` with the corresponding fields set.
 
     Args:
+        get_element (callable): A function that takes a byte string representing an element symbol
+                                and returns its atomic number as an integer.
         mol (dict): A dictionary representing the molecule, with keys 'q', 'r', and optionally 'name'.
 
     Returns:
@@ -70,9 +97,7 @@ def convert_in_mol(mol):
 
     try:
         q = np.ascontiguousarray(q, dtype=c_int)
-    except ValueError as e:
-        lib = ctypes.cdll.LoadLibrary(vmol.so)
-        get_element = declare(lib.get_element, argtypes=[c_char_p], restype=c_int)
+    except ValueError:
         q = q.copy()
         for i, qi in enumerate(q):
             if isinstance(qi, str):
@@ -149,90 +174,117 @@ def convert_in(func):
     return myinner
 
 
-def declare(func, argtypes, restype, errcheck=None, ret_code_ptr_idx=None):
-    """Declare a function from the shared library with the given argument and return types.
+class Hooked:
+    """A descriptor that calls a hook function whenever the attribute is set to a new value."""
 
-    Args:
-        func (callable): The function to declare, typically obtained from the shared library.
-        argtypes (list of ctypes types): The argument types of the function.
-        restype (ctypes type): The return type of the function.
-        errcheck (callable, optional): A function that takes the result, the function, and the arguments,
-                                       and returns the processed result.
-        ret_code_ptr_idx (int, optional): Position of the `int *` argument to store the return value in.
+    def __set_name__(self, owner, name):
+        self.private_name = "_" + name
 
-    Returns:
-        callable: The function with the specified arguments and return types.
-    """
-    func.argtypes = argtypes
-    func.restype = restype
-    if errcheck:
-        func.errcheck = errcheck
-    if ret_code_ptr_idx is not None:
-        func.ret_code_ptr_idx = ret_code_ptr_idx
-    return func
+    def __get__(self, obj, objtype=None):
+        if obj is None:
+            return self
+        return getattr(obj, self.private_name, None)
+
+    def __set__(self, obj, value):
+        setattr(obj, self.private_name, value)
+        obj._call_hook()
 
 
-def run(argv):
-    """Run the viewer with the given command-line arguments.
+class VmolFunctions:
 
-    Args:
-        argv (list of str): The command-line arguments to pass to the main function.
-                            Unlike `capture()`, the first argument is a string that represents the program name,
-                            such as `sys.argv[0]` or the name of the shared library (`vmol.so`),
+    so = Hooked()
+    f = SimpleNamespace()
+    lib = None
 
-    Returns:
-        int: The return code from the main function.
-    """
-    lib = ctypes.cdll.LoadLibrary(vmol.so)
-    main = convert_in(declare(lib.main, argtypes=ARGS_T, restype=c_int))
-    return main(argv)
+    def __init__(self, so=None):
+        self.so = so
+
+    def _check_so(self):
+        if self.so is None:
+            msg = "shared library path is not set, cannot run the viewer"
+            raise ValueError(msg)
+
+    def _call_hook(self):
+        """Re-declare functions when self.so is set to a new value."""
+        if self.so is None:
+            self.lib = None
+            self._reset_functions()
+        elif self.lib is None or self.lib._name != self.so:
+            self._declare_functions()
+
+    def _reset_functions(self):
+        self.f.__dict__.clear()
+
+    def _declare_functions(self):
+
+        def errcheck(result, func, args):
+            ret = args[func.ret_code_ptr_idx]._obj.value
+            out = result.decode('utf-8').rstrip('\n') if result else None
+            self.f.free()
+            return ret, out
+
+        self.lib = ctypes.cdll.LoadLibrary(self.so)
+
+        self.f.free        = declare(self.lib.free_out_str, argtypes=None,       restype=None)
+        self.f.get_element = declare(self.lib.get_element,  argtypes=[c_char_p], restype=c_int)
+
+        self.f.main_raw        = declare(self.lib.main, argtypes=ARGS_T, restype=c_int)
+        self.f.main_out_raw    = declare(self.lib.main_wrap_out,    argtypes=[*ARGS_T, c_int_p],
+                                         restype=c_char_p, errcheck=errcheck, ret_code_ptr_idx=2)
+        self.f.main_in_out_raw = declare(self.lib.main_wrap_in_out, argtypes=[*ARGS_T, c_int_p, in_str_t],
+                                         restype=c_char_p, errcheck=errcheck, ret_code_ptr_idx=2)
+        self.f.main        = convert_in(self.f.main_raw)
+        self.f.main_out    = convert_in(self.f.main_out_raw)
+        self.f.main_in_out = convert_in(self.f.main_in_out_raw)
 
 
-def capture(*, mol=None, args=None, return_code=False):
-    """Run the viewer with the given structure and/or command-line arguments and capture the output.
+class Vmol(VmolFunctions):
+    """Run the viewer with specified command-line arguments and/or molecule data and capture the output."""
 
-    If `args` is provided, it will be passed as command-line arguments to the main function.
-    It can contain any arguments that the main function accepts, except for the program name,
-    includiing the paths to the molecule files to read.
+    def run(self, argv):
+        """Run the viewer with the given command-line arguments.
 
-    If `mol` is provided, it will be converted to the appropriate input structure and passed to the main function,
-    and the paths to the molecule files in `args` will be ignored.
-    The `mol` dictionary must contain 'q' and 'r' keys for the charge and coordinate arrays, respectively,
-    and can optionally contain a 'name' key for the molecule name.
+        Args:
+            argv (list of str): The command-line arguments to pass to the main function.
+                                Unlike `capture()`, the first argument is a string that represents the program name,
+                                such as `sys.argv[0]` or the name of the shared library.
 
-    Args:
-        mol (dict, optional): A dictionary representing the molecule.
-            Must contain 'q' (int 1D array-like) and 'r' (float 2D array-like of shape (n, 3)
-            for charge and coordinate arrays, respectively.
-            Optionally can contain a 'name' (str-like) for the molecule name.
-        args (list of str, optional): Command-line arguments to pass to the main function (without the program name).
-        return_code (bool, optional): Whether to return the return code along with the output. Defaults to False.
+        Returns:
+            int: The return code from the main function.
+        """
+        self._check_so()
+        return self.f.main(argv)
 
-    Returns:
-        If `return_code` is False:
-            str: The output from the main function, decoded as UTF-8 and stripped of trailing newlines.
-        If `return_code` is True:
-            tuple of (int, str): the function return code and the output string.
-    """
-    args = [vmol.so, *args] if args else [vmol.so]
-    lib = ctypes.cdll.LoadLibrary(vmol.so)
-    free = declare(lib.free_out_str, argtypes=None, restype=None)
+    def capture(self, *, mol=None, args=None, return_code=False):
+        """Run the viewer with the given structure and/or command-line arguments and capture the output.
 
-    if mol:
-        main = lib.main_wrap_in_out
-        argtypes = [*ARGS_T, c_int_p, in_str_t]
-        arguments = [args, convert_in_mol(mol)]
-    else:
-        main = lib.main_wrap_out
-        argtypes = [*ARGS_T, c_int_p]
-        arguments = [args]
+        If `args` is provided, it will be passed as command-line arguments to the main function.
+        It can contain any arguments that the main function accepts, except for the program name,
+        includiing the paths to the molecule files to read.
 
-    def errcheck(result, func, args):
-        ret = args[func.ret_code_ptr_idx]._obj.value
-        out = result.decode('utf-8').rstrip('\n') if result else None
-        free()
-        return ret, out
+        If `mol` is provided, it will be converted to the appropriate input structure and passed to the main function,
+        and the paths to the molecule files in `args` will be ignored.
+        The `mol` dictionary must contain 'q' and 'r' keys for the charge and coordinate arrays, respectively,
+        and can optionally contain a 'name' key for the molecule name.
 
-    main = convert_in(declare(main, argtypes=argtypes, restype=c_char_p, errcheck=errcheck, ret_code_ptr_idx=2))
-    ret, out = main(*arguments)
-    return (ret, out) if return_code else out
+        Args:
+            mol (dict, optional): A dictionary representing the molecule.
+                Must contain 'q' (int 1D array-like) and 'r' (float 2D array-like of shape (n, 3)
+                for charge and coordinate arrays, respectively.
+                Optionally can contain a 'name' (str-like) for the molecule name.
+            args (list of str, optional): Command-line arguments to pass to the main function (without the program name).
+            return_code (bool, optional): Whether to return the return code along with the output. Defaults to False.
+
+        Returns:
+            If `return_code` is False:
+                str: The output from the main function, decoded as UTF-8 and stripped of trailing newlines.
+            If `return_code` is True:
+                tuple of (int, str): the function return code and the output string.
+        """
+        self._check_so()
+        args = [self.so, *args] if args else [self.so]
+        if mol:
+            ret, out = self.f.main_in_out(args, dict2struct(self.f.get_element, mol))
+        else:
+            ret, out = self.f.main_out(args)
+        return (ret, out) if return_code else out

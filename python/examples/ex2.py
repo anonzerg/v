@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import vmol
+from vmol import vmol
 
 # mol/mol0001.xyz
 name = 'acetylene'

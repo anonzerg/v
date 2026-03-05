@@ -82,12 +82,12 @@ To subsitute the `.so`, put in in the same directory or change manually:
 ## Usage
 
 ```python
->>> import vmol
+>>> from vmol import vmol
 >>> # `vmol` provides the two wrapper functions `capture` and `run`
->>> # along with the path to the shared library `so`:
->>> dir(vmol)
-['__builtins__', '__cached__', '__doc__', '__file__', '__loader__', '__name__',
- '__package__', '__path__', '__spec__', '_exists', '_paths', 'capture', 'run', 'so']
+>>> # along with the path to the shared library `so`,
+>>> # loaded library `lib`, and function namespace `f`.
+>>> [*filter(lambda x: not str.startswith(x, '_'), dir(vmol))]
+['capture', 'f', 'lib', 'run', 'so']
 >>> vmol.so
 /home/xe/Documents/git/v/python/vmol/v.cpython-313-x86_64-linux-gnu.so
 >>> # one can use a custom .so file:
@@ -110,7 +110,7 @@ python -m vmol ../mol/MOL_3525.xyz cell:8.93,0.0,0.0,4.2,8.9,0.0,0.48,2.32,10
 
 It can also be run from a script, i.e.
 ```python
-import vmol
+from vmol import vmol
 vmol.run(['my_exe_name', '../mol/MOL_3525.xyz', 'cell:8.93,0.0,0.0,4.2,8.9,0.0,0.48,2.32,10'])
 ```
 The arguments are the same as the CLI ones. They should be an array of strings,
@@ -120,7 +120,7 @@ and the 0th argument stays for the program name and is ignored.
 See [example 1](examples/ex1.py).
 
 ```python
-import vmol
+from vmol import vmol
 out = vmol.capture(args=['../mol/MOL_3525.xyz', 'cell:8.93,0.0,0.0,4.2,8.9,0.0,0.48,2.32,10'])
 # look at the molecule, press `x`/`z`/`p` to produce an output, close with `q`/`esc`
 print(out)
@@ -145,7 +145,7 @@ Headless mode also works:
 See [example 2](examples/ex2.py).
 
 ```python
-import vmol
+from vmol import vmol
 name = 'HF molecule'
 q = [1, 'F']
 r = [[0,0,0],[0.9,0,0]]

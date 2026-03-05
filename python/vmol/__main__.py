@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-import vmol
+from vmol import vmol
 
 
 def main():

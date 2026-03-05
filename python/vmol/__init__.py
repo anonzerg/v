@@ -1,6 +1,6 @@
 import os
 from sysconfig import get_path, get_config_var
-from vmol.main import *
+from vmol.main import Vmol
 
 _v = 'v'
 _suffix = get_config_var('EXT_SUFFIX')
@@ -15,7 +15,9 @@ _paths = [
 
 _exists = [os.path.isfile(p) for p in _paths]
 
-so = _paths[_exists.index(True)] if sum(_exists) else None
+_so = _paths[_exists.index(True)] if sum(_exists) else None
+
+vmol = Vmol(so=_so)
 
 del main
 del _v, _suffix

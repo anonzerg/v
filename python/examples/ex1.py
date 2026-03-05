@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from os.path import dirname, normpath
-import vmol
+from vmol import vmol
 
 mol_dir = normpath(f'{dirname(__file__)}/../../mol/')
 args = [
