@@ -142,6 +142,8 @@ Headless mode also works:
 ```
 
 ### 3. Pass a structure
+
+One can pass a structure (or several structures) as an argument.
 See [example 2](examples/ex2.py).
 
 ```python
@@ -149,7 +151,7 @@ from vmol import vmol
 name = 'HF molecule'
 q = [1, 'F']
 r = [[0,0,0],[0.9,0,0]]
-out = vmol.capture(mol={'q': q, 'r': r, 'name': name}, args=['shell:0.6,0.7'])
+out = vmol.capture(mols={'q': q, 'r': r, 'name': name}, args=['shell:0.6,0.7'])
 # look at the molecule, press `x`/`z`/`p` to produce an output, close with `q`/`esc`
 print(out)
 ```

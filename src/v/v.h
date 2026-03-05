@@ -111,11 +111,11 @@ typedef struct {
   int    * q;
   double * r;
   char   * name;
-} in_str_t;
+} inp_mols_t;
 
 
 // load.c
-atcoords * get_in_str(in_str_t in_str, drawpars * dp);
+atcoords * get_in_str(int N, inp_mols_t * inp_mols, drawpars * dp);
 void acs_readmore  (FILE * f, int b, int center, int inertia, int bohr, atcoords * acs, const char * fname);
 void * read_files(drawpars * dp);
 // scale.c

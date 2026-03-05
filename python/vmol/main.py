@@ -8,12 +8,13 @@ import functools
 
 __all__ = ["Vmol"]
 
+
 c_double_p = ctypes.POINTER(c_double)
 c_int_p = ctypes.POINTER(c_int)
 ARGS_T = (c_int, ctypes.POINTER(ctypes.c_char_p))
 
 
-class in_str_t(ctypes.Structure):
+class inp_mols_t(ctypes.Structure):
     """C structure for the input molecule data, containing the number of atoms, charge array, coordinate array, and name."""
 
     _fields_ = [
@@ -55,7 +56,7 @@ def dict2struct(get_element, mol):
         - 'r': a 2D array-like of floats with shape (n, 3) representing the atomic coordinates
         - 'name' (optional): a string representing the name of the molecule
     The function converts the 'q' and 'r' arrays to contiguous C arrays of the appropriate types,
-    and the 'name' to a C string, and returns an instance of `in_str_t` with the corresponding fields set.
+    and the 'name' to a C string, and returns an instance of `inp_mols_t` with the corresponding fields set.
 
     Args:
         get_element (callable): A function that takes a byte string representing an element symbol
@@ -63,7 +64,7 @@ def dict2struct(get_element, mol):
         mol (dict): A dictionary representing the molecule, with keys 'q', 'r', and optionally 'name'.
 
     Returns:
-        in_str_t: An instance of `in_str_t` with the fields set according to the input molecule.
+        inp_mols_t: An instance of `inp_mols_t` with the fields set according to the input molecule.
 
     Raises:
         TypeError: If mol is not a dictionary.
@@ -94,6 +95,7 @@ def dict2struct(get_element, mol):
     if r.shape != (n, 3):
         msg = f"r must be a 2D array with shape ({n}, 3), but has shape {r.shape}"
         raise ValueError(msg)
+    r = r.flatten()
 
     try:
         q = np.ascontiguousarray(q, dtype=c_int)
@@ -106,10 +108,12 @@ def dict2struct(get_element, mol):
                 q[i] = get_element(qi)
         q = np.ascontiguousarray(q, dtype=c_int)
 
-    return in_str_t(n=c_int(n),
-                    q=q.ctypes.data_as(c_int_p),
-                    r=r.flatten().ctypes.data_as(c_double_p),
-                    name=name)
+    in_str = inp_mols_t(n=c_int(n),
+                      q=q.ctypes.data_as(c_int_p),
+                      r=r.ctypes.data_as(c_double_p),
+                      name=name)
+    in_str._keepalive = (n, q, r, name)  # keep strong references
+    return in_str
 
 
 def convert_in(func):
@@ -231,7 +235,7 @@ class VmolFunctions:
         self.f.main_raw        = declare(self.lib.main, argtypes=ARGS_T, restype=c_int)
         self.f.main_out_raw    = declare(self.lib.main_wrap_out,    argtypes=[*ARGS_T, c_int_p],
                                          restype=c_char_p, errcheck=errcheck, ret_code_ptr_idx=2)
-        self.f.main_in_out_raw = declare(self.lib.main_wrap_in_out, argtypes=[*ARGS_T, c_int_p, in_str_t],
+        self.f.main_in_out_raw = declare(self.lib.main_wrap_in_out, argtypes=[*ARGS_T, c_int_p, c_int, ctypes.POINTER(inp_mols_t)],
                                          restype=c_char_p, errcheck=errcheck, ret_code_ptr_idx=2)
         self.f.main        = convert_in(self.f.main_raw)
         self.f.main_out    = convert_in(self.f.main_out_raw)
@@ -255,23 +259,24 @@ class Vmol(VmolFunctions):
         self._check_so()
         return self.f.main(argv)
 
-    def capture(self, *, mol=None, args=None, return_code=False):
+    def capture(self, *, mols=None, args=None, return_code=False):
         """Run the viewer with the given structure and/or command-line arguments and capture the output.
 
         If `args` is provided, it will be passed as command-line arguments to the main function.
         It can contain any arguments that the main function accepts, except for the program name,
         includiing the paths to the molecule files to read.
 
-        If `mol` is provided, it will be converted to the appropriate input structure and passed to the main function,
-        and the paths to the molecule files in `args` will be ignored.
-        The `mol` dictionary must contain 'q' and 'r' keys for the charge and coordinate arrays, respectively,
+        If `mols` is provided, the molecules(s) will be converted to the appropriate input structure(s)
+        and passed to the main function, and the paths to the molecule files in `args` will be ignored.
+        The `mols` dictionaries must contain 'q' and 'r' keys for the charge and coordinate arrays, respectively,
         and can optionally contain a 'name' key for the molecule name.
 
         Args:
-            mol (dict, optional): A dictionary representing the molecule.
+            mols (dict or list[dict], optional): A dictionary representing the molecule.
                 Must contain 'q' (int 1D array-like) and 'r' (float 2D array-like of shape (n, 3)
                 for charge and coordinate arrays, respectively.
                 Optionally can contain a 'name' (str-like) for the molecule name.
+                Could be a list containing dictionaries representing several molecules.
             args (list of str, optional): Command-line arguments to pass to the main function (without the program name).
             return_code (bool, optional): Whether to return the return code along with the output. Defaults to False.
 
@@ -283,8 +288,14 @@ class Vmol(VmolFunctions):
         """
         self._check_so()
         args = [self.so, *args] if args else [self.so]
-        if mol:
-            ret, out = self.f.main_in_out(args, dict2struct(self.f.get_element, mol))
+        if mols:
+
+            if not isinstance(mols, list):
+                mols = [mols]
+            nmol = len(mols)
+            mols = (inp_mols_t * nmol)(*(dict2struct(self.f.get_element, mol) for mol in mols))
+
+            ret, out = self.f.main_in_out(args, nmol, mols)
         else:
             ret, out = self.f.main_out(args)
         return (ret, out) if return_code else out

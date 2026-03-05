@@ -4,25 +4,32 @@
 #define PRINTBUFLEN (1024*128)
 #define FREE0(PTR) { free(PTR); PTR = NULL; }
 
-char * out_str;
-in_str_t in_str;
+struct {
+  int n_inp_mols;
+  inp_mols_t * inp_mols;
+  char * out_str;
+} globals;
 
 char * main_wrap_out(int argc, char * argv[], int * ret) {
-  out_str = calloc(PRINTBUFLEN, 1);
+  globals.out_str = calloc(PRINTBUFLEN, 1);
   *ret = main(argc, argv);
-  return out_str;
+  return globals.out_str;
 }
 
-char * main_wrap_in_out(int argc, char * argv[], int * ret, in_str_t in_str_) {
-  in_str = in_str_;
-  out_str = calloc(PRINTBUFLEN, 1);
+char * main_wrap_in_out(int argc, char * argv[],
+                        int * ret,
+                        int n_inp_mols, inp_mols_t * inp_mols) {
+  globals.inp_mols = inp_mols;
+  globals.n_inp_mols = n_inp_mols;
+  globals.out_str = calloc(PRINTBUFLEN, 1);
   *ret = main(argc, argv);
-  memset(&in_str, 0, sizeof(in_str));
-  return out_str;
+  globals.inp_mols = NULL;
+  globals.n_inp_mols = 0;
+  return globals.out_str;
 }
 
 void free_out_str(void){
-  FREE0(out_str);
+  FREE0(globals.out_str);
   PRINTOUT(NULL, NULL);
 }
 
@@ -39,7 +46,7 @@ void PRINTOUT(FILE * f, char * format, ...){
     return;
   }
 
-  if(!out_str){
+  if(!globals.out_str){
     va_start(args, format);
     vfprintf(f, format, args);
     va_end(args);
@@ -48,14 +55,14 @@ void PRINTOUT(FILE * f, char * format, ...){
 
     va_start(args, format);
     size_t size = N-n;
-    size_t m = vsnprintf(out_str+n, size, format, args);
+    size_t m = vsnprintf(globals.out_str+n, size, format, args);
     va_end(args);
 
     if(m >= size){
       N = m < N ? N * 2 : N + 2*m;
-      out_str = realloc(out_str, N);
+      globals.out_str = realloc(globals.out_str, N);
       va_start(args, format);
-      vsnprintf(out_str+n, N-n, format, args);
+      vsnprintf(globals.out_str+n, N-n, format, args);
       va_end(args);
     }
 
@@ -65,18 +72,18 @@ void PRINTOUT(FILE * f, char * format, ...){
 
 void * READ_FILES(drawpars * dp){
   void * ret;
-  if(!in_str.n){
+  if(!globals.inp_mols){
     ret = read_files(dp);
   }
   else{
-    ret = get_in_str(in_str, dp);
+    ret = get_in_str(globals.n_inp_mols, globals.inp_mols, dp);
   }
   FREE0(dp->input_files);
   return ret;
 }
 
 int SHOULD_PRINT_MAN(int argc){
-  if((argc==1) && (!in_str.n)){
+  if((argc==1) && (!globals.inp_mols)){
     return 1;
   }
   return 0;
