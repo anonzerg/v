@@ -163,4 +163,10 @@ mols = ase.io.read('../mol/mol0002.xyz', index=':')
 out = vmol.capture(mols=mols)
 ```
 
+Without capturing the output:
+```python
+from vmol import vmol
+vmol.run(argv=['vmol'], mols={'q': [1, 'F'], 'r': [[0,0,0],[0.9,0,0]], 'name': 'hydrogen fluoride'})
+```
+
 Formats which are not supported natively can be read with `cclib` as passed (see [example](examples/ex_cclib)).

@@ -270,28 +270,39 @@ class VmolFunctions:
                                          restype=c_char_p, errcheck=errcheck, ret_code_ptr_idx=2)
         self.f.main_in_out_raw = self._declare('main_wrap_in_out', argtypes=[*ARGS_T, c_int_p, *INP_MOLS_T],
                                          restype=c_char_p, errcheck=errcheck, ret_code_ptr_idx=2)
+        self.f.main_in_raw = self._declare('main_wrap_in', argtypes=[*ARGS_T, *INP_MOLS_T], restype=c_int)
 
         self.f.main        = convert_in(self.f.main_raw)
         self.f.main_out    = convert_in(self.f.main_out_raw)
         self.f.main_in_out = convert_in(self.f.main_in_out_raw)
+        self.f.main_in     = convert_in(self.f.main_in_raw)
 
 
 class Vmol(VmolFunctions):
     """Run the viewer with specified command-line arguments and/or molecule data and capture the output."""
 
-    def run(self, argv):
+    def run(self, argv, *, mols=None):
         """Run the viewer with the given command-line arguments.
 
         Args:
             argv (list of str): The command-line arguments to pass to the main function.
                                 Unlike `capture()`, the first argument is a string that represents the program name,
                                 such as `sys.argv[0]` or the name of the shared library.
+            mols (object or list[object], optional): An object or a list thereof representing the molecule(s).
+                 See `mol2struct()` for the expected format.
 
         Returns:
             int: The return code from the main function.
         """
         self._check_so()
-        return self.f.main(argv)
+        if mols is None:
+            return self.f.main(argv)
+        else:
+            if not isinstance(mols, list):
+                mols = [mols]
+            nmol = len(mols)
+            mols = (inp_mols_t * nmol)(*(mol2struct(self.f.get_element, mol) for mol in mols))
+            return self.f.main_in(argv, nmol, mols)
 
     def capture(self, *, mols=None, args=None, return_code=False):
         """Run the viewer with the given structure and/or command-line arguments and capture the output.

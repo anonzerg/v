@@ -16,15 +16,20 @@ char * main_wrap_out(int argc, char * argv[], int * ret) {
   return globals.out_str;
 }
 
+int main_wrap_in(int argc, char * argv[], int n_inp_mols, inp_mols_t * inp_mols) {
+  globals.inp_mols = inp_mols;
+  globals.n_inp_mols = n_inp_mols;
+  int ret = main(argc, argv);
+  globals.inp_mols = NULL;
+  globals.n_inp_mols = 0;
+  return ret;
+}
+
 char * main_wrap_in_out(int argc, char * argv[],
                         int * ret,
                         int n_inp_mols, inp_mols_t * inp_mols) {
-  globals.inp_mols = inp_mols;
-  globals.n_inp_mols = n_inp_mols;
   globals.out_str = calloc(PRINTBUFLEN, 1);
-  *ret = main(argc, argv);
-  globals.inp_mols = NULL;
-  globals.n_inp_mols = 0;
+  *ret = main_wrap_in(argc, argv, n_inp_mols, inp_mols);
   return globals.out_str;
 }
 
