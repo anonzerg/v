@@ -156,9 +156,11 @@ out = vmol.capture(mols={'q': q, 'r': r, 'name': name}, args=['shell:0.6,0.7'])
 print(out)
 ```
 
-ASE Atoms (or anything with `.numbers` and `.positions`) are also supported:
+ASE Atoms (or anything with `.numbers` and `.positions`) are also [supported](examples/ex_ase.py):
 ```python
 import ase.io
 mols = ase.io.read('../mol/mol0002.xyz', index=':')
 out = vmol.capture(mols=mols)
 ```
+
+Formats which are not supported natively can be read with `cclib` as passed (see [example](examples/ex_cclib)).
