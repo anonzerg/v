@@ -4,6 +4,7 @@ from types import SimpleNamespace
 import ctypes
 from ctypes import c_int, c_double, c_char_p
 import functools
+from warnings import warn
 
 
 __all__ = ["Vmol"]
@@ -11,7 +12,6 @@ __all__ = ["Vmol"]
 
 c_double_p = ctypes.POINTER(c_double)
 c_int_p = ctypes.POINTER(c_int)
-ARGS_T = (c_int, ctypes.POINTER(ctypes.c_char_p))
 
 
 class inp_mols_t(ctypes.Structure):
@@ -23,6 +23,10 @@ class inp_mols_t(ctypes.Structure):
             ("r", c_double_p),
             ("name", c_char_p),
             )
+
+
+ARGS_T = (c_int, ctypes.POINTER(ctypes.c_char_p))
+INP_MOLS_T = (c_int, ctypes.POINTER(inp_mols_t))
 
 
 def declare(func, argtypes, restype, errcheck=None, ret_code_ptr_idx=None):
@@ -159,6 +163,8 @@ def convert_in(func):
         TypeError: If func is not a ctypes function.
         ValueError: If its attributes are wrong.
     """
+    if func is None:
+        return None
     if not isinstance(func, ctypes._CFuncPtr):
         msg = "function should be a ctypes function"
         raise TypeError(msg)
@@ -201,8 +207,9 @@ class Hooked:
         return getattr(obj, self.private_name, None)
 
     def __set__(self, obj, value):
-        setattr(obj, self.private_name, value)
-        obj._call_hook()
+        if obj._call_pre_hook(value):
+            setattr(obj, self.private_name, value)
+            obj._call_post_hook()
 
 
 class VmolFunctions:
@@ -225,16 +232,40 @@ class VmolFunctions:
             msg = "shared library path is not set, cannot run the viewer"
             raise ValueError(msg)
 
-    def _call_hook(self):
+    def _call_pre_hook(self, new_so):
+        """Check if the new shared library path is different from the current one and can be loaded."""
+        if new_so is None:
+            self.lib = None
+            return True
+        elif self.lib is None or self.lib._name != new_so:
+            try:
+                self.lib = ctypes.cdll.LoadLibrary(new_so)
+            except OSError as e:
+                msg = f"Failed to load shared library: {e}, keeping the old value {self.so}"
+                warn(msg, RuntimeWarning, stacklevel=3)
+                return False
+            return True
+        else:
+            return False
+
+
+    def _call_post_hook(self):
         """Re-declare functions when self.so is set to a new value."""
         if self.so is None:
-            self.lib = None
             self._reset_functions()
-        elif self.lib is None or self.lib._name != self.so:
+        else:
             self._declare_functions()
 
     def _reset_functions(self):
         self.f.__dict__.clear()
+
+    def _declare(self, name, *kargs, **kwargs):
+        if hasattr(self.lib, name):
+            return declare(getattr(self.lib, name), *kargs, **kwargs)
+        else:
+            msg = f"Function '{name}' not found in the shared library '{self.so}'"
+            warn(msg, RuntimeWarning, stacklevel=2)
+            return None
 
     def _declare_functions(self):
 
@@ -244,16 +275,15 @@ class VmolFunctions:
             self.f.free()
             return ret, out
 
-        self.lib = ctypes.cdll.LoadLibrary(self.so)
+        self.f.free        = self._declare('free_out_str', argtypes=None,       restype=None)
+        self.f.get_element = self._declare('get_element',  argtypes=[c_char_p], restype=c_int)
 
-        self.f.free        = declare(self.lib.free_out_str, argtypes=None,       restype=None)
-        self.f.get_element = declare(self.lib.get_element,  argtypes=[c_char_p], restype=c_int)
+        self.f.main_raw        = self._declare('main', argtypes=ARGS_T, restype=c_int)
+        self.f.main_out_raw    = self._declare('main_wrap_out',    argtypes=[*ARGS_T, c_int_p],
+                                         restype=c_char_p, errcheck=errcheck, ret_code_ptr_idx=2)
+        self.f.main_in_out_raw = self._declare('main_wrap_in_out', argtypes=[*ARGS_T, c_int_p, *INP_MOLS_T],
+                                         restype=c_char_p, errcheck=errcheck, ret_code_ptr_idx=2)
 
-        self.f.main_raw        = declare(self.lib.main, argtypes=ARGS_T, restype=c_int)
-        self.f.main_out_raw    = declare(self.lib.main_wrap_out,    argtypes=[*ARGS_T, c_int_p],
-                                         restype=c_char_p, errcheck=errcheck, ret_code_ptr_idx=2)
-        self.f.main_in_out_raw = declare(self.lib.main_wrap_in_out, argtypes=[*ARGS_T, c_int_p, c_int, ctypes.POINTER(inp_mols_t)],
-                                         restype=c_char_p, errcheck=errcheck, ret_code_ptr_idx=2)
         self.f.main        = convert_in(self.f.main_raw)
         self.f.main_out    = convert_in(self.f.main_out_raw)
         self.f.main_in_out = convert_in(self.f.main_in_out_raw)

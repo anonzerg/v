@@ -5,6 +5,8 @@ from vmol.main import Vmol
 _v = 'v'
 _suffix = get_config_var('EXT_SUFFIX')
 _paths = [
+        f'./{_v}.so',
+        f'./{_v}{_suffix}',
         f'{__path__[0]}/{_v}.so',
         f'{__path__[0]}/{_v}{_suffix}',
         f"{get_path('purelib')}/{__package__}/{_v}{_suffix}",
