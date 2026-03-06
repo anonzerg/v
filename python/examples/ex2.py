@@ -2,8 +2,6 @@
 
 from vmol import vmol
 
-vmol.so = './v.so'
-
 # mol/mol0001.xyz
 name = 'acetylene'
 q = [6, 6, 1, 1]

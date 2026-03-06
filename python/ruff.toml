@@ -43,4 +43,4 @@ extend-ignore = [
 
 [lint.per-file-ignores]
 "vmol/__main__.py" = ["D"]
-"examples/ex?.py"  = ["D"]
+"examples/ex*.py"  = ["D"]

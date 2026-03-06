@@ -17,12 +17,12 @@ ARGS_T = (c_int, ctypes.POINTER(ctypes.c_char_p))
 class inp_mols_t(ctypes.Structure):
     """C structure for the input molecule data, containing the number of atoms, charge array, coordinate array, and name."""
 
-    _fields_ = [
+    _fields_ = (
             ("n", c_int),
             ("q", c_int_p),
             ("r", c_double_p),
             ("name", c_char_p),
-            ]
+            )
 
 
 def declare(func, argtypes, restype, errcheck=None, ret_code_ptr_idx=None):
@@ -48,20 +48,24 @@ def declare(func, argtypes, restype, errcheck=None, ret_code_ptr_idx=None):
     return func
 
 
-def dict2struct(get_element, mol):
-    """Convert a molecule represented as a dictionary to the expected C structure for input.
+def mol2struct(get_element, mol):
+    """Convert a molecule to the expected C structure for input.
 
-    The input molecule should be a dictionary with the following keys
-        - 'q': a 1D array-like of integers or strings representing the atomic numbers or element symbols
-        - 'r': a 2D array-like of floats with shape (n, 3) representing the atomic coordinates
-        - 'name' (optional): a string representing the name of the molecule
-    The function converts the 'q' and 'r' arrays to contiguous C arrays of the appropriate types,
-    and the 'name' to a C string, and returns an instance of `inp_mols_t` with the corresponding fields set.
+    Currently supports two formats for the input molecule:
+
+        1) Dictionary with the following keys:
+           - 'q': a 1D array-like of integers or strings representing the atomic numbers or element symbols,
+           - 'r': a 2D array-like of floats with shape (n, 3) representing the atomic coordinates,
+           - 'name' (optional): a string representing the name of the molecule.
+
+        2) ase.atoms.Atoms-like object with the following attributes:
+           - `numbers`: a 1D array of integers representing the atomic numbers,
+           - `positions`: a 2D array of floats with shape (n, 3) representing the atomic coordinates.
 
     Args:
         get_element (callable): A function that takes a byte string representing an element symbol
                                 and returns its atomic number as an integer.
-        mol (dict): A dictionary representing the molecule, with keys 'q', 'r', and optionally 'name'.
+        mol (dict or ase.atoms.Atoms-like): The molecule to convert.
 
     Returns:
         inp_mols_t: An instance of `inp_mols_t` with the fields set according to the input molecule.
@@ -72,23 +76,27 @@ def dict2struct(get_element, mol):
     """
     import numpy as np
 
-    if not isinstance(mol, dict):
-        msg = f"mol must be a dictionary, but got {type(mol)}"
+    if isinstance(mol, dict):
+        q = mol.get('q')
+        r = mol.get('r')
+        name = mol.get('name')
+        if q is None or r is None:
+            msg = "mol must contain 'q' and 'r' for charge and coordinate arrays, respectively"
+            raise ValueError(msg)
+
+    elif hasattr(mol, 'positions') and hasattr(mol, 'numbers'):
+        r = mol.positions
+        q = mol.numbers
+        name = str(mol)
+
+    else:
+        msg = f"mol must be a dictionary or ase.atoms.Atoms-like, but got {type(mol)}"
         raise TypeError(msg)
-    q = mol.get('q')
-    r = mol.get('r')
-    name = mol.get('name')
-    if q is None or r is None:
-        msg = "mol must contain 'q' and 'r' for charge and coordinate arrays, respectively"
-        raise ValueError(msg)
 
-    if not isinstance(name, bytes):
-        name = str(name).encode('utf-8')
-
-    q_ = np.asarray(q)
-    n = len(q_)
-    if q_.ndim != 1:
-        msg = f"q must be a 1D array, but has shape {q_.shape}"
+    q_tmp = np.asarray(q)
+    n = len(q_tmp)
+    if q_tmp.ndim != 1:
+        msg = f"q must be a 1D array, but has shape {q_tmp.shape}"
         raise ValueError(msg)
 
     r = np.ascontiguousarray(r, dtype=c_double)
@@ -108,10 +116,13 @@ def dict2struct(get_element, mol):
                 q[i] = get_element(qi)
         q = np.ascontiguousarray(q, dtype=c_int)
 
+    if not isinstance(name, bytes):
+        name = str(name).encode('utf-8')
+
     in_str = inp_mols_t(n=c_int(n),
-                      q=q.ctypes.data_as(c_int_p),
-                      r=r.ctypes.data_as(c_double_p),
-                      name=name)
+                        q=q.ctypes.data_as(c_int_p),
+                        r=r.ctypes.data_as(c_double_p),
+                        name=name)
     in_str._keepalive = (n, q, r, name)  # keep strong references
     return in_str
 
@@ -203,6 +214,12 @@ class VmolFunctions:
     def __init__(self, so=None):
         self.so = so
 
+    def __repr__(self):
+        return f"Vmol(so={self.so!r})"
+
+    def __bool__(self):
+        return self.so is not None
+
     def _check_so(self):
         if self.so is None:
             msg = "shared library path is not set, cannot run the viewer"
@@ -272,11 +289,8 @@ class Vmol(VmolFunctions):
         and can optionally contain a 'name' key for the molecule name.
 
         Args:
-            mols (dict or list[dict], optional): A dictionary representing the molecule.
-                Must contain 'q' (int 1D array-like) and 'r' (float 2D array-like of shape (n, 3)
-                for charge and coordinate arrays, respectively.
-                Optionally can contain a 'name' (str-like) for the molecule name.
-                Could be a list containing dictionaries representing several molecules.
+            mols (object or list[object], optional): An object or a list thereof representing the molecule(s).
+                 See `mol2struct()` for the expected format.
             args (list of str, optional): Command-line arguments to pass to the main function (without the program name).
             return_code (bool, optional): Whether to return the return code along with the output. Defaults to False.
 
@@ -293,7 +307,7 @@ class Vmol(VmolFunctions):
             if not isinstance(mols, list):
                 mols = [mols]
             nmol = len(mols)
-            mols = (inp_mols_t * nmol)(*(dict2struct(self.f.get_element, mol) for mol in mols))
+            mols = (inp_mols_t * nmol)(*(mol2struct(self.f.get_element, mol) for mol in mols))
 
             ret, out = self.f.main_in_out(args, nmol, mols)
         else:

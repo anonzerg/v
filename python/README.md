@@ -155,3 +155,10 @@ out = vmol.capture(mols={'q': q, 'r': r, 'name': name}, args=['shell:0.6,0.7'])
 # look at the molecule, press `x`/`z`/`p` to produce an output, close with `q`/`esc`
 print(out)
 ```
+
+ASE Atoms (or anything with `.numbers` and `.positions`) are also supported:
+```python
+import ase.io
+mols = ase.io.read('../mol/mol0002.xyz', index=':')
+out = vmol.capture(mols=mols)
+```
