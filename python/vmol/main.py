@@ -295,14 +295,15 @@ class Vmol(VmolFunctions):
             int: The return code from the main function.
         """
         self._check_so()
+
         if mols is None:
             return self.f.main(argv)
-        else:
-            if not isinstance(mols, list):
-                mols = [mols]
-            nmol = len(mols)
-            mols = (inp_mols_t * nmol)(*(mol2struct(self.f.get_element, mol) for mol in mols))
-            return self.f.main_in(argv, nmol, mols)
+
+        if not isinstance(mols, list):
+            mols = [mols]
+        nmol = len(mols)
+        mols = (inp_mols_t * nmol)(*(mol2struct(self.f.get_element, mol) for mol in mols))
+        return self.f.main_in(argv, nmol, mols)
 
     def capture(self, *, mols=None, args=None, return_code=False):
         """Run the viewer with the given structure and/or command-line arguments and capture the output.
