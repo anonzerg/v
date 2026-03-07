@@ -80,14 +80,14 @@ def mol2struct(get_element, mol):
         msg = f"q must be a 1D array, but has shape {q_tmp.shape}"
         raise ValueError(msg)
 
-    r = np.ascontiguousarray(r, dtype=c_double)
+    r = np.require(r, dtype=c_double, requirements=['C_CONTIGUOUS', 'OWNDATA'])
     if r.shape != (n, 3):
         msg = f"r must be a 2D array with shape ({n}, 3), but has shape {r.shape}"
         raise ValueError(msg)
     r = r.flatten()
 
     try:
-        q = np.ascontiguousarray(q, dtype=c_int)
+        q = np.require(q, dtype=c_int, requirements=['C_CONTIGUOUS', 'OWNDATA'])
     except ValueError:
         q = q.copy()
         for i, qi in enumerate(q):
@@ -95,15 +95,15 @@ def mol2struct(get_element, mol):
                 q[i] = get_element(qi.encode('utf-8'))
             elif isinstance(qi, bytes):
                 q[i] = get_element(qi)
-        q = np.ascontiguousarray(q, dtype=c_int)
+        q = np.require(q, dtype=c_int, requirements=['C_CONTIGUOUS', 'OWNDATA'])
 
     if not isinstance(name, bytes):
         name = str(name).encode('utf-8')
 
-    in_str = inp_mols_t(n=c_int(n),
-                        q=q.ctypes.data_as(c_int_p),
-                        r=r.ctypes.data_as(c_double_p),
-                        name=name)
+    n = c_int(n)
+    q = q.ctypes.data_as(c_int_p)
+    r = r.ctypes.data_as(c_double_p)
+    in_str = inp_mols_t(n=n, q=q, r=r, name=name)
     in_str._keepalive = (n, q, r, name)  # keep strong references
     return in_str
 
@@ -301,7 +301,8 @@ class Vmol(VmolFunctions):
             if not isinstance(mols, list):
                 mols = [mols]
             nmol = len(mols)
-            mols = (inp_mols_t * nmol)(*(mol2struct(self.f.get_element, mol) for mol in mols))
+            mols_keepalive = [mol2struct(self.f.get_element, mol) for mol in mols]
+            mols = (inp_mols_t * nmol)(*mols_keepalive)
             ret = self.f.main_in(args, nmol, mols)
         else:
             ret = self.f.main(args)
@@ -337,7 +338,8 @@ class Vmol(VmolFunctions):
             if not isinstance(mols, list):
                 mols = [mols]
             nmol = len(mols)
-            mols = (inp_mols_t * nmol)(*(mol2struct(self.f.get_element, mol) for mol in mols))
+            mols_keepalive = [mol2struct(self.f.get_element, mol) for mol in mols]
+            mols = (inp_mols_t * nmol)(*mols_keepalive)
             ret, out = self.f.main_in_out(args, nmol, mols)
         else:
             ret, out = self.f.main_out(args)
