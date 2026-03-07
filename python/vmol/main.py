@@ -29,29 +29,6 @@ ARGS_T = (c_int, ctypes.POINTER(ctypes.c_char_p))
 INP_MOLS_T = (c_int, ctypes.POINTER(inp_mols_t))
 
 
-def declare(func, argtypes, restype, errcheck=None, ret_code_ptr_idx=None):
-    """Declare a function from the shared library with the given argument and return types.
-
-    Args:
-        func (callable): The function to declare, typically obtained from the shared library.
-        argtypes (list of ctypes types): The argument types of the function.
-        restype (ctypes type): The return type of the function.
-        errcheck (callable, optional): A function that takes the result, the function, and the arguments,
-                                       and returns the processed result.
-        ret_code_ptr_idx (int, optional): Position of the `int *` argument to store the return value in.
-
-    Returns:
-        callable: The function with the specified arguments and return types.
-    """
-    func.argtypes = argtypes
-    func.restype = restype
-    if errcheck:
-        func.errcheck = errcheck
-    if ret_code_ptr_idx is not None:
-        func.ret_code_ptr_idx = ret_code_ptr_idx
-    return func
-
-
 def mol2struct(get_element, mol):
     """Convert a molecule to the expected C structure for input.
 
@@ -207,9 +184,8 @@ class Hooked:
         return getattr(obj, self.private_name, None)
 
     def __set__(self, obj, value):
-        if obj._call_pre_hook(value):
-            setattr(obj, self.private_name, value)
-            obj._call_post_hook()
+        setattr(obj, self.private_name, value)
+        obj._call_hook()
 
 
 class VmolFunctions:
@@ -232,40 +208,51 @@ class VmolFunctions:
             msg = "shared library path is not set, cannot run the viewer"
             raise ValueError(msg)
 
-    def _call_pre_hook(self, new_so):
-        """Check if the new shared library path is different from the current one and can be loaded."""
-        if new_so is None:
+    def _call_hook(self):
+        """Re-declare functions when self.so is set to a new value."""
+        if self.so is None:
             self.lib = None
-            return True
-        elif self.lib is None or self.lib._name != new_so:
+            self._reset_functions()
+        elif self.lib is None or self.lib._name != self.so:
             try:
-                self.lib = ctypes.cdll.LoadLibrary(new_so)
+                self.lib = ctypes.cdll.LoadLibrary(self.so)
             except OSError as e:
                 msg = f"Failed to load shared library: {e}, keeping the old value {self.so}"
                 warn(msg, RuntimeWarning, stacklevel=3)
-                return False
-            return True
-        else:
-            return False
-
-
-    def _call_post_hook(self):
-        """Re-declare functions when self.so is set to a new value."""
-        if self.so is None:
-            self._reset_functions()
-        else:
+                self.so = None
+                return
             self._declare_functions()
 
     def _reset_functions(self):
         self.f.__dict__.clear()
 
-    def _declare(self, name, *kargs, **kwargs):
-        if hasattr(self.lib, name):
-            return declare(getattr(self.lib, name), *kargs, **kwargs)
-        else:
+    def _declare(self, name, *, argtypes, restype, errcheck=None, ret_code_ptr_idx=None):
+        """Declare a function from the shared library with the given argument and return types.
+
+        Args:
+            name (str): The name of the function to declare.
+            argtypes (list of ctypes types): The argument types of the function.
+            restype (ctypes type): The return type of the function.
+            errcheck (callable, optional): A function that takes the result, the function, and the arguments,
+                                           and returns the processed result.
+            ret_code_ptr_idx (int, optional): Position of the `int *` argument to store the return value in.
+
+        Returns:
+            callable: The function with the specified arguments and return types.
+        """
+        if not hasattr(self.lib, name):
             msg = f"Function '{name}' not found in the shared library '{self.so}'"
             warn(msg, RuntimeWarning, stacklevel=2)
             return None
+
+        func = getattr(self.lib, name)
+        func.argtypes = argtypes
+        func.restype = restype
+        if errcheck:
+            func.errcheck = errcheck
+        if ret_code_ptr_idx is not None:
+            func.ret_code_ptr_idx = ret_code_ptr_idx
+        return func
 
     def _declare_functions(self):
 
