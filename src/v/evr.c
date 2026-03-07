@@ -353,6 +353,7 @@ void kp_move_d(void * ent, drawpars * dp){
 }
 
 void kp_exit(void * ent, drawpars * dp){
+  run_commands(NULL, dp->on_exit, dp, ent);
   ent_free(ent, dp);
   close_x();
   dp->closed = 1;

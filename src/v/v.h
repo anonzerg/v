@@ -95,6 +95,7 @@ typedef struct {
                         //
   int    closed;        // 1: time to go
   char   com[STRLEN];   // command string for gui:0
+  char on_exit[STRLEN]; // command string to run on exit
 
   int  input_files_n;   // number of input files
   char ** input_files;  // input files
@@ -175,6 +176,7 @@ void vibro_text(modestr * ms, drawpars * dp);
 void pg(atcoord * a, styp s, double symtol);
 
 // headless.c
+void run_commands(FILE * f, char * command, drawpars * dp, void * ent);
 int headless(drawpars * dp, void * ent);
 
 // main.c

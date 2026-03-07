@@ -93,11 +93,12 @@ static int cli_parse_arg(char * arg, drawpars * dp){
   int a10 = sscanf (arg, "center:%d", &(dp->center));
   int a11 = sscanf (arg, "inertia:%d", &(dp->inertia));
   int a12  = sscanf (arg, "com:%255s", dp->com);
+  int a13  = sscanf (arg, "exitcom:%255s", dp->on_exit);
   int rot_count   = sscan_rot  (arg, rot);
   int cell_count  = sscan_cell (arg, cell);
   int shell_count = sscan_shell(arg, shell);
 
-  int cli = a0||a1||a2||a3||a4||a5||a6||a7||a8||a9||a10||a11||a12 || rot_count||cell_count||shell_count;
+  int cli = a0||a1||a2||a3||a4||a5||a6||a7||a8||a9||a10||a11||a12||a13 || rot_count||cell_count||shell_count;
 
   if(vib==0){
     dp->task = AT3COORDS;
@@ -161,6 +162,7 @@ static drawpars dp_init(void){
   dp.z[0] = dp.z[1] = dp.z[2] = dp.z[3] = dp.z[4] = 0;
   vecset(3*8, dp.vertices, 0.0);
   memset(dp.com, 0, STRLEN);
+  memset(dp.on_exit, 0, STRLEN);
   dp.input_files_n = 0;
   dp.input_files = NULL;
   // from data read

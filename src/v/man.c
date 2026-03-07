@@ -32,6 +32,7 @@ void printman(FILE * f, char * exename){
   inertia:%%d                                   if rotate molecules wrt axis of inertia (1) or not (0, default) \n\
   gui:%%d                                       normal (1) / headless (0) mode \n\
   com:%%s                                       command sequence for gui:0 \n\
+  exitcom:%%s                                   command sequence to run on exit (same as for gui:0) \n\
   \n\
  KEYBOARD REFERENCE:\n\
   \n\

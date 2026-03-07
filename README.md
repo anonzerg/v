@@ -74,7 +74,8 @@ Show the reference:
 | `center:%d`                                 | origin is geometric center (`1`, default) / center of mass (`2`) / as is (`0`) |
 | `inertia:%d`                                | if rotate molecules wrt axis of inertia (`1`) or not (`0`, default) |
 | `gui:%d`                                    | normal (default `1`) / headless (`0`) mode               |
-| `com:%d`                                    | command sequence for `gui:0`                             |
+| `com:%s`                                    | command sequence for `gui:0`                             |
+| `exitcom:%s`                                | command sequence to run on exit (same as for `gui:0`)    |
 
 </details>
 
