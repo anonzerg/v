@@ -10,6 +10,7 @@ Inspired by @aligfellow's [xyzrender](https://github.com/aligfellow/xyzrender).
 
 * X11
 * numpy
+* cclib (optional, to read formats without native support)
 
 ### For installation:
 * `libX11-devel libXpm-devel xproto-devel` (`libx11-dev libxpm-dev x11proto-dev` on Ubuntu) for C compilation
@@ -115,7 +116,13 @@ vmol.run(['../mol/MOL_3525.xyz', 'cell:8.93,0.0,0.0,4.2,8.9,0.0,0.48,2.32,10'])
 ```
 The arguments are the same as the CLI ones and should be an array of strings.
 
-### 2. Capture the output
+### 2. Other formats
+With `cclib` installed, it is also possible to load the formats which are not supported natively:
+```
+vmol2 ../mol/CEHZOF_1_SPE.out
+```
+
+### 3. Capture the output
 See [example 1](examples/ex1.py).
 
 ```python
@@ -145,7 +152,7 @@ Tell the viewer to automatically print the coordinates before exit:
 >>> print(out)
 ```
 
-### 3. Pass a structure
+### 4. Pass a structure
 
 One can pass a structure (or several structures) as an argument.
 See [example 2](examples/ex2.py).

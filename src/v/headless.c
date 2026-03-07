@@ -48,11 +48,11 @@ void run_commands(FILE * f, char * command, drawpars * dp, void * ent){
 }
 
 int headless(drawpars * dp, void * ent){
-    atcoord * ac = ((atcoords *)ent)->m[dp->n];
-    if(dp->b>0 && !ac->bond_flag){
-      bonds_fill(dp->rl, dp->bmax, ac);
-    }
-    run_commands(stdin, dp->com, dp, ent);
-    ent_free(ent, dp);
-    return 0;
+  atcoord * ac = ((atcoords *)ent)->m[dp->n];
+  if(dp->b>0 && !ac->bond_flag){
+    bonds_fill(dp->rl, dp->bmax, ac);
+  }
+  run_commands(stdin, dp->com, dp, ent);
+  ent_free(ent, dp);
+  return 0;
 }
