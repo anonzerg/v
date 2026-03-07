@@ -139,6 +139,12 @@ Headless mode also works:
 'D4d'
 ```
 
+Tell the viewer to automatically print the coordinates before exit:
+```python
+>>> out = vmol.capture(args=['../mol/rotation1.in', 'exitcom:z'])
+>>> print(out)
+```
+
 ### 3. Pass a structure
 
 One can pass a structure (or several structures) as an argument.
