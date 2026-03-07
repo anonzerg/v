@@ -111,10 +111,9 @@ python -m vmol ../mol/MOL_3525.xyz cell:8.93,0.0,0.0,4.2,8.9,0.0,0.48,2.32,10
 It can also be run from a script, i.e.
 ```python
 from vmol import vmol
-vmol.run(['my_exe_name', '../mol/MOL_3525.xyz', 'cell:8.93,0.0,0.0,4.2,8.9,0.0,0.48,2.32,10'])
+vmol.run(['../mol/MOL_3525.xyz', 'cell:8.93,0.0,0.0,4.2,8.9,0.0,0.48,2.32,10'])
 ```
-The arguments are the same as the CLI ones. They should be an array of strings,
-and the 0th argument stays for the program name and is ignored.
+The arguments are the same as the CLI ones and should be an array of strings.
 
 ### 2. Capture the output
 See [example 1](examples/ex1.py).
@@ -126,7 +125,6 @@ out = vmol.capture(args=['../mol/MOL_3525.xyz', 'cell:8.93,0.0,0.0,4.2,8.9,0.0,0
 print(out)
 ```
 The arguments `args` are the same as the CLI ones and should be an array of strings.
-In this case, the 0th argument is not ignored.
 
 The return code can be captured as well:
 ```python
@@ -166,7 +164,7 @@ out = vmol.capture(mols=mols)
 Without capturing the output:
 ```python
 from vmol import vmol
-vmol.run(argv=['vmol'], mols={'q': [1, 'F'], 'r': [[0,0,0],[0.9,0,0]], 'name': 'hydrogen fluoride'})
+vmol.run(args=['shell:0.6,0.7'], mols={'q': [1, 'F'], 'r': [[0,0,0],[0.9,0,0]], 'name': 'hydrogen fluoride'})
 ```
 
 Formats which are not supported natively can be read with `cclib` as passed (see [example](examples/ex_cclib)).

@@ -281,29 +281,31 @@ class VmolFunctions:
 class Vmol(VmolFunctions):
     """Run the viewer with specified command-line arguments and/or molecule data and capture the output."""
 
-    def run(self, argv, *, mols=None):
+    def run(self, *, args=None, mols=None, with_arg0=False):
         """Run the viewer with the given command-line arguments.
 
         Args:
-            argv (list of str): The command-line arguments to pass to the main function.
-                                Unlike `capture()`, the first argument is a string that represents the program name,
-                                such as `sys.argv[0]` or the name of the shared library.
+            args (list of str, optional): The command-line arguments to pass to the main function.
             mols (object or list[object], optional): An object or a list thereof representing the molecule(s).
                  See `mol2struct()` for the expected format.
+            with_arg0 (bool, optional): Whether the first argument in `args` is the program name (e.g., `sys.argv[0]`).
+                      If False or if `args` is None or empty, the program name is automatically added as the first argument.
+                      Otherwise, `args` is used as is. Defaults to False.
 
         Returns:
             int: The return code from the main function.
         """
         self._check_so()
-
-        if mols is None:
-            return self.f.main(argv)
-
-        if not isinstance(mols, list):
-            mols = [mols]
-        nmol = len(mols)
-        mols = (inp_mols_t * nmol)(*(mol2struct(self.f.get_element, mol) for mol in mols))
-        return self.f.main_in(argv, nmol, mols)
+        args = (args if with_arg0 else [self.so, *args]) if args else [self.so]
+        if mols:
+            if not isinstance(mols, list):
+                mols = [mols]
+            nmol = len(mols)
+            mols = (inp_mols_t * nmol)(*(mol2struct(self.f.get_element, mol) for mol in mols))
+            ret = self.f.main_in(args, nmol, mols)
+        else:
+            ret = self.f.main(args)
+        return ret
 
     def capture(self, *, mols=None, args=None, return_code=False):
         """Run the viewer with the given structure and/or command-line arguments and capture the output.
@@ -332,12 +334,10 @@ class Vmol(VmolFunctions):
         self._check_so()
         args = [self.so, *args] if args else [self.so]
         if mols:
-
             if not isinstance(mols, list):
                 mols = [mols]
             nmol = len(mols)
             mols = (inp_mols_t * nmol)(*(mol2struct(self.f.get_element, mol) for mol in mols))
-
             ret, out = self.f.main_in_out(args, nmol, mols)
         else:
             ret, out = self.f.main_out(args)
