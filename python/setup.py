@@ -6,7 +6,7 @@ import shutil
 from pathlib import Path
 
 
-VERSION="3.0rc3"
+VERSION="3.0rc4"
 
 def run_git(args):
     try:
