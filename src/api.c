@@ -26,8 +26,8 @@ int main_wrap_in(int argc, char * argv[], int n_inp_mols, inp_mols_t * inp_mols)
 }
 
 char * main_wrap_in_out(int argc, char * argv[],
-                        int * ret,
-                        int n_inp_mols, inp_mols_t * inp_mols) {
+                        int n_inp_mols, inp_mols_t * inp_mols,
+                        int * ret){
   globals.out_str = calloc(PRINTBUFLEN, 1);
   *ret = main_wrap_in(argc, argv, n_inp_mols, inp_mols);
   return globals.out_str;

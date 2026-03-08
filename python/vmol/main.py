@@ -108,68 +108,24 @@ def mol2struct(get_element, mol):
     return in_str
 
 
-def convert_in(func):
-    """Decorate a function to convert Python arguments to the expected C types.
-
-    The function is expected to take an integer and a pointer to an array of C strings as its first two arguments,
-    which represent the argument count and argument values, respectively, i.e.,
-    ```
-    void func(int argc, char ** argv, ...)
-    ```
-    The decorator will convert a list of Python strings passed as the first argument
-    to the wrapped function into the appropriate C types before calling the original function, i.e.,
-    ```
-    def wrapped_func(argv: list[str], ...)
-    ```
-
-    If `func.ret_code_ptr_idx` is defined and equals to N>=2, the decorator also passes a pointer to an integer
-    as the Nth argument:
-    ```
-    void func(int argc, char ** argv, ..., int * ret, ...) -> def wrapped_func(argv: list[str], ..., ...)
-              ^0th                         ^Nth
-    ```
-    The `func.errcheck` function is supposed to take care of the return value.
+def make_array(x, element_type, convert_func=lambda x: x):
+    """Convert a list of Python objects to a C array of the specified element type.
 
     Args:
-        func (callable): The function to wrap.
+        x (object or list[object]): An object or a list thereof to convert to a C array.
+        element_type (ctypes type): The type of the elements in the C array.
+        convert_func (callable, optional): A function that takes a Python object and converts it to the appropriate C type.
+                                           Defaults to the identity function.
 
     Returns:
-        callable: A wrapped function.
-
-    Raises:
-        TypeError: If func is not a ctypes function.
-        ValueError: If its attributes are wrong.
+        tuple: A tuple containing the number of elements, the C array, and a list of the converted elements to keep alive.
     """
-    if func is None:
-        return None
-    if not isinstance(func, ctypes._CFuncPtr):
-        msg = "function should be a ctypes function"
-        raise TypeError(msg)
-
-    if func.argtypes is None or len(func.argtypes) < len(ARGS_T) or any(x!=y for x, y in zip(func.argtypes, ARGS_T, strict=False)):
-        msg = f"function must have a signature that starts with {ARGS_T} for the first arguments to convert the input list of strings"
-        raise ValueError(msg)
-
-    if not hasattr(func, 'ret_code_ptr_idx'):
-        func.ret_code_ptr_idx = None
-    if func.ret_code_ptr_idx is not None:
-        if func.ret_code_ptr_idx < len(ARGS_T):
-            msg = f"return code argument index must be at least 2, but got {func.ret_code_ptr_idx}"
-            raise ValueError(msg)
-        if func.argtypes[func.ret_code_ptr_idx] != c_int_p:
-            msg = f"return code argument must be a pointer to an integer ({c_int_p}), but got {func.argtypes[func.ret_code_ptr_idx]}"
-            raise ValueError(msg)
-
-    @functools.wraps(func)
-    def myinner(argv, *args):
-        argc = len(argv)
-        argv = (c_char_p * argc)(*[arg.encode('utf-8') for arg in argv])
-        arguments = [c_int(argc), argv, *args]
-        if func.ret_code_ptr_idx is not None:
-            ret = c_int(0)
-            arguments.insert(func.ret_code_ptr_idx, ctypes.byref(ret))
-        return func(*arguments)
-    return myinner
+    if not isinstance(x, list):
+        x = [x]
+    n = len(x)
+    x_keepalive = [convert_func(i) for i in x]
+    x = (element_type * n)(*x_keepalive)
+    return c_int(n), x, x_keepalive
 
 
 class Hooked:
@@ -226,7 +182,7 @@ class VmolFunctions:
     def _reset_functions(self):
         self.f.__dict__.clear()
 
-    def _declare(self, name, *, argtypes, restype, errcheck=None, ret_code_ptr_idx=None):
+    def _declare(self, name, *, argtypes, restype, errcheck=None):
         """Declare a function from the shared library with the given argument and return types.
 
         Args:
@@ -235,7 +191,6 @@ class VmolFunctions:
             restype (ctypes type): The return type of the function.
             errcheck (callable, optional): A function that takes the result, the function, and the arguments,
                                            and returns the processed result.
-            ret_code_ptr_idx (int, optional): Position of the `int *` argument to store the return value in.
 
         Returns:
             callable: The function with the specified arguments and return types.
@@ -250,14 +205,12 @@ class VmolFunctions:
         func.restype = restype
         if errcheck:
             func.errcheck = errcheck
-        if ret_code_ptr_idx is not None:
-            func.ret_code_ptr_idx = ret_code_ptr_idx
         return func
 
     def _declare_functions(self):
 
-        def errcheck(result, func, args):
-            ret = args[func.ret_code_ptr_idx]._obj.value
+        def errcheck(result, _func, args):
+            ret = args[-1]._obj.value
             out = result.decode('utf-8').rstrip('\n') if result else None
             self.f.free()
             return ret, out
@@ -267,15 +220,98 @@ class VmolFunctions:
 
         self.f.main_raw        = self._declare('main', argtypes=ARGS_T, restype=c_int)
         self.f.main_out_raw    = self._declare('main_wrap_out',    argtypes=[*ARGS_T, c_int_p],
-                                         restype=c_char_p, errcheck=errcheck, ret_code_ptr_idx=2)
-        self.f.main_in_out_raw = self._declare('main_wrap_in_out', argtypes=[*ARGS_T, c_int_p, *INP_MOLS_T],
-                                         restype=c_char_p, errcheck=errcheck, ret_code_ptr_idx=2)
+                                               restype=c_char_p, errcheck=errcheck)
+        self.f.main_in_out_raw = self._declare('main_wrap_in_out', argtypes=[*ARGS_T, *INP_MOLS_T, c_int_p],
+                                               restype=c_char_p, errcheck=errcheck)
         self.f.main_in_raw = self._declare('main_wrap_in', argtypes=[*ARGS_T, *INP_MOLS_T], restype=c_int)
 
-        self.f.main        = convert_in(self.f.main_raw)
-        self.f.main_out    = convert_in(self.f.main_out_raw)
-        self.f.main_in_out = convert_in(self.f.main_in_out_raw)
-        self.f.main_in     = convert_in(self.f.main_in_raw)
+        self.f.main        = self._convert_in(self.f.main_raw)
+        self.f.main_out    = self._convert_in(self.f.main_out_raw, last_arg_ret_code=True)
+        self.f.main_in_out = self._convert_in(self.f.main_in_out_raw, add_molecules=True, last_arg_ret_code=True)
+        self.f.main_in     = self._convert_in(self.f.main_in_raw, add_molecules=True)
+
+    def _convert_in(self, func, add_molecules=False, last_arg_ret_code=False):
+        """Decorate a function to convert Python arguments to the expected C types.
+
+        The function is expected to take an integer and a pointer to an array of C strings as its first two arguments,
+        which represent the argument count and argument values, respectively, i.e.,
+        ```
+        void func(int argc, char ** argv, ...)
+        ```
+        The decorator will convert a list of Python strings passed as the first argument
+        to the wrapped function into the appropriate C types before calling the original function, i.e.,
+        ```
+        def wrapped_func(argv: list[str], ...)
+        ```
+
+        If `add_molecules` is True, the function is also expected to take an integer
+        and a pointer to an array of `inp_mols_t` structures as additional arguments after the first two,
+        which represent the number of molecules and the molecule data, respectively, i.e.,
+        ```
+        void func(int argc, char ** argv, int nmol, inp_mols_t * mols, ...) -> def wrapped_func(argv: list[str], mols: object or list[object], ...)
+        ```
+        The decorator will convert a molecule or a list of molecules passed as the last argument to the wrapped function.
+
+        If `last_arg_ret_code` is True, the decorator also passes a pointer to an integer
+        as the last argument to the original function to store the return code, i.e.,
+        ```
+        void func(int argc, char ** argv, ..., int * ret) -> def wrapped_func(argv: list[str], ...)
+        ```
+        The `func.errcheck` function is supposed to take care of the return value.
+
+        Args:
+            func (callable): The function to wrap.
+            add_molecules (bool, optional): Whether the function also takes molecule data as additional arguments after the first two.
+            last_arg_ret_code (bool, optional): If the last argument is `int *` to store the return value in.
+
+        Returns:
+            callable: A wrapped function.
+
+        Raises:
+            TypeError: If func is not a ctypes function.
+            ValueError: If its attributes are wrong.
+        """
+        def begin_differently(x, y):
+            if x is None:
+                return y is not None
+            if len(x) < len(y):
+                return True
+            return any(xi!=yi for xi, yi in zip(x[:len(y)], y, strict=True))
+
+        if func is None:
+            return None
+        if not isinstance(func, ctypes._CFuncPtr):
+            msg = "function should be a ctypes function"
+            raise TypeError(msg)
+
+        if begin_differently(func.argtypes, ARGS_T):
+            msg = f"function must have a signature that starts with {ARGS_T} to convert the input list of strings"
+            raise ValueError(msg)
+
+        if add_molecules and begin_differently(func.argtypes[len(ARGS_T):], INP_MOLS_T):
+            msg = f"function must have a signature that starts with {ARGS_T + INP_MOLS_T} to convert the input list of strings and molecule data"
+            raise ValueError(msg)
+
+        if last_arg_ret_code and func.argtypes[-1] != c_int_p:
+            msg = f"return code argument must be a pointer to an integer ({c_int_p}), but got {func.argtypes[-1]}"
+            raise ValueError(msg)
+
+        @functools.wraps(func)
+        def myinner(*args):
+            args = list(args)
+            argv = args[0]
+            argc, argv, _argv = make_array(args[0], c_char_p, convert_func=lambda x: x.encode('utf-8'))
+            args.pop(0)
+            if add_molecules:
+                nmol, mols, _mols = make_array(args[0], inp_mols_t, convert_func=lambda x: mol2struct(self.f.get_element, x))
+                args.pop(0)
+                args = [nmol, mols, *args]
+            args = [argc, argv, *args]
+            if last_arg_ret_code:
+                ret = c_int(0)
+                args.append(ctypes.byref(ret))
+            return func(*args)
+        return myinner
 
 
 class Vmol(VmolFunctions):
@@ -283,6 +319,13 @@ class Vmol(VmolFunctions):
 
     def run(self, *, args=None, mols=None, with_arg0=False):
         """Run the viewer with the given command-line arguments.
+
+        If `args` is provided, it will be passed as command-line arguments to the main function.
+        It can contain any arguments that the main function accepts, including the paths to the molecule files to read.
+        If `with_arg0` is True, the first argument in `args` is treated as the program name.
+
+        If `mols` is provided, the molecules(s) will be converted to the appropriate input structure(s)
+        and passed to the main function, and the paths to the molecule files in `args` will be ignored.
 
         Args:
             args (list of str, optional): The command-line arguments to pass to the main function.
@@ -297,28 +340,17 @@ class Vmol(VmolFunctions):
         """
         self._check_so()
         args = (args if with_arg0 else [self.so, *args]) if args else [self.so]
-        if mols:
-            if not isinstance(mols, list):
-                mols = [mols]
-            nmol = len(mols)
-            mols_keepalive = [mol2struct(self.f.get_element, mol) for mol in mols]
-            mols = (inp_mols_t * nmol)(*mols_keepalive)
-            ret = self.f.main_in(args, nmol, mols)
-        else:
-            ret = self.f.main(args)
-        return ret
+        return self.f.main_in(args, mols) if mols else self.f.main(args)
 
     def capture(self, *, mols=None, args=None, return_code=False):
         """Run the viewer with the given structure and/or command-line arguments and capture the output.
 
         If `args` is provided, it will be passed as command-line arguments to the main function.
         It can contain any arguments that the main function accepts, except for the program name,
-        includiing the paths to the molecule files to read.
+        including the paths to the molecule files to read.
 
         If `mols` is provided, the molecules(s) will be converted to the appropriate input structure(s)
         and passed to the main function, and the paths to the molecule files in `args` will be ignored.
-        The `mols` dictionaries must contain 'q' and 'r' keys for the charge and coordinate arrays, respectively,
-        and can optionally contain a 'name' key for the molecule name.
 
         Args:
             mols (object or list[object], optional): An object or a list thereof representing the molecule(s).
@@ -334,13 +366,5 @@ class Vmol(VmolFunctions):
         """
         self._check_so()
         args = [self.so, *args] if args else [self.so]
-        if mols:
-            if not isinstance(mols, list):
-                mols = [mols]
-            nmol = len(mols)
-            mols_keepalive = [mol2struct(self.f.get_element, mol) for mol in mols]
-            mols = (inp_mols_t * nmol)(*mols_keepalive)
-            ret, out = self.f.main_in_out(args, nmol, mols)
-        else:
-            ret, out = self.f.main_out(args)
+        ret, out = self.f.main_in_out(args, mols) if mols else self.f.main_out(args)
         return (ret, out) if return_code else out
