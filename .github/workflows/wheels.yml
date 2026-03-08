@@ -17,6 +17,17 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Export git metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "VMOL_GIT_HASH=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "VMOL_GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)" >> "$GITHUB_ENV"
+          DESC="$(git describe --tags --dirty 2>/dev/null || true)"
+          echo "VMOL_GIT_DESCRIBE=${DESC}" >> "$GITHUB_ENV"
+          # ${{ github.sha }} (commit hash)
+          # ${{ github.ref_name }} (branch or tag name for the workflow run)
+
       - uses: actions/setup-python@v6
 
       - name: Install cibuildwheel
