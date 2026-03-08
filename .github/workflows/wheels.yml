@@ -1,14 +1,33 @@
-name: Build
+name: Build wheels
 
-on: [push, pull_request]
+on:
+  workflow_call:
+    inputs:
+      package-dir:
+        type: string
+        required: false
+        default: ./python
+      output-dir:
+        type: string
+        required: false
+        default: wheelhouse
+      cibw-build:
+        type: string
+        required: false
+        default: ""
+      cibw-skip:
+        type: string
+        required: false
+        default: "*-musllinux_*"
+      upload-artifact:
+        type: boolean
+        required: false
+        default: true
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
+    name: Build wheels
+    runs-on: ubuntu-latest
 
     steps:
 
@@ -21,21 +40,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo "VMOL_GIT_HASH=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
-          echo "VMOL_GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)" >> "$GITHUB_ENV"
-          DESC="$(git describe --tags --dirty 2>/dev/null || true)"
-          echo "VMOL_GIT_DESCRIBE=${DESC}" >> "$GITHUB_ENV"
-          # ${{ github.sha }} (commit hash)
-          # ${{ github.ref_name }} (branch or tag name for the workflow run)
+          echo "VMOL_GIT_HASH=${{ github.sha }}" >> "$GITHUB_ENV"
+          echo "VMOL_GIT_BRANCH=${{ github.ref_name }}" >> "$GITHUB_ENV"
+          echo "VMOL_GIT_DESCRIBE=$(git describe --tags --dirty 2>/dev/null || true)" >> "$GITHUB_ENV"
 
       - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
 
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==3.4.0
 
       - name: Build wheels
-        run: python -m cibuildwheel ./python --output-dir wheelhouse
+        run: python -m cibuildwheel "${{ inputs.package-dir }}" --output-dir "${{ inputs.output-dir }}"
         env:
+          CIBW_BUILD: ${{ inputs.cibw-build }}
+          CIBW_SKIP: ${{ inputs.cibw-skip }}
           CIBW_BEFORE_ALL_LINUX: |
             if [ -f /etc/alpine-release ]; then # musllinux (Alpine)
               apk add --no-cache libx11-dev libxpm-dev pkgconf
@@ -43,8 +63,10 @@ jobs:
               /usr/bin/dnf -y install libX11-devel libXpm-devel pkgconf-pkg-config
             fi
 
-      - uses: actions/upload-artifact@v6
+      - name: Upload wheels
+        if: ${{ inputs.upload-artifact }}
+        uses: actions/upload-artifact@v6
         with:
-          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
-          path: ./wheelhouse/*.whl
+          name: vmol-wheels-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_number }}
+          path: ${{ inputs.output-dir }}/*.whl
           if-no-files-found: error
