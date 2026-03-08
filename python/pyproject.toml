@@ -33,6 +33,7 @@ dependencies = [
 
 [project.scripts]
 vmol = "vmol.__main__:main"
+vmol2 = "vmol.vmol2:main"
 
 [project.urls]
 Repository = "https://github.com/briling/v.git"

@@ -20,7 +20,11 @@ A simple X11 molecular viewer.
 
 ## Python package (wrapper / API) available
 
-[see python package page](python/README.md)
+See python package page
+[here.](python/README.md)
+
+Provides wrapper scripts with a simple installation and
+allows to open unsupported file formats with `cclib`.
 
 ## Download [↑](#download)
 ```
