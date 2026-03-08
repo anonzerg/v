@@ -13,33 +13,40 @@ line-ending = "auto"
 
 [lint]
 
+preview = true
+
 select = [
   "A", "E", "F", "B",
   "S", "COM", "C4", "EXE", "ICN", "PIE", "PLR1714", "ARG",
   "PERF", "FURB", "PLE", "TRY", "W", "UP", "RUF", "SIM", "NPY",
-  "EM", "RET", "PLR",
+  "EM", "RET", "PLR", "BLE", "Q", "PLC",
   "FIX", "TD",
-  "D"
+  "N", "D", "DOC",
 ]
+
 ignore = [
-  "E501",     # line-too-long
-  "D203",     # incorrect-blank-line-before-class
-  "D213",     # multi-line-summary-second-line
-  #"ANN", "Q000", "SLF001", "PLC0415", "N801", "I001", "CPY001"
-]
-
-preview = true
-
-extend-select = ["DOC"]
-
-extend-ignore = [
   "E201",  # whitespace-after-open-bracket
   "E221",  # multiple-spaces-before-operator
   "E222",  # multiple-spaces-after-operator
   "E225",  # missing-whitespace-around-operator
   "E241",  # multiple-spaces-after-comma
+  "E501",  # line-too-long
+  "D203",  # incorrect-blank-line-before-class
+  "D213",  # multi-line-summary-second-line
   "D413",  # missing-blank-line-after-last-section
+  "Q000",  # bad-quotes-inline-string
 ]
+
+## uncomment to check if we break more interesting rules
+#extend-select = ["ALL"]
+#extend-ignore = [
+#  "ANN",     # flake8-annotations
+#  "SLF",     # flake8-self
+#  "I",       # isort
+#  "CPY",     # flake8-copyright
+#  "PTH",     # flake8-use-pathlib
+#  "C",       # mccabe
+#]
 
 [lint.per-file-ignores]
 "vmol/__main__.py" = ["D"]

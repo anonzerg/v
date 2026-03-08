@@ -38,7 +38,7 @@ def read_mols_from_cclib(path):
 
     try:
         data = parser.parse()
-    except Exception:
+    except Exception:  # noqa: BLE001
         msg = f"Error parsing {path} with cclib. Using partial data."
         warnings.warn(msg, RuntimeWarning, stacklevel=2)
         data = parser

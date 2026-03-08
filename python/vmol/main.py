@@ -14,7 +14,7 @@ c_double_p = ctypes.POINTER(c_double)
 c_int_p = ctypes.POINTER(c_int)
 
 
-class inp_mols_t(ctypes.Structure):
+class inp_mols_t(ctypes.Structure):  # noqa: N801
     """C structure for the input molecule data, containing the number of atoms, charge array, coordinate array, and name."""
 
     _fields_ = (
@@ -55,7 +55,7 @@ def mol2struct(get_element, mol):
         TypeError: If mol is not a dictionary.
         ValueError: If the required keys are missing or their values have wrong shapes.
     """
-    import numpy as np
+    import numpy as np  # noqa: PLC0415
 
     if isinstance(mol, dict):
         q = mol.get('q')
