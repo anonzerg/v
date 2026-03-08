@@ -47,9 +47,11 @@ VERSION_FLAGS = [f'-DGIT_HASH="{GIT_HASH}"',
 
 setup(
     version=get_git_version_hash(),
+    include_package_data=True,
     ext_modules=[Extension('vmol.v',
                            sources=c_files,
                            include_dirs=include_dirs,
+
                            libraries = ['X11', 'Xpm'],
                            extra_compile_args=['-std=gnu11', '-O2', ] + VERSION_FLAGS,
                            extra_link_args=[]),

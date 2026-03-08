@@ -34,8 +34,7 @@ jobs:
         run: python -m pip install cibuildwheel==3.4.0
 
       - name: Build wheels
-        working-directory: ./python
-        run: python -m cibuildwheel --output-dir wheelhouse
+        run: python -m cibuildwheel ./python --output-dir wheelhouse
         env:
           CIBW_BEFORE_ALL_LINUX: |
             if [ -f /etc/alpine-release ]; then # musllinux (Alpine)
@@ -47,4 +46,5 @@ jobs:
       - uses: actions/upload-artifact@v6
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
-          path: ./python/wheelhouse/*.whl
+          path: ./wheelhouse/*.whl
+          if-no-files-found: error
