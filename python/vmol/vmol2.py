@@ -61,6 +61,7 @@ def main():
 
     Raises:
         ImportError: If vmol shared library is not found.
+        RuntimeError: If no valid molecular data is found in any provided files.
     """
     if vmol is None:
         paths = '\n'.join(_paths)
@@ -82,8 +83,7 @@ def main():
         except (FileNotFoundError, RuntimeError) as e:
             warnings.warn(str(e), RuntimeWarning, stacklevel=2)
     if not mols:
-        pass
-        msg = f"No valid molecular data found in any provided files."
+        msg = "No valid molecular data found in any provided files."
         raise RuntimeError(msg)
 
     for i in reversed(to_pop):
