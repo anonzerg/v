@@ -12,6 +12,7 @@ XFontStruct * fontInfo;
 int       W,H;
 int (*myDrawString)();
 
+
 static void init_keys(ptf kp[NKP]){
   memset(kp, 0, sizeof(ptf)*NKP);
   kp[ XKeysymToKeycode(dis, XK_Escape    ) ] = kp_exit      ;
@@ -60,73 +61,27 @@ static void init_keys(ptf kp[NKP]){
 }
 
 static void version(FILE * f){
-  fprintf(f, "built on "__TIMESTAMP__"\n"
-             "user:      "BUILD_USER"\n"
-             "directory: "BUILD_DIRECTORY"\n"
-             "commit:    "GIT_HASH" ("GIT_BRANCH")\n"
-             "\n");
-}
-
-static drawpars dp_init(void){
-  drawpars dp;
-  dp.task = UNKNOWN;
-  dp.gui  = 1;
-  dp.input = 0;
-  memset(dp.input_text, 0, STRLEN);
-  dp.dt   = DEFAULT_TIMEOUT;
-  memset(dp.fontname, 0, STRLEN);
-  dp.n   = 0;
-  dp.fbw = 0;
-  dp.num = 0;
-  dp.t   = 0;
-  dp.rl  = 1.0;
-  dp.r   = 1.0;
-  dp.xy0[0] = dp.xy0[1] = 0.0;
-  mx_id(3, dp.ac3rmx);
-  // from command-line
-  dp.inertia = 0;
-  dp.center = 1;
-  dp.b = 1;
-  dp.bmax = 0.0;
-  dp.symtol = DEFAULT_SYMTOL;
-  dp.vert = -1;
-  dp.z[0] = dp.z[1] = dp.z[2] = dp.z[3] = dp.z[4] = 0;
-  vecset(3*8, dp.vertices, 0.0);
-  // from data read
-  dp.scale = 1.0;
-  dp.N = 0.0;
-  dp.f = NULL;
-  dp.fname = NULL;
-  dp.bohr = 0;
-  dp.closed = 0;
-  return dp;
+  PRINTOUT(f, "built on "__TIMESTAMP__"\n"
+              "user:      "BUILD_USER"\n"
+              "directory: "BUILD_DIRECTORY"\n"
+              "commit:    "GIT_HASH" ("GIT_BRANCH")\n"
+              "\n");
 }
 
 int main (int argc, char * argv[]) {
 
-  if(argc == 1){
-    printman(argv[0]);
-    version(stdout);
+  if(SHOULD_PRINT_MAN(argc)){
+    printman(stderr, argv[0]);
+    version(stderr);
     return 0;
   }
 
   /*= Input ==================================================================*/
 
-  drawpars dp   = dp_init();
-  int fn = 0;
-  char ** flist = malloc(argc*sizeof(char*));
-  for(int i=1; i<argc; i++){
-    if(!cli_parse(argv[i], &dp)){
-      flist[fn++] = argv[i];
-    }
-  }
-  if(!fn){
-    PRINT_ERR("no files to read\n");
-    return 1;
-  }
+  drawpars dp = cli_parse(argc, argv);
 
-  void * ent = read_files(fn, flist, &dp);
-  free(flist);
+  void * ent = READ_FILES(&dp);
+
   if(!ent){
     PRINT_ERR("no files to read\n");
     return 1;
@@ -140,31 +95,7 @@ int main (int argc, char * argv[]) {
   }
 
   if(!dp.gui){
-
-    atcoord * ac = ((atcoords *)ent)->m[dp.n];
-    if(dp.b>0 && !ac->bond_flag){
-      bonds_fill(dp.rl, dp.bmax, ac);
-    }
-
-    int c;
-    while((c = getc(stdin))!=EOF){
-      switch(c){
-        case('p'):
-          kp_print2fig(ent, &dp); break;
-        case('z'):
-          kp_print_xyz(ent, &dp); break;
-        case('x'):
-          kp_print(ent, &dp); break;
-        case('.'):
-          {
-            styp sym;
-            pg(ac, sym, dp.symtol);
-            printf("%s\n", sym);
-          }; break;
-      }
-    }
-    ent_free(ent, &dp);
-    return 0;
+    return headless(&dp, ent);
   }
 
   /*= X11 init ===============================================================*/
@@ -188,4 +119,3 @@ int main (int argc, char * argv[]) {
 
   return 0;
 }
-

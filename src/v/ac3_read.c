@@ -4,6 +4,59 @@
 
 #define END(S,X) ( (S)->X + (X##_size)/sizeof(*((S)->X)) )
 
+
+atcoord * atcoord_fill(int n, txyz * a, const char * fname, int b, int center, int inertia, int bohr){
+
+  size_t q_size = sizeof(int   ) * n;
+  size_t r_size = sizeof(double) * n*3;
+  atcoord * m;
+  if(b != -1){
+    size_t bond_a_size = sizeof(int   ) * n*BONDS_MAX;
+    size_t bond_r_size = sizeof(double) * n*BONDS_MAX;
+    size_t size = sizeof(atcoord) + q_size + r_size + bond_a_size + bond_r_size;
+    m = malloc(size);
+    m->n = n;
+    m->r      = (double *) (m + 1);
+    m->bond_r = (double *) END(m,r);
+    m->q      = (int    *) END(m,bond_r);
+    m->bond_a = (int    *) END(m,q);
+    m->bond_flag = 0;
+    m->bond_rl = 0.0;
+  }
+  else{
+    size_t size = sizeof(atcoord) + q_size + r_size;
+    m = malloc(size);
+    m->n = n;
+    m->r      = (double *) (m + 1);
+    m->bond_r = NULL;
+    m->q      = (int    *) END(m,r);
+    m->bond_a = NULL;
+    m->bond_flag = -1;
+    m->bond_rl = 0.0;
+  }
+
+  memset(m->sym, 0, sizeof(m->sym));
+  m->fname = fname;
+
+  for(int i=0; i<n; i++){
+    m->q[i] = a[i].t;
+    if(bohr){
+      r3scal(a[i].r, BA);
+    }
+    r3cp(m->r+i*3, a[i].r);
+  }
+  if(inertia){
+    mol M = {.n=m->n, .q=m->q, .r=m->r};
+    position(&M, NULL, 1);
+  }
+  if(center){
+    center_mol(n, m->r, center==2 ? m->q : NULL);
+  }
+
+  return m;
+}
+
+
 atcoord * ac3_read(FILE * f, int b, int center, int inertia, int bohr, const char * fname, format_t * format){
 
   int n;
@@ -46,50 +99,7 @@ atcoord * ac3_read(FILE * f, int b, int center, int inertia, int bohr, const cha
     return NULL;
   }
 
-  size_t q_size = sizeof(int   ) * n;
-  size_t r_size = sizeof(double) * n*3;
-  atcoord * m;
-  if(b != -1){
-    size_t bond_a_size = sizeof(int   ) * n*BONDS_MAX;
-    size_t bond_r_size = sizeof(double) * n*BONDS_MAX;
-    size_t size = sizeof(atcoord) + q_size + r_size + bond_a_size + bond_r_size;
-    m = malloc(size);
-    m->n = n;
-    m->r      = (double *) (m + 1);
-    m->bond_r = (double *) END(m,r);
-    m->q      = (int    *) END(m,bond_r);
-    m->bond_a = (int    *) END(m,q);
-    m->bond_flag = 0;
-    m->bond_rl = 0.0;
-  }
-  else{
-    size_t size = sizeof(atcoord) + q_size + r_size;
-    m = malloc(size);
-    m->n = n;
-    m->r      = (double *) (m + 1);
-    m->bond_r = NULL;
-    m->q      = (int    *) END(m,r);
-    m->bond_a = NULL;
-    m->bond_flag = -1;
-    m->bond_rl = 0.0;
-  }
-
-  memset(m->sym, 0, sizeof(m->sym));
-  for(int i=0; i<n; i++){
-    m->q[i] = a[i].t;
-    if(bohr){
-      r3scal(a[i].r, BA);
-    }
-    r3cp(m->r+i*3, a[i].r);
-  }
-  if(inertia){
-    mol M = {.n=m->n, .q=m->q, .r=m->r};
-    position(&M, NULL, 1);
-  }
-  if(center){
-    center_mol(n, m->r, center==2 ? m->q : NULL);
-  }
-  m->fname = fname;
+  atcoord * m = atcoord_fill(n, a, fname, b, center, inertia, bohr);
 
 #if 0
   printf("%d\n\n", n);

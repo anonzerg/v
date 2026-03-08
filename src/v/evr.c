@@ -75,16 +75,17 @@ void kp_readmore(void * ent, drawpars * dp){
 
 void kp_readagain(void * ent, drawpars * dp){
   if(dp->task == AT3COORDS){
+
+    if(!dp->f || !(fclose(dp->f), dp->f = fopen(dp->fname, "r"))){
+      PRINT_WARN("cannot reload the file '%s'\n", dp->fname);
+      return;
+    }
+
     atcoords * acs = ent;
     for(int i=0; i<acs->n; i++){
       free(acs->m[i]);
     }
     acs->n = dp->N = dp->n = 0;
-
-    if(!dp->f || !(fclose(dp->f), dp->f = fopen(dp->fname, "r"))){
-      PRINT_ERR("cannot reload the file '%s'\n", dp->fname);
-      return;
-    }
 
     acs_readmore(dp->f, dp->b, dp->center, dp->inertia, dp->bohr, acs, dp->fname);
     newmol_prep(acs, dp);
@@ -112,9 +113,9 @@ void kp_print_xyz(void * ent, drawpars * dp){
 void kp_printrot(void * ent __attribute__ ((unused)), drawpars * dp){
   double * U = dp->ac3rmx;
   for(int i=0; i<3; i++){
-    printf("rotation> % 20.15lf % 20.15lf % 20.15lf\n", U[i*3], U[i*3+1], U[i*3+2]);
+    PRINTOUT(stdout, "rotation> % 20.15lf % 20.15lf % 20.15lf\n", U[i*3], U[i*3+1], U[i*3+2]);
   }
-  printf("rot:%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n\n",
+  PRINTOUT(stdout, "rot:%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n\n",
       U[0], U[1], U[2], U[3], U[4], U[5], U[6], U[7], U[8]);
   return;
 }
@@ -352,6 +353,7 @@ void kp_move_d(void * ent, drawpars * dp){
 }
 
 void kp_exit(void * ent, drawpars * dp){
+  run_commands(NULL, dp->on_exit, dp, ent);
   ent_free(ent, dp);
   close_x();
   dp->closed = 1;

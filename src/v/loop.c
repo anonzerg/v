@@ -55,9 +55,8 @@ void main_loop(void * ent, drawpars * dp, ptf kp[NKP]){
             case(1):
               {
                 int frame = atoi(dp->input_text);
-                if(frame>0 && frame<dp->N-1){
-                  dp->n = frame-1;
-                }
+                frame = MAX(1, MIN(frame, dp->N));
+                dp->n = frame-1;
               }; break;
           }
         }

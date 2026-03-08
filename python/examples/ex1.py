@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
-import os
-import vmol
+from os.path import dirname, normpath
+from vmol import vmol
 
-# vmol.SO = 'v.cpython-313-x86_64-linux-gnu.so'  # set if want to specify the .so path
-mols = f'{os.path.dirname(__file__)}/../../mol/'
-args = [f'{mols}/MOL_3525.xyz']
-r, o = vmol.main.run(args)
+mol_dir = normpath(f'{dirname(__file__)}/../../mol/')
+args = [
+        f'{mol_dir}/MOL_3525.xyz',
+        'cell:8.929542,0.0,0.0,4.197206,8.892922,0.0,0.480945,2.324788,10.016044',
+        ]
+
+r, o = vmol.capture(args=args, return_code=True)
 
 print("Return value:", r)
 print("Captured output:")

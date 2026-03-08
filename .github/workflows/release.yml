@@ -1,6 +1,6 @@
 name: release
 
-on: # triggered by push tagged commits to main
+on: # triggered by push tagged commits
   push:
     tags:
       - 'v*'
@@ -12,44 +12,7 @@ permissions:
 jobs:
 
   build_wheels:
-    name: Build wheels on ${{ matrix.os }} for python ${{ matrix.py }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        py: ['3.11', '3.12', '3.13']
-
-    steps:
-
-      - name: install X11 dependencies
-        if: ${{ runner.os == 'Linux' }}
-        run: |
-          sudo apt-get update
-          sudo apt install -y libx11-dev libxpm-dev x11proto-dev
-
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-
-      - uses: actions/setup-python@v6
-        with:
-          python-version: ${{ matrix.py }}
-
-      - name: install python
-        run: pip install setuptools
-
-      - name: build wheels
-        working-directory: ./python
-        run: python setup.py bdist_wheel
-        ## we don't need the wheel name actually, the artifact name just has to be unique
-        #run: python setup.py bdist_wheel | grep "creating 'dist" | sed -n "s/^creating 'dist\//WHEEL_NAME='/;s/\s.*$//p" >> "$GITHUB_ENV"
-
-      - uses: actions/upload-artifact@v6
-        with:
-          path: ./python/dist/*.whl
-          name: ${{ matrix.os }}.${{ matrix.py }}
-
+    uses: ./.github/workflows/wheels.yml
 
   build_exe:
     name: Build the executable file and shared library for ${{ matrix.os }}
@@ -79,6 +42,7 @@ jobs:
             ./v
             ./v.so
           name: ${{ matrix.os }}.exe
+          if-no-files-found: error
 
 
   release:
@@ -89,10 +53,6 @@ jobs:
       contents: write
 
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
 
       - uses: actions/download-artifact@v4
         with:

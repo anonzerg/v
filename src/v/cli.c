@@ -70,7 +70,7 @@ static void getshell(double shell[2], drawpars * dp){
   return;
 }
 
-int cli_parse(char * arg, drawpars * dp){
+static int cli_parse_arg(char * arg, drawpars * dp){
   int vib   = -1;
   int bonds = 1;
   int frame = 1;
@@ -92,11 +92,13 @@ int cli_parse(char * arg, drawpars * dp){
   int a9  = sscanf (arg, "frame:%d", &frame);
   int a10 = sscanf (arg, "center:%d", &(dp->center));
   int a11 = sscanf (arg, "inertia:%d", &(dp->inertia));
+  int a12  = sscanf (arg, "com:%255s", dp->com);
+  int a13  = sscanf (arg, "exitcom:%255s", dp->on_exit);
   int rot_count   = sscan_rot  (arg, rot);
   int cell_count  = sscan_cell (arg, cell);
   int shell_count = sscan_shell(arg, shell);
 
-  int cli = a0||a1||a2||a3||a4||a5||a6||a7||a8||a9||a10||a11 || rot_count||cell_count||shell_count;
+  int cli = a0||a1||a2||a3||a4||a5||a6||a7||a8||a9||a10||a11||a12||a13 || rot_count||cell_count||shell_count;
 
   if(vib==0){
     dp->task = AT3COORDS;
@@ -128,5 +130,65 @@ int cli_parse(char * arg, drawpars * dp){
   }
   dp->n = frame-1;
 
+  if(!cli){
+    dp->input_files[dp->input_files_n++] = arg;
+  }
   return cli;
+}
+
+static drawpars dp_init(void){
+  drawpars dp;
+  dp.task = UNKNOWN;
+  dp.gui  = 1;
+  dp.input = 0;
+  memset(dp.input_text, 0, STRLEN);
+  dp.dt   = DEFAULT_TIMEOUT;
+  memset(dp.fontname, 0, STRLEN);
+  dp.n   = 0;
+  dp.fbw = 0;
+  dp.num = 0;
+  dp.t   = 0;
+  dp.rl  = 1.0;
+  dp.r   = 1.0;
+  dp.xy0[0] = dp.xy0[1] = 0.0;
+  mx_id(3, dp.ac3rmx);
+  // from command-line
+  dp.inertia = 0;
+  dp.center = 1;
+  dp.b = 1;
+  dp.bmax = 0.0;
+  dp.symtol = DEFAULT_SYMTOL;
+  dp.vert = -1;
+  dp.z[0] = dp.z[1] = dp.z[2] = dp.z[3] = dp.z[4] = 0;
+  vecset(3*8, dp.vertices, 0.0);
+  memset(dp.com, 0, STRLEN);
+  memset(dp.on_exit, 0, STRLEN);
+  dp.input_files_n = 0;
+  dp.input_files = NULL;
+  // from data read
+  dp.scale = 1.0;
+  dp.N = 0;
+  dp.f = NULL;
+  dp.fname = NULL;
+  dp.bohr = 0;
+  // runtime
+  dp.closed = 0;
+  return dp;
+}
+
+drawpars cli_parse(int argc, char ** argv){
+  drawpars dp = dp_init();
+  dp.input_files = malloc(argc*sizeof(char*));
+  for(int i=1; i<argc; i++){
+    cli_parse_arg(argv[i], &dp);
+  }
+
+  if(!dp.gui){
+    if(dp.task == VIBRO){
+      PRINT_WARN("normal modes are not supported in the headless regime\n");
+    }
+    dp.task = AT3COORDS;
+  }
+
+  return dp;
 }

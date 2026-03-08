@@ -94,6 +94,12 @@ typedef struct {
   int    bohr;          // 0: Å            1: Bohr
                         //
   int    closed;        // 1: time to go
+  char   com[STRLEN];   // command string for gui:0
+  char on_exit[STRLEN]; // command string to run on exit
+
+  int  input_files_n;   // number of input files
+  char ** input_files;  // input files
+
 } drawpars;
 
 typedef struct {
@@ -101,24 +107,34 @@ typedef struct {
   double r[3];
 } txyz;
 
+typedef struct {
+  int      n;
+  int    * q;
+  double * r;
+  char   * name;
+} inp_mols_t;
+
+
 // load.c
+atcoords * get_in_str(int N, inp_mols_t * inp_mols, drawpars * dp);
 void acs_readmore  (FILE * f, int b, int center, int inertia, int bohr, atcoords * acs, const char * fname);
-void * read_files(int fn, char ** flist, drawpars * dp);
+void * read_files(drawpars * dp);
 // scale.c
 double ac3_scale(atcoord * ac);
 double acs_scale(atcoords * acs);
 // mode_read.c
 modestr * mode_read(FILE * f, int na);
 // ac3_read*.c
+atcoord * atcoord_fill(int n, txyz * a, const char * fname, int b, int center, int inertia, int bohr);
 atcoord * ac3_read(FILE * f, int b, int center, int inertia, int bohr, const char * fname, format_t * format);
 txyz * ac3_read_in (int * n_p, int * zmat, FILE * f);
 txyz * ac3_read_out(int * n_p, FILE * f);
 txyz * ac3_read_xyz(int * n_p, FILE * f);
 
 // man.c
-void printman(char * exename);
+void printman(FILE * f, char * exename);
 // cli.c
-int cli_parse(char * arg, drawpars * dp);
+drawpars cli_parse(int argc, char ** argv);
 
 // loop.c
 void main_loop(void * ent, drawpars * dp, ptf kp[NKP]);
@@ -159,3 +175,14 @@ void ac3_text(atcoord * ac, drawpars * dp);
 void vibro_text(modestr * ms, drawpars * dp);
 void pg(atcoord * a, styp s, double symtol);
 
+// headless.c
+void run_commands(FILE * f, char * command, drawpars * dp, void * ent);
+int headless(drawpars * dp, void * ent);
+
+// main.c
+int main (int argc, char * argv[]);
+
+// api.c
+void PRINTOUT(FILE * f, char * format, ...);
+void * READ_FILES(drawpars * dp);
+int SHOULD_PRINT_MAN(int argc);

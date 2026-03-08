@@ -57,9 +57,15 @@ static vibrstr * mode_read_try(FILE * f, atcoord * ac){
 }
 
 static FILE * acs_read_newfile(atcoords * acs, char * fname, drawpars * dp){
-  FILE * f = fopen(fname, "r");
-  if(!f){
-    return NULL;
+  FILE * f;
+  if(!strcmp(fname, "-")){
+    f = stdin;
+  }
+  else{
+    f = fopen(fname, "r");
+    if(!f){
+      return NULL;
+    }
   }
   acs_readmore(f, dp->b, dp->center, dp->inertia, dp->bohr, acs, fname);
   return f;
@@ -102,19 +108,21 @@ static void * ent_read(char * fname, drawpars * dp){
   return acs;
 }
 
-void * read_files(int fn, char ** flist, drawpars * dp){
+void * read_files(drawpars * dp){
 
-  void * ent;
+  int fn = dp->input_files_n;
+  char ** flist = dp->input_files;
+  void * ent = NULL;
   int i=0;
+
+  // read the first available file
   while(i<fn && !(ent = ent_read(flist[i], dp))){
     PRINT_WARN("cannot read file '%s'\n", flist[i]);
     i++;
   }
-  if(i==fn){
-    return NULL;
-  }
 
-  if(dp->task == AT3COORDS){
+  // if the first file does not contain normal modes, try to read other files
+  if(ent && (dp->task == AT3COORDS)){
     atcoords * acs = ent;
     int n0 = fill_nf(acs, 0);
     for(i++; i<fn; i++){
@@ -133,13 +141,51 @@ void * read_files(int fn, char ** flist, drawpars * dp){
       }
     }
     dp->scale = acs_scale(acs);
-    dp->N = 0;
     newmol_prep(acs, dp);
-    dp->N = acs->n;
     intcoord_check(INT_MAX, dp->z);
   }
   else{
     dp->z[0] = 0;
   }
+
   return ent;
+}
+
+atcoords * get_in_str(int N, inp_mols_t * inp_mols, drawpars * dp){
+
+  for(int i=0; i<dp->input_files_n; i++){
+    PRINT_WARN("ignoring file '%s'\n", dp->input_files[i]);
+  }
+  if(dp->task==VIBRO){
+    PRINT_WARN("cannot read vibrations from input variable\n");
+  }
+  dp->task = AT3COORDS;
+
+  atcoords * acs = malloc(sizeof(atcoords));
+  acs->Nmem = N;
+  acs->m = malloc(acs->Nmem*sizeof(atcoord *));
+  acs->n = N;
+
+  int nmax = 0;
+  for(int i=0; i<N; i++){
+    nmax = MAX(nmax, inp_mols[i].n);
+  }
+  txyz * xyz = malloc(sizeof(txyz)*nmax);
+
+  for(int i=0; i<N; i++){
+    inp_mols_t * inmol = inp_mols + i;
+    for(int i=0; i<inmol->n; i++){
+      xyz[i].t = inmol->q[i];
+      r3cp(xyz[i].r, inmol->r+i*3);
+    }
+    acs->m[i] = atcoord_fill(inmol->n, xyz, inmol->name, dp->b, dp->center, dp->inertia, dp->bohr);
+  }
+
+  free(xyz);
+  fill_nf(acs, 0);
+  dp->scale = acs_scale(acs);
+  newmol_prep(acs, dp);
+  intcoord_check(nmax, dp->z);
+
+  return acs;
 }

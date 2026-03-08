@@ -1,11 +1,11 @@
 #include "v.h"
 
-void printman(char * exename){
-printf("\
+void printman(FILE * f, char * exename){
+  PRINTOUT(f, "\
   \n\
  USAGE:\n\
   \n\
-  %s file [options] \n\
+  %s file[s] [options] \n\
   \n\
  OPTIONS:\n\
   \n\
@@ -29,8 +29,10 @@ printf("\
   shell:b%%lf,%%lf                               spheres radii in a.u. \n\
   shell:%%lf,%%lf                                spheres radii in Å \n\
   center:%%d                                    origin is geometric center (1, default) / center of mass (2) / as is (0) \n\
-  inertia:1                                    rotate molecules wrt axis of inertia \n\
-  gui:%%d`                                      normal (1) / headless (0) mode \n\
+  inertia:%%d                                   if rotate molecules wrt axis of inertia (1) or not (0, default) \n\
+  gui:%%d                                       normal (1) / headless (0) mode \n\
+  com:%%s                                       command sequence for gui:0 \n\
+  exitcom:%%s                                   command sequence to run on exit (same as for gui:0) \n\
   \n\
  KEYBOARD REFERENCE:\n\
   \n\
