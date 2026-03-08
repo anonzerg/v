@@ -78,6 +78,7 @@ To subsitute the `.so`, put in in the same directory or change manually:
 ```
 >>> vmol.so='./v.so'
 ```
+or set the `VMOL_SO_PATH` environment variable.
 
 
 ## Usage
