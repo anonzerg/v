@@ -11,6 +11,7 @@ jobs:
         os: [ubuntu-latest]
 
     steps:
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
@@ -24,8 +25,15 @@ jobs:
       - name: Build wheels
         working-directory: ./python
         run: python -m cibuildwheel --output-dir wheelhouse
+        env:
+          CIBW_BEFORE_ALL_LINUX: |
+            if [ -f /etc/alpine-release ]; then # musllinux (Alpine)
+              apk add --no-cache libx11-dev libxpm-dev pkgconf
+            else # manylinux (AlmaLinux)
+              /usr/bin/dnf -y install libX11-devel libXpm-devel pkgconf-pkg-config
+            fi
 
       - uses: actions/upload-artifact@v6
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
-          path: ./wheelhouse/*.whl
+          path: ./python/wheelhouse/*.whl
