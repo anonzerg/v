@@ -26,12 +26,12 @@ PY="313"      # python version for wheels, also available "311" and "312"
 ### Option 1 -- install wheels
 
 ```
-pip install "https://github.com/briling/v/releases/download/v${VV}/vmol-${VV}-cp${PY}-cp${PY}-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl[all]"
+pip install "vmol[all] @ https://github.com/briling/v/releases/download/v${VV}/vmol-${VV}-cp${PY}-cp${PY}-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
 ```
 alternatively
 ```
 wget "https://github.com/briling/v/releases/download/v${VV}/vmol-${VV}-cp${PY}-cp${PY}-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
-pip install "vmol-${VV}-cp${PY}-cp${PY}-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl[all]"
+pip install "vmol[all] @ vmol-${VV}-cp${PY}-cp${PY}-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
 ```
 
 ### Option 2 -- build and install from github
