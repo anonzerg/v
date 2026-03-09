@@ -19,24 +19,24 @@ Inspired by @aligfellow's [xyzrender](https://github.com/aligfellow/xyzrender).
 ## Installation
 
 ```
-VV="3.0rc4" # v version
-PY="313"    # python version for wheels, also available "311" and "312"
+VV="3.0rc4+1" # v version
+PY="313"      # python version for wheels, also available "311" and "312"
 ```
 
 ### Option 1 -- install wheels
 
 ```
-pip install "https://github.com/briling/v/releases/download/v${VV}/vmol-${VV}-cp${PY}-cp${PY}-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
+pip install "https://github.com/briling/v/releases/download/v${VV}/vmol-${VV}-cp${PY}-cp${PY}-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl[all]"
 ```
 alternatively
 ```
 wget "https://github.com/briling/v/releases/download/v${VV}/vmol-${VV}-cp${PY}-cp${PY}-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
-pip install "vmol-${VV}-cp${PY}-cp${PY}-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
+pip install "vmol-${VV}-cp${PY}-cp${PY}-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl[all]"
 ```
 
 ### Option 2 -- build and install from github
 ```
-pip install git+https://github.com/briling/v@v${VV}#subdirectory=python
+pip install "vmol[all] @ git+https://github.com/briling/v@v${VV}#subdirectory=python"
 ```
 
 ### Option 3 -- build and install from github but with more control
@@ -50,9 +50,9 @@ wget https://github.com/briling/v/archive/v${VV}.tar.gz && tar -xvf v${VV}.tar.g
 #### build and install
 ```
 cd python
-pip install .
+pip install .[all]
 # OR
-pip install .
+pip install -e .[all]
 # OR build a wheel
 make
 ```
