@@ -63,10 +63,15 @@ jobs:
               /usr/bin/dnf -y install libX11-devel libXpm-devel pkgconf-pkg-config
             fi
 
+      - name: Build cdist
+        run: python -m build "${{ inputs.package-dir }}" --sdist --outdir "${{ inputs.output-dir }}"
+
       - name: Upload wheels
         if: ${{ inputs.upload-artifact }}
         uses: actions/upload-artifact@v6
         with:
           name: vmol-wheels-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_number }}
-          path: ${{ inputs.output-dir }}/*.whl
+          path: |
+            ${{ inputs.output-dir }}/*.whl
+            ${{ inputs.output-dir }}/*.tar.gz
           if-no-files-found: error

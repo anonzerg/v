@@ -11,8 +11,12 @@ permissions:
 
 jobs:
 
+################################################################################################################################
+
   build_wheels:
     uses: ./.github/workflows/wheels.yml
+
+################################################################################################################################
 
   build_exe:
     name: Build the executable file and shared library for ${{ matrix.os }}
@@ -41,9 +45,10 @@ jobs:
           path: |
             ./v
             ./v.so
-          name: ${{ matrix.os }}.exe
+          name: v.${{ matrix.os }}.exe
           if-no-files-found: error
 
+################################################################################################################################
 
   release:
 
@@ -74,3 +79,23 @@ jobs:
           body_path: .github/CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+################################################################################################################################
+
+  publish:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download build artifacts from this run
+        uses: actions/download-artifact@v4
+        with:
+          name: vmol-wheels-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_number }}
+          path: dist
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist
+          repository-url: https://test.pypi.org/legacy/
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
