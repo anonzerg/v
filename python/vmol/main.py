@@ -89,7 +89,7 @@ def mol2struct(get_element, mol):
     try:
         q = np.require(q, dtype=c_int, requirements=['C_CONTIGUOUS', 'OWNDATA'])
     except ValueError:
-        q = q.copy()
+        q = list(q)
         for i, qi in enumerate(q):
             if isinstance(qi, str):
                 q[i] = get_element(qi.encode('utf-8'))
