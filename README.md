@@ -64,6 +64,7 @@ Show the reference:
 | `rot:%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf`   | rotation matrix to start with (default identity matrix)  |
 | `frame:%d`               |     frame to start with (default 1)                                         |
 | `font:%s`                |     font ([xlfd](https://en.wikipedia.org/wiki/X_logical_font_description)) |
+| `colors:%s`              |      colorscheme (`v` (default) or `cpk`)                                   |
 | `cell:b%lf,%lf,%lf`                         | cuboid size in a.u. (for periodical boundary conditions) |
 | `cell:%lf,%lf,%lf`                          | cuboid size in Å                                         |
 | `cell:b%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf` | cell parameters in a.u.                                  |
@@ -105,7 +106,7 @@ Show the reference:
 | `tab`                          |  read new points
 | `r`                            |  reread file
 | `x`                            |  print molecule (Priroda input + bonds)
-| `z`                            |  print molecule (`.xyz`) 
+| `z`                            |  print molecule (`.xyz`)
 | `p`                            |  print molecule (input for an `.svg` generator)
 | `u`                            |  print current rotation matrix
 | `m`                            |  save the current frame ([`.xpm`](https://en.wikipedia.org/wiki/X_PixMap) format)
@@ -179,4 +180,9 @@ D*h
 ![Organic crystal cell](figures/MOL_3525.xyz_1.gif)
 
 ---
-![Periodic table of elements](figures/periodic.png)
+* Currently two colorschemes are supported (thanks to @iribirii)
+```
+v mol/periodic.in bonds:0 colors:v    # default
+v mol/periodic.in bonds:0 colors:cpk
+```
+![Periodic table of elements with animated change of colorschemes](figures/periodic.gif)

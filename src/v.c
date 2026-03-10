@@ -100,7 +100,7 @@ int main (int argc, char * argv[]) {
 
   /*= X11 init ===============================================================*/
   ptf kp[NKP];
-  init_x(dp.fname);
+  init_x(dp.fname, dp.colors);
   init_keys(kp);
   init_font(dp.fontname);
 #if 0

@@ -21,7 +21,8 @@ void printman(FILE * f, char * exename){
                                                      3,i,j,k,l - torsion  i-j-k-l\n\
   rot:%%lf,%%lf,%%lf,%%lf,%%lf,%%lf,%%lf,%%lf,%%lf      rotation matrix to start with (default identity matrix)\n\
   frame:%%d                                     frame to start with (default 1)\n\
-  font:%%s                                      font (xlfd) \n\n\
+  font:%%s                                      font (xlfd) \n\
+  colors:%%s                                    colorscheme (\"v\" (default) or \"cpk\") \n\n\
   cell:b%%lf,%%lf,%%lf                            cuboid size in a.u. \n\
   cell:%%lf,%%lf,%%lf                             cuboid size in Å \n\
   cell:b%%lf,%%lf,%%lf,%%lf,%%lf,%%lf,%%lf,%%lf,%%lf    cell parameters in a.u. \n\
@@ -29,7 +30,7 @@ void printman(FILE * f, char * exename){
   shell:b%%lf,%%lf                               spheres radii in a.u. \n\
   shell:%%lf,%%lf                                spheres radii in Å \n\
   center:%%d                                    origin is geometric center (1, default) / center of mass (2) / as is (0) \n\
-  inertia:%%d                                   if rotate molecules wrt axis of inertia (1) or not (0, default) \n\
+  inertia:%%d                                   if rotate molecules wrt axis of inertia (1) or not (0, default) \n\n\
   gui:%%d                                       normal (1) / headless (0) mode \n\
   com:%%s                                       command sequence for gui:0 \n\
   exitcom:%%s                                   command sequence to run on exit (same as for gui:0) \n\

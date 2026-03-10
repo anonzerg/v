@@ -4,7 +4,7 @@
 #include <X11/xpm.h>
 #include <X11/keysymdef.h>
 
-#define NCOLORS 80
+#define NCOLORS 110
 
 #define CLEARCANV \
   if(canv == px){\
@@ -18,3 +18,4 @@
   if(canv == px){\
     XCopyArea(dis, px, win, gc_white, 0, 0, W, H, 0, 0);\
   }
+

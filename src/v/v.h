@@ -23,6 +23,11 @@ typedef enum {
   OUT,
 } format_t;
 
+typedef enum {
+  V_COLORS,
+  CPK_COLORS,
+} colorscheme_t;
+
 typedef struct {
   int      n;            // number of atoms
   int      bond_flag;    // whether bonds are up-to-date. 0: no, 1: yes, -1: disabled
@@ -99,6 +104,8 @@ typedef struct {
 
   int  input_files_n;   // number of input files
   char ** input_files;  // input files
+                        //
+  colorscheme_t colors; // colorscheme (v or cpk)
 
 } drawpars;
 
@@ -156,7 +163,7 @@ int get_element(char * s);
 
 // x.c
 void close_x      (void);
-void init_x       (const char * const capt);
+void init_x(const char * const capt, const colorscheme_t colorscheme);
 void init_font    (char * fontname);
 void textincorner (const char * const text1, const char * const text2);
 void textincorner2(const char * const text1);
