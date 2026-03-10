@@ -47,6 +47,11 @@ Unsupported quantum-chemical outputs, e.g., Orca:
 vmol2 ../mol/CEHZOF_1_SPE.out
 python -m vmol.vmol2 ../mol/AJALIH_5_SPE.out
 ```
+or Gaussian:
+```
+vmol2 mol/Cat1_TSOA_CfA_Cf0.log vib:0  #  geometry optimization
+vmol2 mol/Cat1_TSOA_CfA_Cf0.log        #  normal modes (default for files containing both)
+```
 
 ### Library
 
