@@ -23,7 +23,7 @@ allows to open unsupported file formats with `cclib`.
 
 ## Download [↑](#download)
 ```
-wget https://github.com/briling/v/releases/download/v2.0/v.2.0 -O v
+wget https://github.com/briling/v/releases/latest/download/v
 chmod +x ./v
 ```
 
@@ -33,8 +33,10 @@ make v
 ```
 
 ### Requirements:
+To use:
 * `GNU/Linux` or `Cygwin`
 * `X11`
+To build:
 * `gcc >= 4.7`
 * `libX11-devel libXpm-devel xproto-devel` (`libx11-dev libxpm-dev x11proto-dev` on Ubuntu)
 * `make`
