@@ -28,54 +28,161 @@ void close_x(void) {
   XCloseDisplay  (dis);
 };
 
-static void setcolors(){
-  XColor
-  col[NCOLORS]={
-    [   0] .red = 0x9999, [   0] .green = 0x9999, [   0] .blue = 0x9999,
-    [   1] .red = 0xBFFF, [   1] .green = 0xBFFF, [   1] .blue = 0xBFFF, /* H  */
-    [   2] .red = 0xAAAA, [   2] .green = 0xFFFF, [   2] .blue = 0xFFFF, /* He */
-    [   6] .red = 0x5FFF, [   6] .green = 0x5FFF, [   6] .blue = 0x5FFF, /* C  */
-    [   5] .red = 0xFFFF, [   5] .green = 0xDDDD, [   5] .blue = 0xFFFF, /* P  */
-    [   7] .red = 0x1FFF, [   7] .green = 0x1FFF, [   7] .blue = 0xBFFF, /* N  */
-    [   8] .red = 0xBFFF, [   8] .green = 0x1FFF, [   8] .blue = 0x1FFF, /* O  */
-    [   9] .red = 0xF500, [   9] .green = 0xFFFF, [   9] .blue = 0x8500, /* F  */
-    [  10] .red = 0xAAAA, [  10] .green = 0xFFFF, [  10] .blue = 0xFFFF, /* Ne */
-    [  14] .red = 0x5FFF, [  14] .green = 0x5FFF, [  14] .blue = 0x5FFF, /* Si */
-    [  15] .red = 0xFFFF, [  15] .green = 0xCCCC, [  15] .blue = 0x9999, /* P  */
-    [  16] .red = 0xFFFF, [  16] .green = 0xEEEE, [  16] .blue = 0x1111, /* S  */
-    [  17] .red = 0xCCCC, [  17] .green = 0xFFFF, [  17] .blue = 0x9999, /* Cl */
-    [  18] .red = 0xAAAA, [  18] .green = 0xFFFF, [  18] .blue = 0xFFFF, /* Ar */
-    [  28] .red = 0x9999, [  28] .green = 0x5555, [  28] .blue = 0xFFFF, /* Ni */
-    [  29] .red = 0xBBBB, [  29] .green = 0x7777, [  29] .blue = 0x3333, /* Cu */
-    [  34] .red = 0xFFFF, [  34] .green = 0xAAAA, [  34] .blue = 0x1111, /* Se */
-    [  35] .red = 0xAAAA, [  35] .green = 0x4444, [  35] .blue = 0x0000, /* Br */
-    [  36] .red = 0xAAAA, [  36] .green = 0xFFFF, [  36] .blue = 0xFFFF, /* Kr */
-    [  46] .red = 0x0000, [  46] .green = 0x6666, [  46] .blue = 0x7777, /* Pd */
-    [  47] .red = 0xAAAA, [  47] .green = 0xAAAA, [  47] .blue = 0xAAAA, /* Ag */
-    [  53] .red = 0xAAAA, [  53] .green = 0x0000, [  53] .blue = 0xFFFF, /* I  */
-    [  54] .red = 0xAAAA, [  54] .green = 0xFFFF, [  54] .blue = 0xFFFF, /* Xe */
-    [  78] .red = 0x3333, [  78] .green = 0x9999, [  78] .blue = 0xDDDD, /* Pt */
-    [  79] .red = 0xFFFF, [  79] .green = 0xCCCC, [  79] .blue = 0x0000, /* Au */
-  };
+static void setcolors(colorscheme_t colorscheme){
 
-  for(int i=3;  i<5;  i++){ col[i] = col[0]; }
-  for(int i=11; i<14; i++){ col[i] = col[0]; }
-  for(int i=19; i<28; i++){ col[i] = col[0]; }
-  for(int i=30; i<34; i++){ col[i] = col[0]; }
-  for(int i=37; i<46; i++){ col[i] = col[0]; }
-  for(int i=48; i<53; i++){ col[i] = col[0]; }
-  for(int i=55; i<78; i++){ col[i] = col[0]; }
+  XColor c[NCOLORS] = {};
+
+  if(colorscheme==V_COLORS){
+    for(int i=0; i<NCOLORS; i++){
+      c[i] = (XColor){.red = 0x9999, .green = 0x9999, .blue = 0x9999};
+    }
+    c[  1] = (XColor){.red = 0xBFFF, .green = 0xBFFF, .blue = 0xBFFF}; /* H  */
+    c[  2] = (XColor){.red = 0xAAAA, .green = 0xFFFF, .blue = 0xFFFF}; /* He */
+    c[  6] = (XColor){.red = 0x5FFF, .green = 0x5FFF, .blue = 0x5FFF}; /* C  */
+    c[  5] = (XColor){.red = 0xFFFF, .green = 0xDDDD, .blue = 0xFFFF}; /* P  */
+    c[  7] = (XColor){.red = 0x1FFF, .green = 0x1FFF, .blue = 0xBFFF}; /* N  */
+    c[  8] = (XColor){.red = 0xBFFF, .green = 0x1FFF, .blue = 0x1FFF}; /* O  */
+    c[  9] = (XColor){.red = 0xF500, .green = 0xFFFF, .blue = 0x8500}; /* F  */
+    c[ 10] = (XColor){.red = 0xAAAA, .green = 0xFFFF, .blue = 0xFFFF}; /* Ne */
+    c[ 14] = (XColor){.red = 0x5FFF, .green = 0x5FFF, .blue = 0x5FFF}; /* Si */
+    c[ 15] = (XColor){.red = 0xFFFF, .green = 0xCCCC, .blue = 0x9999}; /* P  */
+    c[ 16] = (XColor){.red = 0xFFFF, .green = 0xEEEE, .blue = 0x1111}; /* S  */
+    c[ 17] = (XColor){.red = 0xCCCC, .green = 0xFFFF, .blue = 0x9999}; /* Cl */
+    c[ 18] = (XColor){.red = 0xAAAA, .green = 0xFFFF, .blue = 0xFFFF}; /* Ar */
+    c[ 28] = (XColor){.red = 0x9999, .green = 0x5555, .blue = 0xFFFF}; /* Ni */
+    c[ 29] = (XColor){.red = 0xBBBB, .green = 0x7777, .blue = 0x3333}; /* Cu */
+    c[ 34] = (XColor){.red = 0xFFFF, .green = 0xAAAA, .blue = 0x1111}; /* Se */
+    c[ 35] = (XColor){.red = 0xAAAA, .green = 0x4444, .blue = 0x0000}; /* Br */
+    c[ 36] = (XColor){.red = 0xAAAA, .green = 0xFFFF, .blue = 0xFFFF}; /* Kr */
+    c[ 46] = (XColor){.red = 0x0000, .green = 0x6666, .blue = 0x7777}; /* Pd */
+    c[ 47] = (XColor){.red = 0xAAAA, .green = 0xAAAA, .blue = 0xAAAA}; /* Ag */
+    c[ 53] = (XColor){.red = 0xAAAA, .green = 0x0000, .blue = 0xFFFF}; /* I  */
+    c[ 54] = (XColor){.red = 0xAAAA, .green = 0xFFFF, .blue = 0xFFFF}; /* Xe */
+    c[ 78] = (XColor){.red = 0x3333, .green = 0x9999, .blue = 0xDDDD}; /* Pt */
+    c[ 79] = (XColor){.red = 0xFFFF, .green = 0xCCCC, .blue = 0x0000}; /* Au */
+  }
+  else if(colorscheme==CPK_COLORS){
+    c[  0] = (XColor){.red = 0x9999, .green = 0x9999, .blue = 0x9999};
+    c[  1] = (XColor){.red = 0xBFFF, .green = 0xBFFF, .blue = 0xBFFF}; /* H  */
+    c[  2] = (XColor){.red = 0xD9D9, .green = 0xFFFF, .blue = 0xFFFF}; /* He */
+    c[  3] = (XColor){.red = 0xCCCC, .green = 0x8080, .blue = 0xFFFF}; /* Li */
+    c[  4] = (XColor){.red = 0xC2C2, .green = 0xFFFF, .blue = 0x0000}; /* Be */
+    c[  5] = (XColor){.red = 0xFFFF, .green = 0xB5B5, .blue = 0xB5B5}; /* B */
+    c[  6] = (XColor){.red = 0x5FFF, .green = 0x5FFF, .blue = 0x5FFF}; /* C  */
+    c[  7] = (XColor){.red = 0x1FFF, .green = 0x1FFF, .blue = 0xBFFF}; /* N  */
+    c[  8] = (XColor){.red = 0xBFFF, .green = 0x1FFF, .blue = 0x1FFF}; /* O  */
+    c[  9] = (XColor){.red = 0xF500, .green = 0xFFFF, .blue = 0x8500}; /* F  */
+    c[ 10] = (XColor){.red = 0xAAAA, .green = 0xFFFF, .blue = 0xFFFF}; /* Ne */
+    c[ 11] = (XColor){.red = 0xABAB, .green = 0x5C5C, .blue = 0xF2F2}; /* Na */
+    c[ 12] = (XColor){.red = 0x8A8A, .green = 0xFFFF, .blue = 0x0000}; /* Mg */
+    c[ 13] = (XColor){.red = 0xBFBF, .green = 0xA6A6, .blue = 0xA6A6}; /* Al */
+    c[ 14] = (XColor){.red = 0x5FFF, .green = 0x5FFF, .blue = 0x5FFF}; /* Si */
+    c[ 15] = (XColor){.red = 0xFFFF, .green = 0xCCCC, .blue = 0x9999}; /* P  */
+    c[ 16] = (XColor){.red = 0xFFFF, .green = 0xEEEE, .blue = 0x1111}; /* S  */
+    c[ 17] = (XColor){.red = 0xCCCC, .green = 0xFFFF, .blue = 0x9999}; /* Cl */
+    c[ 18] = (XColor){.red = 0xAAAA, .green = 0xFFFF, .blue = 0xFFFF}; /* Ar */
+    c[ 19] = (XColor){.red = 0x8F8F, .green = 0x4040, .blue = 0xD4D4}; /* K */
+    c[ 20] = (XColor){.red = 0x3D3D, .green = 0xFFFF, .blue = 0x0000}; /* Ca */
+    c[ 21] = (XColor){.red = 0xE6E6, .green = 0xE6E6, .blue = 0xE6E6}; /* Sc */
+    c[ 22] = (XColor){.red = 0xBFBF, .green = 0xC2C2, .blue = 0xC7C7}; /* Ti */
+    c[ 23] = (XColor){.red = 0xA6A6, .green = 0xA6A6, .blue = 0xABAB}; /* V */
+    c[ 24] = (XColor){.red = 0x8A8A, .green = 0x9999, .blue = 0xC7C7}; /* Cr */
+    c[ 25] = (XColor){.red = 0x9C9C, .green = 0x7A7A, .blue = 0xC7C7}; /* Mn */
+    c[ 26] = (XColor){.red = 0xDDDD, .green = 0x6666, .blue = 0x3333}; /* Fe */
+    c[ 27] = (XColor){.red = 0xEEEE, .green = 0x8888, .blue = 0x9999}; /* Co */
+    c[ 28] = (XColor){.red = 0x5050, .green = 0xD0D0, .blue = 0x5050}; /* Ni */
+    c[ 29] = (XColor){.red = 0xBBBB, .green = 0x7777, .blue = 0x3333}; /* Cu */
+    c[ 30] = (XColor){.red = 0x7D7D, .green = 0x8080, .blue = 0xB0B0}; /* Zn */
+    c[ 31] = (XColor){.red = 0xC2C2, .green = 0x8F8F, .blue = 0x8F8F}; /* Ga */
+    c[ 32] = (XColor){.red = 0x6666, .green = 0x8F8F, .blue = 0x8F8F}; /* Ge */
+    c[ 33] = (XColor){.red = 0xBDBD, .green = 0x8080, .blue = 0xE3E3}; /* As */
+    c[ 34] = (XColor){.red = 0xFFFF, .green = 0xAAAA, .blue = 0x1111}; /* Se */
+    c[ 35] = (XColor){.red = 0xAAAA, .green = 0x4444, .blue = 0x0000}; /* Br */
+    c[ 36] = (XColor){.red = 0xAAAA, .green = 0xFFFF, .blue = 0xFFFF}; /* Kr */
+    c[ 37] = (XColor){.red = 0x7070, .green = 0x2E2E, .blue = 0xB0B0}; /* Rb */
+    c[ 38] = (XColor){.red = 0x0000, .green = 0xFFFF, .blue = 0x0000}; /* Sr */
+    c[ 39] = (XColor){.red = 0x9494, .green = 0xFFFF, .blue = 0xFFFF}; /* Y */
+    c[ 40] = (XColor){.red = 0x9494, .green = 0xE0E0, .blue = 0xE0E0}; /* Zr */
+    c[ 41] = (XColor){.red = 0x7373, .green = 0xC2C2, .blue = 0xC9C9}; /* Nb */
+    c[ 42] = (XColor){.red = 0x5454, .green = 0xB5B5, .blue = 0xB5B5}; /* Mo */
+    c[ 43] = (XColor){.red = 0x3B3B, .green = 0x9E9E, .blue = 0x9E9E}; /* Tc */
+    c[ 44] = (XColor){.red = 0x2424, .green = 0x8F8F, .blue = 0x8F8F}; /* Ru */
+    c[ 45] = (XColor){.red = 0x0A0A, .green = 0x7D7D, .blue = 0x8C8C}; /* Rh */
+    c[ 46] = (XColor){.red = 0x0000, .green = 0x6969, .blue = 0x8585}; /* Pd */
+    c[ 47] = (XColor){.red = 0xC0C0, .green = 0xC0C0, .blue = 0xC0C0}; /* Ag */
+    c[ 48] = (XColor){.red = 0xFFFF, .green = 0xD9D9, .blue = 0x8F8F}; /* Cd */
+    c[ 49] = (XColor){.red = 0xA6A6, .green = 0x7575, .blue = 0x7373}; /* In */
+    c[ 50] = (XColor){.red = 0x6666, .green = 0x8080, .blue = 0x8080}; /* Sn */
+    c[ 51] = (XColor){.red = 0x9E9E, .green = 0x6363, .blue = 0xB5B5}; /* Sb */
+    c[ 52] = (XColor){.red = 0xD4D4, .green = 0x7A7A, .blue = 0x0000}; /* Te */
+    c[ 53] = (XColor){.red = 0x9494, .green = 0x0000, .blue = 0x9494}; /* I */
+    c[ 54] = (XColor){.red = 0x4242, .green = 0x9E9E, .blue = 0xB0B0}; /* Xe */
+    c[ 55] = (XColor){.red = 0x5757, .green = 0x1717, .blue = 0x8F8F}; /* Cs */
+    c[ 56] = (XColor){.red = 0x0000, .green = 0xC9C9, .blue = 0x0000}; /* Ba */
+    c[ 57] = (XColor){.red = 0x7070, .green = 0xD4D4, .blue = 0xFFFF}; /* La */
+    c[ 58] = (XColor){.red = 0xFFFF, .green = 0xFFFF, .blue = 0xC7C7}; /* Ce */
+    c[ 59] = (XColor){.red = 0xD9D9, .green = 0xFFFF, .blue = 0xC7C7}; /* Pr */
+    c[ 60] = (XColor){.red = 0xC7C7, .green = 0xFFFF, .blue = 0xC7C7}; /* Nd */
+    c[ 61] = (XColor){.red = 0xA3A3, .green = 0xFFFF, .blue = 0xC7C7}; /* Pm */
+    c[ 62] = (XColor){.red = 0x8F8F, .green = 0xFFFF, .blue = 0xC7C7}; /* Sm */
+    c[ 63] = (XColor){.red = 0x6161, .green = 0xFFFF, .blue = 0xC7C7}; /* Eu */
+    c[ 64] = (XColor){.red = 0x4545, .green = 0xFFFF, .blue = 0xC7C7}; /* Gd */
+    c[ 65] = (XColor){.red = 0x3030, .green = 0xFFFF, .blue = 0xC7C7}; /* Tb */
+    c[ 66] = (XColor){.red = 0x1F1F, .green = 0xFFFF, .blue = 0xC7C7}; /* Dy */
+    c[ 67] = (XColor){.red = 0x0000, .green = 0xFFFF, .blue = 0x9C9C}; /* Ho */
+    c[ 68] = (XColor){.red = 0x0000, .green = 0xE6E6, .blue = 0x7575}; /* Er */
+    c[ 69] = (XColor){.red = 0x0000, .green = 0xD4D4, .blue = 0x5252}; /* Tm */
+    c[ 70] = (XColor){.red = 0x0000, .green = 0xBFBF, .blue = 0x3838}; /* Yb */
+    c[ 71] = (XColor){.red = 0x0000, .green = 0xABAB, .blue = 0x2424}; /* Lu */
+    c[ 72] = (XColor){.red = 0x4D4D, .green = 0xC2C2, .blue = 0xFFFF}; /* Hf */
+    c[ 73] = (XColor){.red = 0x4D4D, .green = 0xA6A6, .blue = 0xFFFF}; /* Ta */
+    c[ 74] = (XColor){.red = 0x2121, .green = 0x9494, .blue = 0xD6D6}; /* W */
+    c[ 75] = (XColor){.red = 0x2626, .green = 0x7D7D, .blue = 0xABAB}; /* Re */
+    c[ 76] = (XColor){.red = 0x2626, .green = 0x6666, .blue = 0x9696}; /* Os */
+    c[ 77] = (XColor){.red = 0x1717, .green = 0x5454, .blue = 0x8787}; /* Ir */
+    c[ 78] = (XColor){.red = 0xD0D0, .green = 0xD0D0, .blue = 0xE0E0}; /* Pt */
+    c[ 79] = (XColor){.red = 0xFFFF, .green = 0xD1D1, .blue = 0x2323}; /* Au */
+    c[ 80] = (XColor){.red = 0xB8B8, .green = 0xB8B8, .blue = 0xD0D0}; /* Hg */
+    c[ 81] = (XColor){.red = 0xA6A6, .green = 0x5454, .blue = 0x4D4D}; /* Tl */
+    c[ 82] = (XColor){.red = 0x5757, .green = 0x5959, .blue = 0x6161}; /* Pb */
+    c[ 83] = (XColor){.red = 0x9E9E, .green = 0x4F4F, .blue = 0xB5B5}; /* Bi */
+    c[ 84] = (XColor){.red = 0xABAB, .green = 0x5C5C, .blue = 0x0000}; /* Po */
+    c[ 85] = (XColor){.red = 0x7575, .green = 0x4F4F, .blue = 0x4545}; /* At */
+    c[ 86] = (XColor){.red = 0x4242, .green = 0x8282, .blue = 0x9696}; /* Rn */
+    c[ 87] = (XColor){.red = 0x4242, .green = 0x0000, .blue = 0x6666}; /* Fr */
+    c[ 88] = (XColor){.red = 0x0000, .green = 0x7D7D, .blue = 0x0000}; /* Ra */
+    c[ 89] = (XColor){.red = 0x7070, .green = 0xABAB, .blue = 0xFAFA}; /* Ac */
+    c[ 90] = (XColor){.red = 0x0000, .green = 0xBABA, .blue = 0xFFFF}; /* Th */
+    c[ 91] = (XColor){.red = 0x0000, .green = 0xA1A1, .blue = 0xFFFF}; /* Pa */
+    c[ 92] = (XColor){.red = 0x0000, .green = 0x8F8F, .blue = 0xFFFF}; /* U */
+    c[ 93] = (XColor){.red = 0x0000, .green = 0x8080, .blue = 0xFFFF}; /* Np */
+    c[ 94] = (XColor){.red = 0x0000, .green = 0x6B6B, .blue = 0xFFFF}; /* Pu */
+    c[ 95] = (XColor){.red = 0x5454, .green = 0x5C5C, .blue = 0xF2F2}; /* Am */
+    c[ 96] = (XColor){.red = 0x7878, .green = 0x5C5C, .blue = 0xE3E3}; /* Cm */
+    c[ 97] = (XColor){.red = 0x8A8A, .green = 0x4F4F, .blue = 0xE3E3}; /* Bk */
+    c[ 98] = (XColor){.red = 0xA1A1, .green = 0x3636, .blue = 0xD4D4}; /* Cf */
+    c[ 99] = (XColor){.red = 0xB3B3, .green = 0x1F1F, .blue = 0xD4D4}; /* Es */
+    c[100] = (XColor){.red = 0xB3B3, .green = 0x1F1F, .blue = 0xBABA}; /* Fm */
+    c[101] = (XColor){.red = 0xB3B3, .green = 0x0D0D, .blue = 0xA6A6}; /* Md */
+    c[102] = (XColor){.red = 0xBDBD, .green = 0x0D0D, .blue = 0x8787}; /* No */
+    c[103] = (XColor){.red = 0xC7C7, .green = 0x0000, .blue = 0x6666}; /* Lr */
+    c[104] = (XColor){.red = 0xCCCC, .green = 0x0000, .blue = 0x5959}; /* Rf */
+    c[105] = (XColor){.red = 0xD1D1, .green = 0x0000, .blue = 0x4F4F}; /* Db */
+    c[106] = (XColor){.red = 0xD9D9, .green = 0x0000, .blue = 0x4545}; /* Sg */
+    c[107] = (XColor){.red = 0xE0E0, .green = 0x0000, .blue = 0x3838}; /* Bh */
+    c[108] = (XColor){.red = 0xE6E6, .green = 0x0000, .blue = 0x2E2E}; /* Hs */
+  }
 
   Colormap colmap = DefaultColormap(dis, DefaultScreen(dis));
   for(int i=0; i<NCOLORS; i++){
     gcc[i] = XCreateGC (dis, win, 0, 0);
-    XAllocColor(dis, colmap, col+i);
-    XSetForeground (dis, gcc[i], col[i].pixel);
+    XAllocColor(dis, colmap, c+i);
+    XSetForeground (dis, gcc[i], c[i].pixel);
   }
   return;
 }
 
-void init_x(const char * const capt){
+void init_x(const char * const capt, const colorscheme_t colorscheme){
 
   dis    = XOpenDisplay((char *)0);
   screen = DefaultScreen(dis);
@@ -115,7 +222,7 @@ void init_x(const char * const capt){
   XSetForeground (dis, gc_black, bp);
   XSetLineAttributes(dis, gc_dot[1], 0, 1, 0, 0);
 
-  setcolors();
+  setcolors(colorscheme);
 
   XClearWindow   (dis, win);
   XMapRaised     (dis, win);
