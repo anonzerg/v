@@ -1,10 +1,11 @@
 #include <ctype.h>
 #include "v.h"
 
-#define NATOMS  102
+#define NATOMS  118
+#define NRADII  92
 #define NAMELEN 3
 
-static const double ra[NATOMS+1] = {
+static const double ra[NRADII+1] = {
   1.0,
   0.455, 0.260, 1.885, 1.365, 1.105,
   0.910, 0.845, 0.780, 0.650, 0.520,
@@ -24,9 +25,7 @@ static const double ra[NATOMS+1] = {
   1.638, 1.638, 1.677, 1.742, 1.872,
   2.015, 2.002, 1.976, 1.989, 1.989,
   1.950, 3.510, 2.899, 2.431, 2.314,
-  2.093, 1.820, 1.820, 1.820, 1.820,
-  1.820, 1.820, 1.820, 1.820, 1.820,
-  1.820, 1.820
+  2.093, 1.820
 };
 
 static const char aname[NATOMS+1][NAMELEN]={
@@ -34,13 +33,14 @@ static const char aname[NATOMS+1][NAMELEN]={
 };
 
 double getradius(int q){
-  return ra[ abs(q)<=NATOMS ? abs(q) : 0 ];
+  q = abs(q);
+  return ra[ q<=NRADII ? q : ( q<=NATOMS? NRADII : 0) ];
 }
 
 double getmaxradius(int n, int * q){
   double r = 0.0;
   for(int i=0; i<n; i++){
-    r = MAX(r, ra[ q[i] ]);
+    r = MAX(r, getradius(q[i]));
   }
   return r;
 }
@@ -50,6 +50,7 @@ const char * getname(int q){
 }
 
 int get_element(styp s){
+
   char * s_end;
   long q = strtol(s, &s_end, 10);
   if(s_end != s) {
