@@ -79,6 +79,7 @@ static int cli_parse_arg(char * arg, drawpars * dp){
   double shell[2]={0};
   double tf = 0.0;
   double bmax = 0.0;
+  char ts[256] = "";
 
   int a0  = sscanf (arg, "vib:%d", &vib);
   int a1  = sscanf (arg, "dt:%lf", &tf);
@@ -92,13 +93,14 @@ static int cli_parse_arg(char * arg, drawpars * dp){
   int a9  = sscanf (arg, "frame:%d", &frame);
   int a10 = sscanf (arg, "center:%d", &(dp->center));
   int a11 = sscanf (arg, "inertia:%d", &(dp->inertia));
-  int a12  = sscanf (arg, "com:%255s", dp->com);
-  int a13  = sscanf (arg, "exitcom:%255s", dp->on_exit);
+  int a12 = sscanf (arg, "com:%255s", dp->com);
+  int a13 = sscanf (arg, "exitcom:%255s", dp->on_exit);
+  int a14 = sscanf (arg, "colors:%255s", ts);
   int rot_count   = sscan_rot  (arg, rot);
   int cell_count  = sscan_cell (arg, cell);
   int shell_count = sscan_shell(arg, shell);
 
-  int cli = a0||a1||a2||a3||a4||a5||a6||a7||a8||a9||a10||a11||a12||a13 || rot_count||cell_count||shell_count;
+  int cli = a0||a1||a2||a3||a4||a5||a6||a7||a8||a9||a10||a11||a12||a13||a14 || rot_count||cell_count||shell_count;
 
   if(vib==0){
     dp->task = AT3COORDS;
@@ -119,6 +121,22 @@ static int cli_parse_arg(char * arg, drawpars * dp){
     dp->bmax = bmax;
   }
 
+  if(ts[0]){
+    const char * const colorscheme_names[] = {[V_COLORS] = "v", [CPK_COLORS] = "cpk"};
+    int ncs = sizeof(colorscheme_names)/sizeof(colorscheme_names[0]);
+    for(int i=0; i<ncs; i++){
+      int l0 = strlen(colorscheme_names[i]);
+      int l1 = strlen(ts);
+      if((l0==l1) && (!strncmp(ts, colorscheme_names[i], l0))){
+        dp->colors = i;
+        break;
+      }
+      if(i==ncs-1){
+        PRINT_WARN("unknown colorscheme %s. defaulting to %s\n", ts, colorscheme_names[V_COLORS]);
+      }
+    }
+  }
+
   if(rot_count==9){
     veccp(9, dp->ac3rmx, rot); // we don't check if the matrix is unitary
   }
@@ -137,7 +155,7 @@ static int cli_parse_arg(char * arg, drawpars * dp){
 }
 
 static drawpars dp_init(void){
-  drawpars dp;
+  drawpars dp = {};
   dp.task = UNKNOWN;
   dp.gui  = 1;
   dp.input = 0;
@@ -165,6 +183,7 @@ static drawpars dp_init(void){
   memset(dp.on_exit, 0, STRLEN);
   dp.input_files_n = 0;
   dp.input_files = NULL;
+  dp.colors = V_COLORS;
   // from data read
   dp.scale = 1.0;
   dp.N = 0;

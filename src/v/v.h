@@ -104,6 +104,8 @@ typedef struct {
 
   int  input_files_n;   // number of input files
   char ** input_files;  // input files
+                        //
+  colorscheme_t colors; // colorscheme (v or cpk)
 
 } drawpars;
 
