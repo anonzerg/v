@@ -180,7 +180,7 @@ D*h
 ![Organic crystal cell](figures/MOL_3525.xyz_1.gif)
 
 ---
-* Currently two colorschemes are supported (thanks to @iribirii)
+* Currently two colorschemes are supported (thanks to [@iribirii](https://))
 ```
 v mol/periodic.in bonds:0 colors:v    # default
 v mol/periodic.in bonds:0 colors:cpk
