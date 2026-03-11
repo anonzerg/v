@@ -5,9 +5,9 @@
 #define FREE0(PTR) { free(PTR); PTR = NULL; }
 
 struct {
-  int n_inp_mols;
-  inp_mols_t * inp_mols;
+  mol * inp_mols;
   char * out_str;
+  int n_inp_mols;
 } globals;
 
 char * main_wrap_out(int argc, char * argv[], int * ret) {
@@ -16,7 +16,7 @@ char * main_wrap_out(int argc, char * argv[], int * ret) {
   return globals.out_str;
 }
 
-int main_wrap_in(int argc, char * argv[], int n_inp_mols, inp_mols_t * inp_mols) {
+int main_wrap_in(int argc, char * argv[], int n_inp_mols, mol * inp_mols) {
   globals.inp_mols = inp_mols;
   globals.n_inp_mols = n_inp_mols;
   int ret = main(argc, argv);
@@ -26,7 +26,7 @@ int main_wrap_in(int argc, char * argv[], int n_inp_mols, inp_mols_t * inp_mols)
 }
 
 char * main_wrap_in_out(int argc, char * argv[],
-                        int n_inp_mols, inp_mols_t * inp_mols,
+                        int n_inp_mols, mol * inp_mols,
                         int * ret){
   globals.out_str = calloc(PRINTBUFLEN, 1);
   *ret = main_wrap_in(argc, argv, n_inp_mols, inp_mols);

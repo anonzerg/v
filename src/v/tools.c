@@ -87,10 +87,7 @@ void vibro_text(modestr * ms, drawpars * dp){
 void pg(atcoord * a, styp s, double symtol){
 
   int n = a->n;
-  mol m;
-  m.n = n;
-  m.q = a->q;
-  m.r = malloc(sizeof(double )*n*3);
+  mol m = {.n = n, .q = a->q, .r=malloc(sizeof(double)*n*3), .name=NULL};
   veccp  (n*3,  m.r, a->r);
   vecscal(n*3,  m.r, AB);
 

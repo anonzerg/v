@@ -46,7 +46,7 @@ atcoord * atcoord_fill(int n, txyz * a, const char * fname, int b, int center, i
     r3cp(m->r+i*3, a[i].r);
   }
   if(inertia){
-    mol M = {.n=m->n, .q=m->q, .r=m->r};
+    mol M = {.n=n, .q=m->q, .r=m->r, .name=NULL};
     position(&M, NULL, 1);
   }
   if(center){

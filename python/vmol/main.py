@@ -14,19 +14,30 @@ c_double_p = ctypes.POINTER(c_double)
 c_int_p = ctypes.POINTER(c_int)
 
 
-class inp_mols_t(ctypes.Structure):  # noqa: N801
-    """C structure for the input molecule data, containing the number of atoms, charge array, coordinate array, and name."""
+class mol_t(ctypes.Structure):  # noqa: N801
+    """C structure for the input molecule data, containing the number of atoms, charge array, coordinate array, and name.
+
+    Declared in src/mol/mol.h as
+    ```
+        typedef struct {
+          double * r;
+          int    * q;
+          char   * name;
+          int      n;
+        } mol;
+    ```
+    """
 
     _fields_ = (
-            ("n", c_int),
-            ("q", c_int_p),
             ("r", c_double_p),
+            ("q", c_int_p),
             ("name", c_char_p),
+            ("n", c_int),
             )
 
 
 ARGS_T = (c_int, ctypes.POINTER(ctypes.c_char_p))
-INP_MOLS_T = (c_int, ctypes.POINTER(inp_mols_t))
+INP_MOLS_T = (c_int, ctypes.POINTER(mol_t))
 
 
 def mol2struct(get_element, mol):
@@ -49,7 +60,7 @@ def mol2struct(get_element, mol):
         mol (dict or ase.atoms.Atoms-like): The molecule to convert.
 
     Returns:
-        inp_mols_t: An instance of `inp_mols_t` with the fields set according to the input molecule.
+        mol_t: An instance of `mol_t` with the fields set according to the input molecule.
 
     Raises:
         TypeError: If mol is not a dictionary.
@@ -103,7 +114,7 @@ def mol2struct(get_element, mol):
     n = c_int(n)
     q = q.ctypes.data_as(c_int_p)
     r = r.ctypes.data_as(c_double_p)
-    in_str = inp_mols_t(n=n, q=q, r=r, name=name)
+    in_str = mol_t(n=n, q=q, r=r, name=name)
     in_str._keepalive = (n, q, r, name)  # keep strong references
     return in_str
 
@@ -245,10 +256,10 @@ class VmolFunctions:
         ```
 
         If `add_molecules` is True, the function is also expected to take an integer
-        and a pointer to an array of `inp_mols_t` structures as additional arguments after the first two,
+        and a pointer to an array of `mol_t` structures as additional arguments after the first two,
         which represent the number of molecules and the molecule data, respectively, i.e.,
         ```
-        void func(int argc, char ** argv, int nmol, inp_mols_t * mols, ...) -> def wrapped_func(argv: list[str], mols: object or list[object], ...)
+        void func(int argc, char ** argv, int nmol, mol_t * mols, ...) -> def wrapped_func(argv: list[str], mols: object or list[object], ...)
         ```
         The decorator will convert a molecule or a list of molecules passed as the last argument to the wrapped function.
 
@@ -303,7 +314,7 @@ class VmolFunctions:
             argc, argv, _argv = make_array(args[0], c_char_p, convert_func=lambda x: x.encode('utf-8'))
             args.pop(0)
             if add_molecules:
-                nmol, mols, _mols = make_array(args[0], inp_mols_t, convert_func=lambda x: mol2struct(self.f.get_element, x))
+                nmol, mols, _mols = make_array(args[0], mol_t, convert_func=lambda x: mol2struct(self.f.get_element, x))
                 args.pop(0)
                 args = [nmol, mols, *args]
             args = [argc, argv, *args]

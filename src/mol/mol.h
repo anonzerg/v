@@ -6,6 +6,7 @@
 typedef struct {
   double * r;
   int    * q;
+  char   * name;
   int      n;
 } mol;
 

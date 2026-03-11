@@ -166,7 +166,7 @@ void * read_files(drawpars * dp){
   return ent;
 }
 
-atcoords * get_in_str(int N, inp_mols_t * inp_mols, drawpars * dp){
+atcoords * get_in_str(int N, mol * inp_mols, drawpars * dp){
 
   for(int i=0; i<dp->input_files_n; i++){
     PRINT_WARN("ignoring file '%s'\n", dp->input_files[i]);
@@ -188,7 +188,7 @@ atcoords * get_in_str(int N, inp_mols_t * inp_mols, drawpars * dp){
   txyz * xyz = malloc(sizeof(txyz)*nmax);
 
   for(int i=0; i<N; i++){
-    inp_mols_t * inmol = inp_mols + i;
+    mol * inmol = inp_mols + i;
     for(int i=0; i<inmol->n; i++){
       xyz[i].t = inmol->q[i];
       r3cp(xyz[i].r, inmol->r+i*3);
