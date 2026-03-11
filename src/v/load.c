@@ -166,7 +166,7 @@ void * read_files(drawpars * dp){
   return ent;
 }
 
-atcoords * get_in_str(int N, mol * inp_mols, drawpars * dp){
+atcoords * acs_from_var(int n, mol * m, drawpars * dp){
 
   for(int i=0; i<dp->input_files_n; i++){
     PRINT_WARN("ignoring file '%s'\n", dp->input_files[i]);
@@ -177,30 +177,22 @@ atcoords * get_in_str(int N, mol * inp_mols, drawpars * dp){
   dp->task = AT3COORDS;
 
   atcoords * acs = malloc(sizeof(atcoords));
-  acs->Nmem = N;
+  acs->Nmem = acs->n = n;
   acs->m = malloc(acs->Nmem*sizeof(atcoord *));
-  acs->n = N;
 
-  int nmax = 0;
-  for(int i=0; i<N; i++){
-    nmax = MAX(nmax, inp_mols[i].n);
-  }
-  txyz * xyz = malloc(sizeof(txyz)*nmax);
-
-  for(int i=0; i<N; i++){
-    mol * inmol = inp_mols + i;
-    for(int i=0; i<inmol->n; i++){
-      xyz[i].t = inmol->q[i];
-      r3cp(xyz[i].r, inmol->r+i*3);
-    }
-    acs->m[i] = atcoord_fill(inmol->n, xyz, inmol->name, dp->b, dp->center, dp->inertia, dp->bohr);
+  for(int i=0; i<n; i++){
+    acs->m[i] = atcoord_fill(-1, m+i, NULL, dp->b, dp->center, dp->inertia, dp->bohr);
   }
 
-  free(xyz);
   fill_nf(acs, 0);
   dp->scale = acs_scale(acs);
   newmol_prep(acs, dp);
-  intcoord_check(nmax, dp->z);
+
+  int natmax = 0;
+  for(int i=0; i<n; i++){
+    natmax = MAX(natmax, m[i].n);
+  }
+  intcoord_check(natmax, dp->z);
 
   return acs;
 }

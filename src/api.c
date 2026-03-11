@@ -81,7 +81,7 @@ void * READ_FILES(drawpars * dp){
     ret = read_files(dp);
   }
   else{
-    ret = get_in_str(globals.n_inp_mols, globals.inp_mols, dp);
+    ret = acs_from_var(globals.n_inp_mols, globals.inp_mols, dp);
   }
   FREE0(dp->input_files);
   return ret;

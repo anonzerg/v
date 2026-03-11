@@ -1,11 +1,23 @@
 #include "v.h"
+#include "vecn.h"
 #include "vec3.h"
 
 
 #define END(S,X) ( (S)->X + (X##_size)/sizeof(*((S)->X)) )
 
 
-atcoord * atcoord_fill(int n, txyz * a, const char * fname, int b, int center, int inertia, int bohr){
+atcoord * atcoord_fill(int n_, void * a, const char * fname, int b, int center, int inertia, int bohr){
+
+  // n_>0 and fname is not NULL => a is (txyz *)
+  // n_<0 and fname is NULL     => a is (mol *)
+
+  int n;
+  if(n_<0){
+    n = ((mol *)a)->n;
+  }
+  else{
+    n = n_;
+  }
 
   size_t q_size = sizeof(int   ) * n;
   size_t r_size = sizeof(double) * n*3;
@@ -36,14 +48,26 @@ atcoord * atcoord_fill(int n, txyz * a, const char * fname, int b, int center, i
   }
 
   memset(m->sym, 0, sizeof(m->sym));
-  m->fname = fname;
 
-  for(int i=0; i<n; i++){
-    m->q[i] = a[i].t;
-    if(bohr){
-      r3scal(a[i].r, BA);
+  if(n_<0){
+    mol * m0 = a;
+    for(int i=0; i<n; i++){
+      m->q[i] = m0->q[i];
+      r3cp(m->r+i*3, m0->r+i*3);
     }
-    r3cp(m->r+i*3, a[i].r);
+    m->fname = m0->name;
+  }
+  else{
+    txyz * xyz = a;
+    for(int i=0; i<n; i++){
+      m->q[i] = xyz[i].t;
+      r3cp(m->r+i*3, xyz[i].r);
+    }
+    m->fname = fname;
+  }
+
+  if(bohr){
+    vecscal(n*3, m->r, BA);
   }
   if(inertia){
     mol M = {.n=n, .q=m->q, .r=m->r, .name=NULL};

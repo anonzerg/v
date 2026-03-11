@@ -116,7 +116,7 @@ typedef struct {
 
 
 // load.c
-atcoords * get_in_str(int N, mol * inp_mols, drawpars * dp);
+atcoords * acs_from_var(int n, mol * m, drawpars * dp);
 void acs_readmore  (FILE * f, int b, int center, int inertia, int bohr, atcoords * acs, const char * fname);
 void * read_files(drawpars * dp);
 // scale.c
@@ -125,7 +125,7 @@ double acs_scale(atcoords * acs);
 // mode_read.c
 modestr * mode_read(FILE * f, int na);
 // ac3_read*.c
-atcoord * atcoord_fill(int n, txyz * a, const char * fname, int b, int center, int inertia, int bohr);
+atcoord * atcoord_fill(int n_, void * a, const char * fname, int b, int center, int inertia, int bohr);
 atcoord * ac3_read(FILE * f, int b, int center, int inertia, int bohr, const char * fname, format_t * format);
 txyz * ac3_read_in (int * n_p, int * zmat, FILE * f);
 txyz * ac3_read_out(int * n_p, FILE * f);
