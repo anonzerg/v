@@ -1,6 +1,9 @@
 #include "v.h"
 #include "x.h"
 
+#define BOND_OFFSET 0.666          // bond line starts this fraction of the atom radius away from the atom center
+#define RESOL_SCALE (128.0/768.0)  // reference resolution for atom sizes
+
 extern int W,H;
 extern int       screen;
 extern Display * dis;
@@ -42,7 +45,7 @@ void ac3_draw(atcoord * ac, double r0, double scale, double xy0[2], int b, int n
   int   * ks = (b>0) ? malloc(sizeof(int)*n) : NULL;
 
   double d     = MIN(H,W) * scale;
-  double resol = MIN(H,W) * (128.0/768.0);
+  double resol = MIN(H,W) * RESOL_SCALE;
   double r1  = r0 * resol * scale;
 
   for(int k=0; k<n; k++){
@@ -99,7 +102,7 @@ void ac3_draw(atcoord * ac, double r0, double scale, double xy0[2], int b, int n
         if(r2d < 1e-15){
           continue;
         }
-        double dd = 0.666 * r / sqrt(r2d);
+        double dd = BOND_OFFSET * r / sqrt(r2d);
         XDrawLine(dis, canv, gc_black, x+dd*dx, y+dd*dy, x1, y1);
         if(b==2){
           char text[16];

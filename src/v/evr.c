@@ -8,6 +8,7 @@ static const double step_move = 0.2;
 static const double step_zoom = 1.1;
 static const double step_r    = 1.1;
 static const double step_mod  = 0.03125;
+static const double rl_move_pbc_scale = 0.9;
 
 static void redraw_ac3(void * ent, drawpars * dp){
   atcoord * ac = ((atcoords *)ent)->m[dp->n];
@@ -310,7 +311,7 @@ static void move_pbc(atcoords * acs, drawpars * dp, int dir, double d){
     }
     if(dp->b>0){
       acs->m[i]->bond_flag = 0;
-      acs->m[i]->bond_rl *= 0.9;
+      acs->m[i]->bond_rl *= rl_move_pbc_scale;
     }
   }
   return;

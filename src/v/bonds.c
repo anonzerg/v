@@ -1,6 +1,7 @@
 #include "v.h"
 #include "vec3.h"
 
+#define DMAX_SCALE 2.01  // look for bonds within max. atom diameter + eps
 #define boxnumber(BOX,NB) (BOX[0]*NB[1]*NB[2] + BOX[1]*NB[2] + BOX[2])
 
 static int cmpint(const void * p1, const void * p2){
@@ -34,7 +35,7 @@ static void makelist(int bsize_max, int * bsize, int * list,
 
 static void bonds_add(double rl, double bmax, atcoord * ac){
 
-  double dmax = (bmax > 0.0) ? bmax : (2.01 * rl * getmaxradius(ac->n, ac->q));
+  double dmax = (bmax > 0.0) ? bmax : (DMAX_SCALE * rl * getmaxradius(ac->n, ac->q));
 
   double rmin[3], rmax[3];
   r3cp(rmin, ac->r);

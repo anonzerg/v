@@ -2,6 +2,8 @@
 #include "x.h"
 #include "evr.h"
 
+#define VIBRO_SUBSTEPS 4
+
 extern int W,H;
 extern Display * dis;
 extern Window    win;
@@ -129,7 +131,7 @@ void main_loop(void * ent, drawpars * dp, ptf kp[NKP]){
          * because we need an XEvent to reiterate the main loop.
          * Alternatively, we can send an event manually.
          */
-        if(++tr == 4){
+        if(++tr == VIBRO_SUBSTEPS){
           tr = 0;
           dp->t++;
         }
