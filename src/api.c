@@ -12,6 +12,10 @@ struct {
 
 char * main_wrap_out(int argc, char * argv[], int * ret) {
   globals.out_str = calloc(PRINTBUFLEN, 1);
+  if(!globals.out_str){
+    *ret = -1;
+    return NULL;
+  }
   *ret = main(argc, argv);
   return globals.out_str;
 }
@@ -29,6 +33,10 @@ char * main_wrap_in_out(int argc, char * argv[],
                         int n_inp_mols, mol * inp_mols,
                         int * ret){
   globals.out_str = calloc(PRINTBUFLEN, 1);
+  if(!globals.out_str){
+    *ret = -1;
+    return NULL;
+  }
   *ret = main_wrap_in(argc, argv, n_inp_mols, inp_mols);
   return globals.out_str;
 }
@@ -65,7 +73,12 @@ void PRINTOUT(FILE * f, char * format, ...){
 
     if(m >= size){
       N = m < N ? N * 2 : N + 2*m;
-      globals.out_str = realloc(globals.out_str, N);
+      char * tmp = realloc(globals.out_str, N);
+      if(!tmp){
+        PRINT_ERR("cannot reallocate output buffer\n");
+        abort();
+      }
+      globals.out_str = tmp;
       va_start(args, format);
       vsnprintf(globals.out_str+n, N-n, format, args);
       va_end(args);

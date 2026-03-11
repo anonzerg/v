@@ -69,7 +69,9 @@ modestr * mode_read (FILE * f, int na){
       break;
     }
   }
-  fgets(s, sizeof(s), f);
+  if (!fgets(s, sizeof(s), f)){
+    return NULL;
+  }
   while(1){
     if (!fgets(s, sizeof(s), f)) {
       return NULL;
