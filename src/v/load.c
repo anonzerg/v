@@ -5,15 +5,29 @@
 
 #define N_MIN 256
 
-static inline int fill_nf(atcoords * acs, int n0){
+static inline void fill_nf(atcoords * acs, int n0){
   for(int j=n0; j<acs->n; j++){
     acs->m[j]->nf[0] = j-n0;
     acs->m[j]->nf[1] = acs->n-n0;
   }
-  return acs->n;
+  return;
 }
 
 void acs_readmore(FILE * f, int b, int center, int inertia, int bohr, atcoords * acs, const char * fname){
+
+  // needed to reset nf
+  int n0 = acs->n;
+  // if continue reading from a previously opened file, find the first molecule from it
+  if(ftell(f) && acs->n){
+    for(int i=1; i<=acs->n; i++){
+      int n1 = acs->n-i;
+      if(acs->m[n1]->nf[0]==0){
+        n0 = n1;
+        break;
+      }
+    }
+  }
+
   atcoord * m;
   format_t format = UNKNOWN_FORMAT;
   while((m = ac3_read(f, b, center, inertia, bohr, fname, &format))!=NULL){
@@ -31,6 +45,7 @@ void acs_readmore(FILE * f, int b, int center, int inertia, int bohr, atcoords *
     }
     acs->m[acs->n++] = m;
   }
+  fill_nf(acs, n0);
   return;
 }
 
@@ -124,7 +139,7 @@ void * read_files(drawpars * dp){
   // if the first file does not contain normal modes, try to read other files
   if(ent && (dp->task == AT3COORDS)){
     atcoords * acs = ent;
-    int n0 = fill_nf(acs, 0);
+    int n0 = acs->n;
     for(i++; i<fn; i++){
       FILE * f = acs_read_newfile(acs, flist[i], dp);
       if(!f){
@@ -137,7 +152,7 @@ void * read_files(drawpars * dp){
         fclose(dp->f);
         dp->f = f;
         dp->fname = flist[i];
-        n0 = fill_nf(acs, n0);
+        n0 = acs->n;
       }
     }
     dp->scale = acs_scale(acs);

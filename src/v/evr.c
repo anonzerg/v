@@ -66,6 +66,7 @@ void kp_readmore(void * ent, drawpars * dp){
       PRINT_ERR("cannot read from the file '%s'\n", dp->fname);
       return;
     }
+    fseek(dp->f, 0, SEEK_CUR);
     acs_readmore(dp->f, dp->b, dp->center, dp->inertia, dp->bohr, acs, dp->fname);
     newmol_prep(acs, dp);
     redraw_ac3 (acs, dp);
