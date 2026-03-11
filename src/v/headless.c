@@ -29,9 +29,9 @@ void run_commands(FILE * f, char * command, drawpars * dp, void * ent){
         kp_print(ent, dp); break;
       case('.'):
         {
-          styp sym;
-          pg(((atcoords *)ent)->m[dp->n], sym, dp->symtol);
-          PRINTOUT(stdout, "%s\n", sym);
+          atcoord * ac = ((atcoords *)ent)->m[dp->n];
+          pg(ac, dp->symtol);
+          PRINTOUT(stdout, "%s\n", ac->sym);
         }; break;
 
       case(' '):

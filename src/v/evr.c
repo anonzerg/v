@@ -491,7 +491,7 @@ void kp_pg(void * ent, drawpars * dp){
   if(dp->task == AT3COORDS){
     atcoord * ac = ((atcoords *)ent)->m[dp->n];
     if(!ac->sym[0]){
-      pg(ac, ac->sym, dp->symtol);
+      pg(ac, dp->symtol);
       redraw_ac3(ent, dp);
     }
   }

@@ -173,7 +173,7 @@ void acs_free(atcoords * acs);
 void newmol_prep(atcoords * acs, drawpars * dp);
 void ac3_text(atcoord * ac, drawpars * dp);
 void vibro_text(modestr * ms, drawpars * dp);
-void pg(atcoord * a, styp s, double symtol);
+void pg(atcoord * a, double symtol);
 
 // headless.c
 void run_commands(FILE * f, char * command, drawpars * dp, void * ent);

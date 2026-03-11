@@ -84,7 +84,7 @@ void vibro_text(modestr * ms, drawpars * dp){
   return;
 }
 
-void pg(atcoord * a, styp s, double symtol){
+void pg(atcoord * a, double symtol){
 
   int n = a->n;
   mol m = {.n = n, .q = a->q, .r=malloc(sizeof(double)*n*3), .name=NULL};
@@ -92,7 +92,7 @@ void pg(atcoord * a, styp s, double symtol){
   vecscal(n*3,  m.r, AB);
 
   molsym * ms = pointgroup(&m, symtol*AB);
-  strcpy(s, ms->s);
+  snprintf(a->sym, sizeof(styp), "%s", ms->s);
 
   free(m.r);
   free(ms);
