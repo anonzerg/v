@@ -4,6 +4,16 @@
 
 #define EPS 1e-10
 
+static inline void swap_ev(double d[3], double I_b[9], int i, int j){
+  double td = d[i];
+  d[i] = d[j];
+  d[j] = td;
+  double tb[3];
+  r3cp(tb, I_b+i*3);
+  r3cp(I_b+i*3, I_b+j*3);
+  r3cp(I_b+j*3, tb);
+}
+
 static const double amass[]={
   #include "masses.h"
 };
@@ -60,23 +70,18 @@ void position(mol * m, double d[3], int preserve_chirality){
   double I_b[9]={1,0,0, 0,1,0, 0,0,1};
   jacobi(I_t, I_b, d, 3, 1e-15, 20, NULL);
 
-#if 1
-#define SWITCH(I,J) { double td, tb[3];\
-                      td = d[I];          d[I] = d[J];            d[J] = td; \
-                      r3cp(tb, I_b+I*3);  r3cp(I_b+I*3, I_b+J*3); r3cp(I_b+J*3, tb); }
   //sort ev
-  if(d[0]<d[1]) SWITCH(0,1);
-  if(d[1]<d[2]) SWITCH(1,2);
-  if(d[0]<d[1]) SWITCH(0,1);
-  SWITCH(0,2);
+  if(d[0]<d[1]) swap_ev(d, I_b, 0, 1);
+  if(d[1]<d[2]) swap_ev(d, I_b, 1, 2);
+  if(d[0]<d[1]) swap_ev(d, I_b, 0, 1);
+  swap_ev(d, I_b, 0, 2);
   // make improper rotations proper
   if(preserve_chirality && mat3det(I_b)<0.0){
-    SWITCH(0,1);
+    swap_ev(d, I_b, 0, 1);
   }
   // rotate the molecule around y-axis by π
   r3scal(I_b,   -1.0);
   r3scal(I_b+6, -1.0);
-#endif
 
   for(int i=0; i<m->n; i++){
     double u[3];

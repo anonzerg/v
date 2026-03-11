@@ -57,13 +57,14 @@ int get_element(styp s){
     return (int)q;
   }
 
-  s[0] = toupper(s[0]);
+  styp ts = "";
+  ts[0] = toupper(s[0]);
   for(int i=1; s[i]; i++){
-    s[i] = tolower(s[i]);
+    ts[i] = tolower(s[i]);
   }
 
   for(int q=1; q<=NATOMS; q++){
-    if(!strncmp(s, aname[q], NAMELEN)){
+    if(!strncmp(ts, aname[q], NAMELEN)){
       return q;
     }
   }
