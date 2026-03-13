@@ -1,7 +1,7 @@
 #include "v.h"
 #include "evr.h"
 
-void run_commands(FILE * f, char * command, drawpars * dp, void * ent){
+void run_commands(FILE * f, char * command, drawpars * dp, object * ent){
   char * com = command;
   char c;
 
@@ -29,7 +29,7 @@ void run_commands(FILE * f, char * command, drawpars * dp, void * ent){
         kp_print(ent, dp); break;
       case('.'):
         {
-          atcoord * ac = ((atcoords *)ent)->m[dp->n];
+          atcoord * ac = ent->m[dp->n];
           pg(ac, dp->symtol);
           PRINTOUT(stdout, "%s\n", ac->sym);
         }; break;
@@ -47,8 +47,8 @@ void run_commands(FILE * f, char * command, drawpars * dp, void * ent){
   return;
 }
 
-int headless(drawpars * dp, void * ent){
-  atcoord * ac = ((atcoords *)ent)->m[dp->n];
+int headless(drawpars * dp, object * ent){
+  atcoord * ac = ent->m[dp->n];
   if(dp->b>0 && !ac->bond_flag){
     bonds_fill(dp->rl, dp->bmax, ac);
   }

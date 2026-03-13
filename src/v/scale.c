@@ -18,7 +18,7 @@ double ac3_scale(atcoord * ac){
   return VIEWPORT_FILL / sqrt(d2max);
 }
 
-double acs_scale(atcoords * acs){
+double acs_scale(object * acs){
   double d2max = ac3_scale(acs->m[0]);
   for(int i=1; i<acs->n; i++){
     d2max = MIN(ac3_scale(acs->m[i]), d2max);

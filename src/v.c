@@ -80,7 +80,7 @@ int main (int argc, char * argv[]) {
 
   drawpars dp = cli_parse(argc, argv);
 
-  void * ent = READ_FILES(&dp);
+  object * ent = READ_FILES(&dp);
 
   if(!ent){
     PRINT_ERR("no files to read\n");

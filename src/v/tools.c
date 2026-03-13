@@ -1,11 +1,11 @@
 #include "v.h"
 #include "sym.h"
 
-void ent_free(void * ent, drawpars * dp){
+void ent_free(object * ent, drawpars * dp){
   if (dp->task == VIBRO){
-    free(((vibrstr *)ent)->ac);
-    free(((vibrstr *)ent)->modes);
-    free(ent);
+    free(ent->vib.mode0);
+    free(ent->vib.modes);
+    acs_free(ent);
   }
   else if (dp->task == AT3COORDS){
     if(dp->f){
@@ -16,7 +16,7 @@ void ent_free(void * ent, drawpars * dp){
   return;
 }
 
-void acs_free(atcoords * acs){
+void acs_free(object * acs){
   for(int i=0; i<acs->n; i++){
     free(acs->m[i]);
   }
@@ -25,7 +25,7 @@ void acs_free(atcoords * acs){
   return;
 }
 
-void newmol_prep(atcoords * acs, drawpars * dp){
+void newmol_prep(object * acs, drawpars * dp){
   for(int j=dp->N; j<acs->n; j++){
     atcoord * ac = acs->m[j];
     for(int i=0; i<ac->n; i++){

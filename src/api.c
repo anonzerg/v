@@ -88,8 +88,8 @@ void PRINTOUT(FILE * f, char * format, ...){
   }
 }
 
-void * READ_FILES(drawpars * dp){
-  void * ret;
+object * READ_FILES(drawpars * dp){
+  object * ret;
   if(!globals.inp_mols){
     ret = read_files(dp);
   }

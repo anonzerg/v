@@ -42,11 +42,6 @@ typedef struct {
 } atcoord;
 
 typedef struct {
-  int n, Nmem;
-  atcoord ** m;
-} atcoords;
-
-typedef struct {
   int      n;
   double * f;
   double * d;
@@ -55,8 +50,21 @@ typedef struct {
 typedef struct {
   modestr * modes;
   double  * mode0;
-  atcoord * ac;
 } vibrstr;
+
+typedef struct {
+//
+//  object
+//
+  int n, Nmem;
+  atcoord ** m;
+//
+// vibrstr
+//
+vibrstr vib;
+//
+} object;
+
 
 typedef struct {
 
@@ -111,12 +119,12 @@ typedef struct {
 
 
 // load.c
-atcoords * acs_from_var(int n, mol * m, drawpars * dp);
-void acs_readmore  (FILE * f, int b, int center, int inertia, int bohr, atcoords * acs, const char * fname);
-void * read_files(drawpars * dp);
+object * acs_from_var(int n, mol * m, drawpars * dp);
+void acs_readmore  (FILE * f, int b, int center, int inertia, int bohr, object * acs, const char * fname);
+object * read_files(drawpars * dp);
 // scale.c
 double ac3_scale(atcoord * ac);
-double acs_scale(atcoords * acs);
+double acs_scale(object * acs);
 // mode_read.c
 modestr * mode_read(FILE * f, int na);
 // ac3_read*.c
@@ -133,7 +141,7 @@ void printman(FILE * f, char * exename);
 drawpars cli_parse(int argc, char ** argv);
 
 // loop.c
-void main_loop(void * ent, drawpars * dp, ptf kp[NKP]);
+void main_loop(object * ent, drawpars * dp, ptf kp[NKP]);
 
 // ac3_draw.c
 void ac3_draw      (atcoord * ac, double r0, double scale, double xy0[2], int b, int num);
@@ -164,21 +172,21 @@ int  savepic      (char * s);
 int process_x_input(drawpars * dp, void * event);
 
 // tools.c
-void ent_free(void * ent, drawpars * dp);
-void acs_free(atcoords * acs);
-void newmol_prep(atcoords * acs, drawpars * dp);
+void ent_free(object * ent, drawpars * dp);
+void acs_free(object * acs);
+void newmol_prep(object * acs, drawpars * dp);
 void ac3_text(atcoord * ac, drawpars * dp);
 void vibro_text(modestr * ms, drawpars * dp);
 void pg(atcoord * a, double symtol);
 
 // headless.c
-void run_commands(FILE * f, char * command, drawpars * dp, void * ent);
-int headless(drawpars * dp, void * ent);
+void run_commands(FILE * f, char * command, drawpars * dp, object * ent);
+int headless(drawpars * dp, object * ent);
 
 // main.c
 int main (int argc, char * argv[]);
 
 // api.c
 void PRINTOUT(FILE * f, char * format, ...);
-void * READ_FILES(drawpars * dp);
+object * READ_FILES(drawpars * dp);
 int SHOULD_PRINT_MAN(int argc);

@@ -8,7 +8,7 @@ extern int W,H;
 extern Display * dis;
 extern Window    win;
 
-void main_loop(void * ent, drawpars * dp, ptf kp[NKP]){
+void main_loop(object * ent, drawpars * dp, ptf kp[NKP]){
 
   // To handle window closing. Thanks to https://stackoverflow.com/a/1186544
   Atom wm_delete_window = XInternAtom(dis, "WM_DELETE_WINDOW", False);

@@ -5,7 +5,7 @@
 
 #define N_MIN 256
 
-static inline void fill_nf(atcoords * acs, int n0){
+static inline void fill_nf(object * acs, int n0){
   for(int j=n0; j<acs->n; j++){
     acs->m[j]->nf[0] = j-n0;
     acs->m[j]->nf[1] = acs->n-n0;
@@ -13,7 +13,7 @@ static inline void fill_nf(atcoords * acs, int n0){
   return;
 }
 
-void acs_readmore(FILE * f, int b, int center, int inertia, int bohr, atcoords * acs, const char * fname){
+void acs_readmore(FILE * f, int b, int center, int inertia, int bohr, object * acs, const char * fname){
 
   // needed to reset nf
   int n0 = acs->n;
@@ -49,7 +49,7 @@ void acs_readmore(FILE * f, int b, int center, int inertia, int bohr, atcoords *
   return;
 }
 
-static vibrstr * mode_read_try(FILE * f, atcoord * ac){
+static object * mode_read_try(FILE * f, atcoord * ac){
 
   long pos = ftell(f);
   rewind(f);
@@ -58,11 +58,13 @@ static vibrstr * mode_read_try(FILE * f, atcoord * ac){
   modestr * modes = mode_read(f, n);
 
   if(modes){
-    vibrstr * vib = malloc(sizeof(vibrstr) + sizeof(double)*n*3);
-    vib->ac    = ac;
-    vib->modes = modes;
-    vib->mode0 = (double *)(vib + 1);
-    veccp(n*3, vib->mode0, ac->r);
+    object * vib = malloc(sizeof(object));
+    vib->Nmem = vib->n = 1;
+    vib->m    = malloc(vib->Nmem*sizeof(atcoord *));
+    vib->m[0] = ac;
+    vib->vib.modes = modes;
+    vib->vib.mode0 = malloc(sizeof(double)*n*3);
+    veccp(n*3, vib->vib.mode0, ac->r);
     return vib;
   }
   else{
@@ -71,7 +73,7 @@ static vibrstr * mode_read_try(FILE * f, atcoord * ac){
   }
 }
 
-static FILE * acs_read_newfile(atcoords * acs, char * fname, drawpars * dp){
+static FILE * acs_read_newfile(object * acs, char * fname, drawpars * dp){
   FILE * f;
   if(!strcmp(fname, "-")){
     f = stdin;
@@ -86,9 +88,9 @@ static FILE * acs_read_newfile(atcoords * acs, char * fname, drawpars * dp){
   return f;
 }
 
-static void * ent_read(char * fname, drawpars * dp){
+static object * ent_read(char * fname, drawpars * dp){
 
-  atcoords * acs = malloc(sizeof(atcoords));
+  object * acs = malloc(sizeof(object));
   acs->Nmem = 0;
   acs->n = 0;
   acs->m = NULL;
@@ -101,13 +103,13 @@ static void * ent_read(char * fname, drawpars * dp){
   dp->fname = fname;
 
   if(dp->task==UNKNOWN || dp->task==VIBRO){
-    vibrstr * vib = mode_read_try(f, acs->m[acs->n-1]);
+    object * vib = mode_read_try(f, acs->m[acs->n-1]);
     if(vib){
       acs->n--;
       acs_free(acs);
       fclose(f);
-      dp->scale = ac3_scale(vib->ac);
-      dp->N = vib->modes->n;
+      dp->scale = ac3_scale(vib->m[0]);
+      dp->N = vib->vib.modes->n;
       dp->task = VIBRO;
       return vib;
     }
@@ -123,11 +125,11 @@ static void * ent_read(char * fname, drawpars * dp){
   return acs;
 }
 
-void * read_files(drawpars * dp){
+object * read_files(drawpars * dp){
 
   int fn = dp->input_files_n;
   char ** flist = dp->input_files;
-  void * ent = NULL;
+  object * ent = NULL;
   int i=0;
 
   // read the first available file
@@ -138,7 +140,7 @@ void * read_files(drawpars * dp){
 
   // if the first file does not contain normal modes, try to read other files
   if(ent && (dp->task == AT3COORDS)){
-    atcoords * acs = ent;
+    object * acs = ent;
     int n0 = acs->n;
     for(i++; i<fn; i++){
       FILE * f = acs_read_newfile(acs, flist[i], dp);
@@ -166,7 +168,7 @@ void * read_files(drawpars * dp){
   return ent;
 }
 
-atcoords * acs_from_var(int n, mol * m, drawpars * dp){
+object * acs_from_var(int n, mol * m, drawpars * dp){
 
   for(int i=0; i<dp->input_files_n; i++){
     PRINT_WARN("ignoring file '%s'\n", dp->input_files[i]);
@@ -176,7 +178,7 @@ atcoords * acs_from_var(int n, mol * m, drawpars * dp){
   }
   dp->task = AT3COORDS;
 
-  atcoords * acs = malloc(sizeof(atcoords));
+  object * acs = malloc(sizeof(object));
   acs->Nmem = acs->n = n;
   acs->m = malloc(acs->Nmem*sizeof(atcoord *));
 
