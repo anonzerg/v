@@ -2,22 +2,11 @@
 #include "vecn.h"
 #include "vec3.h"
 
-
 #define END(S,X) ( (S)->X + (X##_size)/sizeof(*((S)->X)) )
 
+atcoord * atcoord_fill(mol * m0, int b, int center, int inertia, int bohr){
 
-atcoord * atcoord_fill(int n_, void * a, const char * fname, int b, int center, int inertia, int bohr){
-
-  // n_>0 and fname is not NULL => a is (txyz *)
-  // n_<0 and fname is NULL     => a is (mol *)
-
-  int n;
-  if(n_<0){
-    n = ((mol *)a)->n;
-  }
-  else{
-    n = n_;
-  }
+  int n = m0->n;
 
   size_t q_size = sizeof(int   ) * n;
   size_t r_size = sizeof(double) * n*3;
@@ -49,29 +38,18 @@ atcoord * atcoord_fill(int n_, void * a, const char * fname, int b, int center, 
 
   memset(m->sym, 0, sizeof(m->sym));
 
-  if(n_<0){
-    mol * m0 = a;
-    for(int i=0; i<n; i++){
-      m->q[i] = m0->q[i];
-      r3cp(m->r+i*3, m0->r+i*3);
-    }
-    m->fname = m0->name;
+  for(int i=0; i<n; i++){
+    m->q[i] = m0->q[i];
+    r3cp(m->r+i*3, m0->r+i*3);
   }
-  else{
-    txyz * xyz = a;
-    for(int i=0; i<n; i++){
-      m->q[i] = xyz[i].t;
-      r3cp(m->r+i*3, xyz[i].r);
-    }
-    m->fname = fname;
-  }
+  m->fname = m0->name;
 
   if(bohr){
     vecscal(n*3, m->r, BA);
   }
   if(inertia){
-    mol M = {.n=n, .q=m->q, .r=m->r, .name=NULL};
-    position(&M, NULL, 1);
+    // should not change m0
+    position(&((mol){.n=n, .q=m->q, .r=m->r}), NULL, 1);
   }
   if(center){
     center_mol(n, m->r, center==2 ? m->q : NULL);
@@ -80,58 +58,49 @@ atcoord * atcoord_fill(int n_, void * a, const char * fname, int b, int center, 
   return m;
 }
 
-
 atcoord * ac3_read(FILE * f, int b, int center, int inertia, int bohr, const char * fname, format_t * format){
 
-  int n;
-  int zmat=0;
-  txyz * a;
+  mol * m = NULL;
 
   switch(*format){
     case XYZ:
-      if((a=ac3_read_xyz(&n, f))){
+      if((m=ac3_read_xyz(f))){
         *format = XYZ;
       }
       break;
     case IN:
-      if((a=ac3_read_in(&n, &zmat, f))){
+      if((m=ac3_read_in(f))){
         *format = IN;
       }
       break;
     case OUT:
-      if((a=ac3_read_out(&n, f))){
+      if((m=ac3_read_out(f))){
         *format = OUT;
       }
       break;
     default:
-      if((a=ac3_read_xyz(&n, f))){
+      if((m=ac3_read_xyz(f))){
         *format = XYZ;
       }
-      if(!a){
-        if((a=ac3_read_in(&n, &zmat, f))){
+      if(!m){
+        if((m=ac3_read_in(f))){
           *format = IN;
         }
       }
-      if(!a){
-        if((a=ac3_read_out(&n, f))){
+      if(!m){
+        if((m=ac3_read_out(f))){
           *format = OUT;
         }
       }
       break;
   }
-  if(!a){
+  if(!m){
     return NULL;
   }
+  m->name = fname;
 
-  atcoord * m = atcoord_fill(n, a, fname, b, center, inertia, bohr);
-
-#if 0
-  printf("%d\n\n", n);
-  for(int i=0; i<n; i++){
-    printf("%d\t%lf\t%lf\t%lf\n", m->q[i], m->r[i*3  ], m->r[i*3+1], m->r[i*3+2]);
-  }
-#endif
-  free(a);
-  return m;
+  atcoord * M = atcoord_fill(m, b, center, inertia, bohr);
+  free(m);
+  return M;
 }
 

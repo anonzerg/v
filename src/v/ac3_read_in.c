@@ -1,83 +1,93 @@
+#include <ctype.h>
 #include "v.h"
-#include "vec3.h"
-#define EPS 1e-15
 #include "3d.h"
+#include "vec3.h"
 
-static int zmat2cart(int    n,  txyz * mr,  double r[3],
-              int    a1, int    a2,  int    a3,
-              double R,  double phi, double theta){
-
-  if(n == 0){
-    r[0] = r[1] = r[2] = 0.0;
+int read_cart_atom(FILE * f, int n, mol * m){
+  int q;
+  double r[3];
+  int res = (fscanf(f, "%d%lf%lf%lf", &q, r, r+1, r+2)==4);
+  if(res && m){
+    m->q[n] = q;
+    r3cp(m->r+3*n, r);
   }
-
-  else if(n == 1){
-    r[0] = mr[a1].r[0];
-    r[1] = mr[a1].r[1] + R;
-    r[2] = mr[a1].r[2];
-  }
-
-  else if(n == 2){
-    r[0] = mr[a1].r[0] + R * sqrt( 1 - cos(phi)*cos(phi) );
-    r[1] = mr[a1].r[1] + ( (mr[a2].r[1]<mr[a1].r[1])?-1.0:+1.0 ) * R * cos(phi);
-    r[2] = mr[a1].r[2];
-  }
-
-  else{
-
-    double ab[3], bc[3];
-    double r1[3], r2[3];
-    double perp[3];
-    double rot[9];
-    double t;
-
-    double * a = mr[a1].r;
-    double * b = mr[a2].r;
-    double * c = mr[a3].r;
-
-    r3diff(ab, b, a);
-    t = r3dot(ab,ab);
-    if(t<EPS){
-      return 1;
-    }
-    r3scal(ab, 1.0/sqrt(t));
-
-    r3cp   (r1, a);
-    r3adds (r1, ab, R);
-
-    r3diff(bc, b, c);
-    r3x(perp, ab, bc);
-    t = r3dot(perp,perp);
-    if(t<EPS){
-      return 1;
-    }
-    r3scal(perp, 1.0/sqrt(t));
-
-    r3min (r1, a);
-    rotmx (rot, perp, -phi);
-    r3mx  (r2, r1, rot);
-    rotmx (rot, ab, theta);
-    r3mx  (r, r2, rot);
-    r3add (r, a);
-
-  }
-
-  return 0;
+  return res;
 }
 
-txyz * ac3_read_in(int * n_p, int * zmat, FILE * f){
+static int read_z_atom( FILE * f, int n, mol * m){
 
-  txyz * a = NULL;
+  int  res, q, a, b, c;
+  double R, phi, theta;
 
-  const double rd = M_PI/180.0;
-  int bohr = 0;
-  int zcf  = 0;
+  switch(n){
+    case 0:
+      res = (fscanf(f, "%d", &q) == 1);
+      break;
+    case 1:
+      res = (fscanf(f, "%d%d%lf", &q, &a, &R) == 3);
+      break;
+    case 2:
+      res = (fscanf(f, "%d%d%lf%d%lf", &q, &a, &R, &b, &phi) == 5);
+      break;
+    default:
+      res = (fscanf(f, "%d%d%lf%d%lf%d%lf", &q, &a, &R, &b, &phi, &c, &theta) == 7);
+      break;
+  }
+
+  if(res && m){
+    m->q[n] = q;
+    res = !zmat2cart(n, m->r+3*n,
+                     m->r+3*(a-1), m->r+3*(b-1), m->r+3*(c-1),
+                     R, phi*DEG2RAD, theta*DEG2RAD);
+  }
+  return res;
+}
+
+static inline int read_atom(FILE * f, int zmat, int n, mol * m){
+  if(zmat){
+    return read_z_atom(f, n, m);
+  }
+  else{
+    return read_cart_atom(f, n, m);
+  }
+}
+
+static int read_atoms(FILE * f, int zmat, mol * m){
   char s[STRLEN];
-  int    q;
-  double r[3];
-  double tf; char tc; styp ts; int ti1, ti2;
-  long pos = ftell(f);
+  int n = 0;
+  while (fscanf(f, " $%255s", s) != 1){
+    if(fscanf(f, "set =%255s", s)==1){
+      continue;
+    }
+    if(!read_atom(f, zmat, n, m)){
+      return 0;
+    }
+    // ignore the rest of the line
+    int tc;
+    while((tc=getc(f))!='\n'){
+      if(tc==EOF){
+        return 0;
+      }
+    }
+    n++;
+  }
+  return n;
+}
 
+static inline int strlcmp(const char * const s1, const char * const s2){
+  return strncmp(s1, s2, MIN(strlen(s1), strlen(s2)));
+}
+
+mol * ac3_read_in(FILE * f){
+
+  int bohr = 0;
+  int zmat = 0;
+  char s[STRLEN];
+  char key[STRLEN];
+  char val[STRLEN];
+  long pos0 = ftell(f);
+
+  // find where the molecule begins
   while(1){
     memset(s, '\0', sizeof(s));
     if(!fgets(s, sizeof(s), f)){
@@ -91,80 +101,56 @@ txyz * ac3_read_in(int * n_p, int * zmat, FILE * f){
       break;
     }
   }
+
+  // read the keyword block up until cart/zmat
   while (fscanf(f, " %255[^$ \n]", s) == 1) {
-    if (s[0] == 'u' ){
-      if ((*(strchr(s, '=')+1))=='b'){
-        bohr = 1;
+    for(int i=0; i<strlen(s); i++){
+      s[i] = tolower(s[i]);
+    }
+    if(sscanf(s, "%255[^=]=%255s", key, val)==2){
+      if(!strlcmp(key, "units")){
+        if(!strlcmp(val, "bohr")){
+          bohr = 1;
+        }
+        else if(!strlcmp(val, "angstrom")){
+          bohr = 0;
+        }
+        else{
+          PRINT_WARN("Unknown units in '%s'\n", s);
+        }
       }
     }
-    else if (! strncmp(s, "cartesian", 4) ){
-      zcf = 0;
+    else if(! strlcmp(s, "cartesian") ){
+      zmat = 0;
       break;
     }
-    else if( ! strncmp(s, "z-matrix", 1 ) ){
-      zcf = 1;
+    else if(! strlcmp(s, "z-matrix") ){
+      zmat = 1;
       break;
     }
   }
 
-  int n = 0;
-  while (fscanf(f, " $%255s", s) != 1){
-    if (zcf == 0){
-      if (fscanf(f, "%d%lf%lf%lf", &q, r, r+1, r+2) != 4){
-        if ( fscanf(f, " %255[^\n]", s) && strstr(s, "set")){
-          continue;
-        }
-        goto hell;
-      }
-    }
-    else if (zcf == 1){
-      int    sc;
-      int    a1, a2, a3;
-      double ab, ac, az;
-      switch(n){
-        case 0:
-          sc = (fscanf(f, "%d", &q) != 1);
-          break;
-        case 1:
-          sc = (fscanf(f, "%d%d%lf", &q, &a1, &ab) != 3);
-          break;
-        case 2:
-          sc = (fscanf(f, "%d%d%lf%d%lf", &q, &a1, &ab, &a2, &ac) != 5);
-          break;
-        default:
-          sc = (fscanf(f, "%d%d%lf%d%lf%d%lf", &q, &a1, &ab, &a2, &ac, &a3, &az) != 7);
-          break;
-      }
-      if(sc || zmat2cart(n, a, r, a1-1, a2-1, a3-1, ab, ac*rd, az*rd)){
-        if ( fscanf(f, " %255[^\n]", s) && strstr(s, "set")){
-          continue;
-        }
-        goto hell;
-      }
-    }
-    if(bohr == 1){
-      r3scal(r, BA);
-    }
-
-    a = realloc(a, sizeof(txyz)*(n+1));
-    a[n].t = q;
-    r3cp(a[n].r, r);
-
-    fscanf(f, " mass = %lf", &tf);
-    fscanf(f, " type = %7s", ts);
-    if (fscanf(f, " k%c",&tc) == 1){
-      do{
-        fscanf(f, "%d(%d)", &ti1, &ti2);
-      } while((char)getc(f)==',');
-    }
-
-    n++;
+  // count atoms
+  long pos1 = ftell(f);
+  int n = read_atoms(f, zmat, NULL);
+  if(!n){
+    goto hell;
   }
-  *n_p  = n;
-  *zmat = zcf;
-  return a;
+  fseek(f, pos1, SEEK_SET);
+
+  // fill in
+  mol * m = alloc_mol(n);
+  if(!read_atoms(f, zmat, m)){
+    // error in zmat conversion
+    free(m);
+    goto hell;
+  }
+  if(bohr){
+    vecscal(3*n, m->r, BA);
+  }
+  return m;
+
 hell:
-  fseek(f, pos, SEEK_SET);
-  free(a);
+  fseek(f, pos0, SEEK_SET);
   return NULL;
 }

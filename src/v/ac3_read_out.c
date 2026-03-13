@@ -1,12 +1,13 @@
 #include "v.h"
+#include "vec3.h"
+#include "mol.h"
 
-txyz * ac3_read_out(int * n_p, FILE * f){
+mol * ac3_read_out(FILE * f){
 
-  txyz * a = NULL;
-
+  // find where the molecule begins
   char s[STRLEN];
-  while (1){
-    if (!fgets(s, sizeof(s), f)) {
+  while(1){
+    if(!fgets(s, sizeof(s), f)){
       return NULL;
     }
     if(strstr(s, "Atomic Coordinates:")){
@@ -14,16 +15,22 @@ txyz * ac3_read_out(int * n_p, FILE * f){
     }
   }
 
-  int n = 0;
-  while(1) {
-    a = realloc(a, sizeof(txyz)*(n+1));
-    if (fscanf (f, "%d%lf%lf%lf",
-          &(a[n].t), a[n].r, a[n].r+1, a[n].r+2) != 4) {
-      break;
-    }
+  // count atoms
+  long pos = ftell(f);
+  int n=0;
+  while(read_cart_atom(f, n, NULL)){
     n++;
   }
+  if(!n){
+    return NULL;
+  }
+  fseek(f, pos, SEEK_SET);
 
-  *n_p = n;
-  return a;
+  // fill in
+  mol * m = alloc_mol(n);
+  for(int i=0; i<n; i++){
+    read_cart_atom(f, i, m);
+  }
+
+  return m;
 }

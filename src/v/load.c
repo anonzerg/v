@@ -181,7 +181,7 @@ atcoords * acs_from_var(int n, mol * m, drawpars * dp){
   acs->m = malloc(acs->Nmem*sizeof(atcoord *));
 
   for(int i=0; i<n; i++){
-    acs->m[i] = atcoord_fill(-1, m+i, NULL, dp->b, dp->center, dp->inertia, dp->bohr);
+    acs->m[i] = atcoord_fill(m+i, dp->b, dp->center, dp->inertia, dp->bohr);
   }
 
   fill_nf(acs, 0);

@@ -109,11 +109,6 @@ typedef struct {
 
 } drawpars;
 
-typedef struct {
-  int    t;
-  double r[3];
-} txyz;
-
 
 // load.c
 atcoords * acs_from_var(int n, mol * m, drawpars * dp);
@@ -125,11 +120,12 @@ double acs_scale(atcoords * acs);
 // mode_read.c
 modestr * mode_read(FILE * f, int na);
 // ac3_read*.c
-atcoord * atcoord_fill(int n_, void * a, const char * fname, int b, int center, int inertia, int bohr);
+int read_cart_atom(FILE * f, int n, mol * m);
+atcoord * atcoord_fill(mol * m, int b, int center, int inertia, int bohr);
 atcoord * ac3_read(FILE * f, int b, int center, int inertia, int bohr, const char * fname, format_t * format);
-txyz * ac3_read_in (int * n_p, int * zmat, FILE * f);
-txyz * ac3_read_out(int * n_p, FILE * f);
-txyz * ac3_read_xyz(int * n_p, FILE * f);
+mol * ac3_read_in (FILE * f);
+mol * ac3_read_out(FILE * f);
+mol * ac3_read_xyz(FILE * f);
 
 // man.c
 void printman(FILE * f, char * exename);
