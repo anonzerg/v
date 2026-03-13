@@ -37,16 +37,16 @@ static void redraw_ac3(object * ent, drawpars * dp){
 
 static void redraw_vibro(object * ent, drawpars * dp){
 
-  atcoord * m    = ent->m[0];
-  double  * r0   = ent->vib.mode0;
-  double  * mode = ent->vib.modes->d + dp->n * m->n*3;
+  atcoord * m  = ent->m[0];
+  double  * r0 = ent->vib->r0;
+  double  * dr = ent->vib->disp + dp->n * m->n*3;
 
   if(dp->b>0 && !m->bond_flag){
     bonds_fill(dp->rl, dp->bmax, m);
     m->bond_flag = 1;
   }
 
-  vecsums(m->n*3, m->r, r0, mode, sin( dp->t * 2.0*M_PI/TMAX ) * 0.1*sqrt(m->n) );
+  vecsums(m->n*3, m->r, r0, dr, sin( dp->t * 2.0*M_PI/TMAX ) * 0.1*sqrt(m->n) );
   for(int j=0; j<m->n; j++){
     double v[3];
     r3mx(v, m->r+3*j, dp->ac3rmx);
@@ -54,7 +54,7 @@ static void redraw_vibro(object * ent, drawpars * dp){
   }
 
   ac3_draw(m, dp->r, dp->scale, dp->xy0, dp->b, dp->num);
-  vibro_text(ent->vib.modes, dp);
+  vibro_text(ent->vib, dp);
 
   return;
 }
@@ -349,9 +349,12 @@ void kp_move_d(object * ent, drawpars * dp){
 
 void kp_exit(object * ent, drawpars * dp){
   run_commands(NULL, dp->on_exit, dp, ent);
-  ent_free(ent, dp);
-  close_x();
+  obj_free(ent);
+  if(dp->f){
+    fclose(dp->f);
+  }
   dp->closed = 1;
+  close_x();
 }
 
 void kp_fw_toggle(object * ent __attribute__ ((unused)), drawpars * dp){

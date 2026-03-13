@@ -35,7 +35,7 @@ void acs_readmore(FILE * f, int b, int center, int inertia, int bohr, object * a
       int N = acs->Nmem ? acs->Nmem*2 : N_MIN;
       atcoord ** ms = realloc(acs->m, N*sizeof(atcoord *));
       if(!ms){
-        acs_free(acs);
+        obj_free(acs);
         free(m);
         PRINT_ERR("cannot reallocate memory\n");
         abort();
@@ -55,17 +55,16 @@ static object * mode_read_try(FILE * f, atcoord * ac){
   rewind(f);
 
   int n = ac->n;
-  modestr * modes = mode_read(f, n);
+  vibr_t * modes = mode_read(f, n);
 
   if(modes){
-    object * vib = malloc(sizeof(object));
-    vib->Nmem = vib->n = 1;
-    vib->m    = malloc(vib->Nmem*sizeof(atcoord *));
-    vib->m[0] = ac;
-    vib->vib.modes = modes;
-    vib->vib.mode0 = malloc(sizeof(double)*n*3);
-    veccp(n*3, vib->vib.mode0, ac->r);
-    return vib;
+    object * ent = malloc(sizeof(object));
+    ent->Nmem  = ent->n = 1;
+    ent->m     = malloc(ent->Nmem*sizeof(atcoord *));
+    ent->m[0]  = ac;
+    ent->vib   = modes;
+    veccp(n*3, ent->vib->r0, ac->r);
+    return ent;
   }
   else{
     fseek(f, pos, SEEK_SET);
@@ -94,6 +93,7 @@ static object * ent_read(char * fname, drawpars * dp){
   acs->Nmem = 0;
   acs->n = 0;
   acs->m = NULL;
+  acs->vib = NULL;
 
   FILE * f = acs_read_newfile(acs, fname, dp);
   if(!f || !acs->n){
@@ -106,10 +106,10 @@ static object * ent_read(char * fname, drawpars * dp){
     object * vib = mode_read_try(f, acs->m[acs->n-1]);
     if(vib){
       acs->n--;
-      acs_free(acs);
+      obj_free(acs);
       fclose(f);
       dp->scale = ac3_scale(vib->m[0]);
-      dp->N = vib->vib.modes->n;
+      dp->N = vib->vib->n;
       dp->task = VIBRO;
       return vib;
     }
@@ -181,6 +181,7 @@ object * acs_from_var(int n, mol * m, drawpars * dp){
   object * acs = malloc(sizeof(object));
   acs->Nmem = acs->n = n;
   acs->m = malloc(acs->Nmem*sizeof(atcoord *));
+  acs->vib = NULL;
 
   for(int i=0; i<n; i++){
     acs->m[i] = atcoord_fill(m+i, dp->b, dp->center, dp->inertia, dp->bohr);

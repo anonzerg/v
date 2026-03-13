@@ -53,6 +53,9 @@ int headless(drawpars * dp, object * ent){
     bonds_fill(dp->rl, dp->bmax, ac);
   }
   run_commands(stdin, dp->com, dp, ent);
-  ent_free(ent, dp);
+  obj_free(ent);
+  if(dp->f){
+    fclose(dp->f);
+  }
   return 0;
 }

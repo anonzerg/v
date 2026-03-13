@@ -1,27 +1,15 @@
 #include "v.h"
 #include "sym.h"
 
-void ent_free(object * ent, drawpars * dp){
-  if (dp->task == VIBRO){
-    free(ent->vib.mode0);
-    free(ent->vib.modes);
-    acs_free(ent);
+void obj_free(object * ent){
+  if(ent->vib){
+    free(ent->vib);
   }
-  else if (dp->task == AT3COORDS){
-    if(dp->f){
-      fclose(dp->f);
-    }
-    acs_free(ent);
+  for(int i=0; i<ent->n; i++){
+    free(ent->m[i]);
   }
-  return;
-}
-
-void acs_free(object * acs){
-  for(int i=0; i<acs->n; i++){
-    free(acs->m[i]);
-  }
-  free(acs->m);
-  free(acs);
+  free(ent->m);
+  free(ent);
   return;
 }
 
@@ -68,9 +56,9 @@ void ac3_text(atcoord * ac, drawpars * dp){
   return;
 }
 
-void vibro_text(modestr * ms, drawpars * dp){
+void vibro_text(vibr_t * ms, drawpars * dp){
   char text[STRLEN];
-  double fq = ms->f[dp->n];
+  double fq = ms->freq[dp->n];
   char i = fq > 0.0 ? ' ' : 'i';
   snprintf(text, sizeof(text),
            "%*d / %d   %.1lf%c   r = %.1lf   rl = %.1lf",

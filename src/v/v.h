@@ -43,28 +43,16 @@ typedef struct {
 
 typedef struct {
   int      n;
-  double * f;
-  double * d;
-} modestr;
+  double * freq;
+  double * disp;
+  double * r0;
+} vibr_t;
 
 typedef struct {
-  modestr * modes;
-  double  * mode0;
-} vibrstr;
-
-typedef struct {
-//
-//  object
-//
   int n, Nmem;
   atcoord ** m;
-//
-// vibrstr
-//
-vibrstr vib;
-//
+  vibr_t * vib;
 } object;
-
 
 typedef struct {
 
@@ -126,7 +114,7 @@ object * read_files(drawpars * dp);
 double ac3_scale(atcoord * ac);
 double acs_scale(object * acs);
 // mode_read.c
-modestr * mode_read(FILE * f, int na);
+vibr_t * mode_read(FILE * f, int na);
 // ac3_read*.c
 int read_cart_atom(FILE * f, int n, mol * m);
 atcoord * atcoord_fill(mol * m, int b, int center, int inertia, int bohr);
@@ -172,11 +160,10 @@ int  savepic      (char * s);
 int process_x_input(drawpars * dp, void * event);
 
 // tools.c
-void ent_free(object * ent, drawpars * dp);
-void acs_free(object * acs);
+void obj_free(object * ent);
 void newmol_prep(object * acs, drawpars * dp);
 void ac3_text(atcoord * ac, drawpars * dp);
-void vibro_text(modestr * ms, drawpars * dp);
+void vibro_text(vibr_t * ms, drawpars * dp);
 void pg(atcoord * a, double symtol);
 
 // headless.c

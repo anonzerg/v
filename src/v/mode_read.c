@@ -1,6 +1,6 @@
 #include "v.h"
 
-static int readb(FILE * f, int i, int Nmax, int N, int na, modestr * m){
+static int readb(FILE * f, int i, int Nmax, int N, int na, vibr_t * m){
   double d;
   char   s[STRLEN];
   int    t,k,j;
@@ -21,7 +21,7 @@ static int readb(FILE * f, int i, int Nmax, int N, int na, modestr * m){
     if(s[1]=='i'){
       d = -d;
     }
-    m->f[i*Nmax+j] = d;
+    m->freq[i*Nmax+j] = d;
   }
 
   if (!fgets(s, sizeof(s), f)) {
@@ -41,7 +41,7 @@ static int readb(FILE * f, int i, int Nmax, int N, int na, modestr * m){
       if (fscanf (f, "%lf", &d) != 1) {
         return -1;
       }
-      m->d[3*na*(i*Nmax+j)+k] = d;
+      m->disp[3*na*(i*Nmax+j)+k] = d;
     }
   }
 #if 0
@@ -55,7 +55,7 @@ static int readb(FILE * f, int i, int Nmax, int N, int na, modestr * m){
   return 0;
 }
 
-modestr * mode_read (FILE * f, int na){
+vibr_t * mode_read (FILE * f, int na){
 
   const int N = 6;
   int  n = 0;
@@ -84,11 +84,12 @@ modestr * mode_read (FILE * f, int na){
     }
   }
 
-  size_t size = sizeof(modestr) + n*sizeof(double) + n*na*3*sizeof(double);
-  modestr * m = malloc(size);
-  m->n = n;
-  m->f = (double *)(m+1);
-  m->d = m->f+n;
+  size_t size = sizeof(vibr_t) + n*sizeof(double) + n*na*3*sizeof(double) + na*3*sizeof(double);
+  vibr_t * m = malloc(size);
+  m->n    = n;
+  m->freq = (double *)(m+1);
+  m->r0   = m->freq+n;
+  m->disp = m->r0+3*na;
 
   for (int i=0; i<3; i++){
     if (!fgets(s, sizeof(s), f)) {
