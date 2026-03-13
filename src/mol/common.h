@@ -6,6 +6,8 @@
 #define   BA    0.5291772
 #define   AB    1.88972616356109068947
 
+#define MEM_END(S,X) ( (S)->X + (X##_size)/sizeof(*((S)->X)) )
+
 #define MAX(x,y) ( ((x) > (y)) ? (x) : (y) )
 #define MIN(x,y) ( ((x) < (y)) ? (x) : (y) )
 

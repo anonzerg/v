@@ -11,10 +11,13 @@ typedef struct {
 } mol;
 
 static inline mol * alloc_mol(int n){
-  mol * m = calloc(sizeof(mol)+3*n*sizeof(double)+n*sizeof(int), 1);
+  size_t r_size = sizeof(double) * n*3;
+  size_t q_size = sizeof(int   ) * n;
+  mol * m = calloc(sizeof(mol)+r_size+q_size, 1);
+  m->r = (double *) (m + 1);
+  m->q = (int    *) MEM_END(m, r);
+  m->name = NULL;
   m->n = n;
-  m->r = (double *)(m + 1);
-  m->q = (int *)(m->r + 3*n);
   return m;
 }
 

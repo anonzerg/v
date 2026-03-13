@@ -2,8 +2,6 @@
 #include "vecn.h"
 #include "vec3.h"
 
-#define END(S,X) ( (S)->X + (X##_size)/sizeof(*((S)->X)) )
-
 atcoord * atcoord_fill(mol * m0, int b, int center, int inertia, int bohr){
 
   int n = m0->n;
@@ -18,9 +16,9 @@ atcoord * atcoord_fill(mol * m0, int b, int center, int inertia, int bohr){
     m = malloc(size);
     m->n = n;
     m->r      = (double *) (m + 1);
-    m->bond_r = (double *) END(m,r);
-    m->q      = (int    *) END(m,bond_r);
-    m->bond_a = (int    *) END(m,q);
+    m->bond_r = (double *) MEM_END(m,r);
+    m->q      = (int    *) MEM_END(m,bond_r);
+    m->bond_a = (int    *) MEM_END(m,q);
     m->bond_flag = 0;
     m->bond_rl = 0.0;
   }
@@ -30,7 +28,7 @@ atcoord * atcoord_fill(mol * m0, int b, int center, int inertia, int bohr){
     m->n = n;
     m->r      = (double *) (m + 1);
     m->bond_r = NULL;
-    m->q      = (int    *) END(m,r);
+    m->q      = (int    *) MEM_END(m,r);
     m->bond_a = NULL;
     m->bond_flag = -1;
     m->bond_rl = 0.0;

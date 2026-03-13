@@ -1,5 +1,17 @@
 #include "sym.h"
 
+static inline molsym * alloc_molsym(int a, int mssize){
+  size_t r_size = sizeof(double) * mssize*3;
+  size_t o_size = sizeof(int   ) * mssize;
+  size_t e_size = sizeof(elsym ) * mssize;
+  molsym * ms = calloc(sizeof(molsym)+ e_size + o_size + r_size, 1);
+  ms->r = (double *) (ms+1);
+  ms->o = (int    *) MEM_END(ms,r);
+  ms->e = (elsym  *) MEM_END(ms,o);
+  ms->a = a;
+  return ms;
+}
+
 static inline int isnew(int N, double * R, double r[3], double eps2){
   for(int i=0; i<N; i++){
     double t = fabs(r3d2(R+i*3, r));
@@ -354,12 +366,7 @@ molsym * pointgroup(mol * m, double eps){
 
 #define PRINTSYMEL(MS,I) //printf("\t%d %d %lf %lf %lf\n", MS->e[(I)], MS->o[(I)], MS->r[(I)*3], MS->r[(I)*3+1], MS->r[(I)*3+2]);
 #define MSSIZE 4
-  molsym * ms = malloc(sizeof(molsym)+MSSIZE*(sizeof(elsym)+sizeof(int)+3*sizeof(double)));
-  ms->a = m->n;
-  ms->n = 0;
-  ms->r = (double *)(ms+1);
-  ms->o = (int    *)(ms->r + MSSIZE*3);
-  ms->e = (elsym  *)(ms->o + MSSIZE);
+  molsym * ms = alloc_molsym(m->n, MSSIZE);
 
   double d[3];
   position(m, d, 0);
