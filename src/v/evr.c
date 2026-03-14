@@ -3,12 +3,15 @@
 #include "evr.h"
 #include "vec3.h"
 
+#define EPS_INV 1e-15
+
 static const double step_rot  = M_PI/90.0;
 static const double step_move = 0.2;
 static const double step_zoom = 1.1;
 static const double step_r    = 1.1;
 static const double step_mod  = 0.03125;
 static const double rl_move_pbc_scale = 0.9;
+static const double vibration_amplitude = 0.1;
 
 static void redraw_ac3(object * ent, drawpars * dp){
   atcoord * ac = ent->m[dp->n];
@@ -44,7 +47,7 @@ static void redraw_vibro(object * ent, drawpars * dp){
     bonds_fill(dp->bond, m);
   }
 
-  vecsums(m->n*3, m->r, r0, dr, sin( dp->anim.t * 2.0*M_PI/TMAX ) * 0.1*sqrt(m->n) );
+  vecsums(m->n*3, m->r, r0, dr, sin( dp->anim.t * 2.0*M_PI/TMAX ) * vibration_amplitude*sqrt(m->n) );
   for(int j=0; j<m->n; j++){
     double v[3];
     r3mx(v, m->r+3*j, dp->rend.ac3rmx);
@@ -277,7 +280,7 @@ static void mol2cell(double r0[3], drawpars * dp){
   double mat[9], r[3];
   veccp(9, mat, dp->rend.ac3rmx);
   r3cp(r, r0);
-  mx_inv (3, 1, r, mat, 1e-15);
+  mx_inv (3, 1, r, mat, EPS_INV);
   double rcell[3];
   r3mx(rcell, r, dp->cell.rot_to_cell_basis);
   for(int i=0; i<3; i++){

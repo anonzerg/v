@@ -3,6 +3,8 @@
 #include "vec3.h"
 
 #define EPS 1e-10
+#define EIGEN_EPS 1e-15
+#define EIGEN_NIT 20
 
 static inline void swap_ev(double d[3], double I_b[9], int i, int j){
   double td = d[i];
@@ -68,7 +70,7 @@ void position(mol * m, double d[3], int preserve_chirality){
     I_t[mpos(1,2)] -= tm * (y*z);       //Iyz
   }
   double I_b[9]={1,0,0, 0,1,0, 0,0,1};
-  jacobi(I_t, I_b, d, 3, 1e-15, 20, NULL);
+  jacobi(I_t, I_b, d, 3, EIGEN_EPS, EIGEN_NIT, NULL);
 
   //sort ev
   if(d[0]<d[1]) swap_ev(d, I_b, 0, 1);

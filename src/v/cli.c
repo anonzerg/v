@@ -3,7 +3,7 @@
 #include "matrix.h"
 #include "vec3.h"
 
-#define EPS2 1e-15
+#define EPS_INV 1e-15
 
 static int lazysscanf(char * const s, const char * const template, char ** ret){
   // if the string `s` begins with the template,
@@ -85,7 +85,7 @@ static int sscan_cell(const char * arg, cellpars * cp){
                                 a[2], b[2], c[2]};
   veccp(9,     cp->rot_to_lab_basis, rot_to_lab_basis);
   mx_id(3,     cp->rot_to_cell_basis);
-  mx_inv(3, 3, cp->rot_to_cell_basis, rot_to_lab_basis, EPS2);
+  mx_inv(3, 3, cp->rot_to_cell_basis, rot_to_lab_basis, EPS_INV);
 
   cp->vert = 1;
   return 1;
@@ -151,7 +151,7 @@ static int cli_parse_arg(char * arg, allpars * ap){
   }
 
   if(tf>0.0){
-    dp->anim.dt = ceil(tf*1e6);
+    dp->anim.dt = ceil(tf*S_TO_MS);
   }
 
   if(bmax>0.0){

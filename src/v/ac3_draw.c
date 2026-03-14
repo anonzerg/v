@@ -1,6 +1,7 @@
 #include "v.h"
 #include "x.h"
 
+#define EPS 1e-15
 #define BOND_OFFSET 0.666          // bond line starts this fraction of the atom radius away from the atom center
 #define RESOL_SCALE (128.0/768.0)  // reference resolution for atom sizes
 
@@ -99,7 +100,7 @@ void ac3_draw(atcoord * ac, rendpars rend){
         int dx = x1-x;
         int dy = y1-y;
         double r2d = dx*dx+dy*dy;
-        if(r2d < 1e-15){
+        if(r2d < EPS){
           continue;
         }
         double dd = BOND_OFFSET * r / sqrt(r2d);
