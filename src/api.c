@@ -2,7 +2,6 @@
 #include "v.h"
 
 #define PRINTBUFLEN (1024*128)
-#define FREE0(PTR) { free(PTR); PTR = NULL; }
 
 struct {
   mol * inp_mols;
@@ -88,15 +87,15 @@ void PRINTOUT(FILE * f, char * format, ...){
   }
 }
 
-object * READ_FILES(drawpars * dp){
+object * READ_FILES(allpars * ap){
   object * ret;
   if(!globals.inp_mols){
-    ret = read_files(dp);
+    ret = read_files(ap);
   }
   else{
-    ret = acs_from_var(globals.n_inp_mols, globals.inp_mols, dp);
+    ret = acs_from_var(globals.n_inp_mols, globals.inp_mols, ap);
   }
-  FREE0(dp->input_files);
+  FREE0(ap->ip.input_files);
   return ret;
 }
 

@@ -8,13 +8,9 @@
 #define STRLEN 256
 #define BIGSTRLEN 4096
 
-typedef void (* ptf )();
+#include "pars.h"
 
-typedef enum {
-  UNKNOWN,
-  AT3COORDS,
-  VIBRO,
-} task_t;
+typedef void (* ptf )();
 
 typedef enum {
   UNKNOWN_FORMAT,
@@ -22,11 +18,6 @@ typedef enum {
   IN,
   OUT,
 } format_t;
-
-typedef enum {
-  V_COLORS,
-  CPK_COLORS,
-} colorscheme_t;
 
 typedef struct {
   int      n;            // number of atoms
@@ -54,62 +45,11 @@ typedef struct {
   vibr_t * vib;
 } object;
 
-typedef struct {
-
-  task_t task;          // data type
-  unsigned int dt;      // animation timeout
-  char fontname[STRLEN];// font
-  int gui;              //
-
-  int input;            // 0=no input regime, 1=jump, ...
-  char input_text[STRLEN];
-
-  double xy0[2];        // translation vector
-  double ac3rmx[9];     // rotational matrix
-
-  double scale;         // zoom
-  double r;             // atom size scale factor
-  double rl;            // bond length scale factor
-
-  FILE * f;             // opened file for kp_readmore()
-  const char * fname;   // file name
-  double vertices[3*8]; // parameters of cell/shell
-  double rot_to_lab_basis[3*3];   // "rotation" matrix for PBC
-  double rot_to_cell_basis[3*3];  // "rotation" matrix for PBC
-  double symtol;        // tolerance for symmetry determination
-  double bmax;          // max. bond length to show
-  int    z[5];          // internal coordinate to show
-  int    modkey;        // whether ctrl of shift are pressed
-
-  int    N;             // number of structures / modes
-  int    n;             // current structure / mode
-  int    t;             // counter for mode animation
-
-  int    b;             // 0: do not show; 1: show bonds;     2: show bond+lengths; -1: never show
-  int    fbw;           // 0: nothing;     1: play forwards; -1: play backwards
-  int    num;           // 0: do not show; 1: show numbers;  -1: show atom types
-  int    vert;          // 0: nothing;     1: show cell;      2: show shell
-
-  int    center;        // 0: nothing;     1: center each molecule upon reading ; 2: center wrt center of mass
-  int    inertia;       // 0: nothing;     1: rotate each molecule upon reading wrt axis of inertia
-  int    bohr;          // 0: Å            1: Bohr
-                        //
-  int    closed;        // 1: time to go
-  char   com[STRLEN];   // command string for gui:0
-  char on_exit[STRLEN]; // command string to run on exit
-
-  int  input_files_n;   // number of input files
-  char ** input_files;  // input files
-                        //
-  colorscheme_t colors; // colorscheme (v or cpk)
-
-} drawpars;
-
 
 // load.c
-object * acs_from_var(int n, mol * m, drawpars * dp);
-void acs_readmore  (FILE * f, int b, int center, int inertia, int bohr, object * acs, const char * fname);
-object * read_files(drawpars * dp);
+object * acs_from_var(int n, mol * m, allpars * ap);
+void acs_readmore  (readpars read, int b, geompars geom, object * acs);
+object * read_files(allpars * ap);
 // scale.c
 double ac3_scale(atcoord * ac);
 double acs_scale(object * acs);
@@ -117,8 +57,8 @@ double acs_scale(object * acs);
 vibr_t * mode_read(FILE * f, int na);
 // ac3_read*.c
 int read_cart_atom(FILE * f, int n, mol * m);
-atcoord * atcoord_fill(mol * m, int b, int center, int inertia, int bohr);
-atcoord * ac3_read(FILE * f, int b, int center, int inertia, int bohr, const char * fname, format_t * format);
+atcoord * atcoord_fill(mol * m, int b, geompars geom);
+atcoord * ac3_read(readpars read, int b, geompars geom, format_t * format);
 mol * ac3_read_in (FILE * f);
 mol * ac3_read_out(FILE * f);
 mol * ac3_read_xyz(FILE * f);
@@ -126,19 +66,19 @@ mol * ac3_read_xyz(FILE * f);
 // man.c
 void printman(FILE * f, char * exename);
 // cli.c
-drawpars cli_parse(int argc, char ** argv);
+allpars cli_parse(int argc, char ** argv);
 
 // loop.c
 void main_loop(object * ent, drawpars * dp, ptf kp[NKP]);
 
 // ac3_draw.c
-void ac3_draw      (atcoord * ac, double r0, double scale, double xy0[2], int b, int num);
+void ac3_draw      (atcoord * ac, rendpars rend);
 // ac3_print.c
-void ac3_print    (atcoord * ac, double xy0[2], int b);
-void ac3_print_xyz(atcoord * ac, double xy0[2]);
-void ac3_print2fig(atcoord * ac, double xy0[2], int b, double * v);
+void ac3_print    (atcoord * ac, rendpars rend);
+void ac3_print_xyz(atcoord * ac, rendpars rend);
+void ac3_print2fig(atcoord * ac, rendpars rend, double * v);
 // bonds.c
-void bonds_fill(double rl, double bmax, atcoord * ac);
+void bonds_fill(bondpars bond, atcoord * ac);
 
 // get_atpar.c
 double getradius(int q);
@@ -157,7 +97,7 @@ void drawvertices (double * v, double scale, double xy0[2]);
 void drawshell    (double rmin, double rmax, double scale, double * xy0);
 int  savepic      (char * s);
 // xinput.c
-int process_x_input(drawpars * dp, void * event);
+int process_x_input(char input_text[STRLEN], void * event);
 
 // tools.c
 void obj_free(object * ent);
@@ -175,5 +115,5 @@ int main (int argc, char * argv[]);
 
 // api.c
 void PRINTOUT(FILE * f, char * format, ...);
-object * READ_FILES(drawpars * dp);
+object * READ_FILES(allpars * ap);
 int SHOULD_PRINT_MAN(int argc);

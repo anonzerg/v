@@ -2,7 +2,7 @@
 #include "vecn.h"
 #include "vec3.h"
 
-atcoord * atcoord_fill(mol * m0, int b, int center, int inertia, int bohr){
+atcoord * atcoord_fill(mol * m0, int b, const geompars geom){
 
   int n = m0->n;
 
@@ -42,23 +42,24 @@ atcoord * atcoord_fill(mol * m0, int b, int center, int inertia, int bohr){
   }
   m->fname = m0->name;
 
-  if(bohr){
+  if(geom.bohr){
     vecscal(n*3, m->r, BA);
   }
-  if(inertia){
+  if(geom.inertia){
     // should not change m0
     position(&((mol){.n=n, .q=m->q, .r=m->r}), NULL, 1);
   }
-  if(center){
-    center_mol(n, m->r, center==2 ? m->q : NULL);
+  if(geom.center){
+    center_mol(n, m->r, geom.center==2 ? m->q : NULL);
   }
 
   return m;
 }
 
-atcoord * ac3_read(FILE * f, int b, int center, int inertia, int bohr, const char * fname, format_t * format){
+atcoord * ac3_read(readpars read, int b, const geompars geom, format_t * format){
 
   mol * m = NULL;
+  FILE * f = read.f;
 
   switch(*format){
     case XYZ:
@@ -95,9 +96,9 @@ atcoord * ac3_read(FILE * f, int b, int center, int inertia, int bohr, const cha
   if(!m){
     return NULL;
   }
-  m->name = fname;
+  m->name = read.fname;
 
-  atcoord * M = atcoord_fill(m, b, center, inertia, bohr);
+  atcoord * M = atcoord_fill(m, b, geom);
   free(m);
   return M;
 }

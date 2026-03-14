@@ -13,12 +13,12 @@ static inline void fill_nf(object * acs, int n0){
   return;
 }
 
-void acs_readmore(FILE * f, int b, int center, int inertia, int bohr, object * acs, const char * fname){
+void acs_readmore(readpars read, int b, geompars geom, object * acs){
 
   // needed to reset nf
   int n0 = acs->n;
   // if continue reading from a previously opened file, find the first molecule from it
-  if(ftell(f) && acs->n){
+  if(ftell(read.f) && acs->n){
     for(int i=1; i<=acs->n; i++){
       int n1 = acs->n-i;
       if(acs->m[n1]->nf[0]==0){
@@ -30,7 +30,7 @@ void acs_readmore(FILE * f, int b, int center, int inertia, int bohr, object * a
 
   atcoord * m;
   format_t format = UNKNOWN_FORMAT;
-  while((m = ac3_read(f, b, center, inertia, bohr, fname, &format))!=NULL){
+  while((m = ac3_read(read, b, geom, &format))!=NULL){
     if(acs->n==acs->Nmem){
       int N = acs->Nmem ? acs->Nmem*2 : N_MIN;
       atcoord ** ms = realloc(acs->m, N*sizeof(atcoord *));
@@ -83,7 +83,7 @@ static FILE * acs_read_newfile(object * acs, char * fname, drawpars * dp){
       return NULL;
     }
   }
-  acs_readmore(f, dp->b, dp->center, dp->inertia, dp->bohr, acs, fname);
+  acs_readmore((readpars){f, fname}, dp->rend.bonds, dp->geom, acs);
   return f;
 }
 
@@ -100,7 +100,7 @@ static object * ent_read(char * fname, drawpars * dp){
     free(acs);
     return NULL;
   }
-  dp->fname = fname;
+  dp->read.fname = fname;
 
   if(dp->task==UNKNOWN || dp->task==VIBRO){
     object * vib = mode_read_try(f, acs->m[acs->n-1]);
@@ -108,7 +108,7 @@ static object * ent_read(char * fname, drawpars * dp){
       acs->n--;
       obj_free(acs);
       fclose(f);
-      dp->scale = ac3_scale(vib->m[0]);
+      dp->rend.scale = ac3_scale(vib->m[0]);
       dp->N = vib->vib->n;
       dp->task = VIBRO;
       return vib;
@@ -121,14 +121,16 @@ static object * ent_read(char * fname, drawpars * dp){
   }
 
   dp->task = AT3COORDS;
-  dp->f = f;
+  dp->read.f = f;
   return acs;
 }
 
-object * read_files(drawpars * dp){
+object * read_files(allpars * ap){
+  drawpars * dp = &ap->dp;
+  initpars * ip = &ap->ip;
 
-  int fn = dp->input_files_n;
-  char ** flist = dp->input_files;
+  int fn = ip->input_files_n;
+  char ** flist = ip->input_files;
   object * ent = NULL;
   int i=0;
 
@@ -151,27 +153,29 @@ object * read_files(drawpars * dp){
         PRINT_WARN("cannot find molecules in file '%s'\n", flist[i]);
       }
       else{
-        fclose(dp->f);
-        dp->f = f;
-        dp->fname = flist[i];
+        fclose(dp->read.f);
+        dp->read.f = f;
+        dp->read.fname = flist[i];
         n0 = acs->n;
       }
     }
-    dp->scale = acs_scale(acs);
+    dp->rend.scale = acs_scale(acs);
     newmol_prep(acs, dp);
-    intcoord_check(INT_MAX, dp->z);
+    intcoord_check(INT_MAX, dp->anal.intcoord);
   }
   else{
-    dp->z[0] = 0;
+    dp->anal.intcoord[0] = 0;
   }
 
   return ent;
 }
 
-object * acs_from_var(int n, mol * m, drawpars * dp){
+object * acs_from_var(int n, mol * m, allpars * ap){
+  drawpars * dp = &ap->dp;
+  initpars * ip = &ap->ip;
 
-  for(int i=0; i<dp->input_files_n; i++){
-    PRINT_WARN("ignoring file '%s'\n", dp->input_files[i]);
+  for(int i=0; i<ip->input_files_n; i++){
+    PRINT_WARN("ignoring file '%s'\n", ip->input_files[i]);
   }
   if(dp->task==VIBRO){
     PRINT_WARN("cannot read vibrations from input variable\n");
@@ -184,18 +188,18 @@ object * acs_from_var(int n, mol * m, drawpars * dp){
   acs->vib = NULL;
 
   for(int i=0; i<n; i++){
-    acs->m[i] = atcoord_fill(m+i, dp->b, dp->center, dp->inertia, dp->bohr);
+    acs->m[i] = atcoord_fill(m+i, dp->rend.bonds, dp->geom);
   }
 
   fill_nf(acs, 0);
-  dp->scale = acs_scale(acs);
+  dp->rend.scale = acs_scale(acs);
   newmol_prep(acs, dp);
 
   int natmax = 0;
   for(int i=0; i<n; i++){
     natmax = MAX(natmax, m[i].n);
   }
-  intcoord_check(natmax, dp->z);
+  intcoord_check(natmax, dp->anal.intcoord);
 
   return acs;
 }

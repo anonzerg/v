@@ -6,6 +6,9 @@
 #define   BA    0.5291772
 #define   AB    1.88972616356109068947
 
+#define CLOSE0(F) {if(F){ fclose(F); F = NULL; }}
+#define FREE0(PTR) {if(PTR){ free(PTR); PTR = NULL; }}
+
 #define MEM_END(S,X) ( (S)->X + (X##_size)/sizeof(*((S)->X)) )
 
 #define MAX(x,y) ( ((x) > (y)) ? (x) : (y) )

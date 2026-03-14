@@ -1,14 +1,14 @@
 #include "v.h"
 
-void ac3_print(atcoord * ac, double xy0[2], int b){
+void ac3_print(atcoord * ac, rendpars rend){
   PRINTOUT(stdout, "$molecule\ncart\n");
   for(int k=0; k<ac->n; k++){
     PRINTOUT(stdout, "%3d   % lf   % lf   % lf",
         ac->q[k],
-        xy0[0] + ac->r[k*3  ],
-        xy0[1] + ac->r[k*3+1],
+        rend.xy0[0] + ac->r[k*3  ],
+        rend.xy0[1] + ac->r[k*3+1],
                  ac->r[k*3+2]);
-    if(b>0){
+    if(rend.bonds>0){
       for(int j=0; j<BONDS_MAX; j++){
         int k1 = ac->bond_a[k*BONDS_MAX+j];
         if(k1 == -1 ){
@@ -23,7 +23,7 @@ void ac3_print(atcoord * ac, double xy0[2], int b){
   return;
 }
 
-void ac3_print_xyz(atcoord * ac, double xy0[2]){
+void ac3_print_xyz(atcoord * ac, rendpars rend){
   PRINTOUT(stdout, "%d\n\n", ac->n);
   for(int k=0; k<ac->n; k++){
     const char * s = getname(ac->q[k]);
@@ -35,33 +35,33 @@ void ac3_print_xyz(atcoord * ac, double xy0[2]){
       PRINTOUT(stdout, " %3d", ac->q[k]);
     }
     PRINTOUT(stdout, "   % lf   % lf   % lf\n",
-        xy0[0] + ac->r[k*3  ],
-        xy0[1] + ac->r[k*3+1],
+        rend.xy0[0] + ac->r[k*3  ],
+        rend.xy0[1] + ac->r[k*3+1],
                  ac->r[k*3+2]);
   }
   return;
 }
 
-void ac3_print2fig(atcoord * ac, double xy0[2], int b, double * v){
+void ac3_print2fig(atcoord * ac, rendpars rend, double * v){
 
   int n = ac->n;
   for(int i=0; i<n; i++){
     PRINTOUT(stdout, "atom %3d% 13.7lf% 13.7lf% 13.7lf\n", ac->q[i],
-        xy0[0] + ac->r[i*3  ],
-        xy0[1] + ac->r[i*3+1],
+        rend.xy0[0] + ac->r[i*3  ],
+        rend.xy0[1] + ac->r[i*3+1],
                  ac->r[i*3+2]);
   }
 
   if(v){
     for(int i=0; i<8; i++){
       PRINTOUT(stdout, "atom %3d% 13.7lf% 13.7lf% 13.7lf\n", 0,
-          xy0[0] + v[i*3  ],
-          xy0[1] + v[i*3+1],
+          rend.xy0[0] + v[i*3  ],
+          rend.xy0[1] + v[i*3+1],
                    v[i*3+2]);
     }
   }
 
-  if(b>0){
+  if(rend.bonds>0){
     for(int k=0; k<n; k++){
       for(int j=0; j<BONDS_MAX; j++){
         int k1 = ac->bond_a[k*BONDS_MAX+j];

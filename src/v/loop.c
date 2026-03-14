@@ -46,31 +46,31 @@ void main_loop(object * ent, drawpars * dp, ptf kp[NKP]){
     else if(event->type == ConfigureNotify){
       W = event->xconfigure.width;
       H = event->xconfigure.height;
-      dp->xy0[0] = dp->xy0[1] = 0.0;
+      dp->rend.xy0[0] = dp->rend.xy0[1] = 0.0;
       exp_redraw(ent, dp);
     }
     else if(event->type == KeyPress) {
-      if(dp->input){
-        int stop_input = process_x_input(dp, event);
+      if(dp->ui.input){ //////////////////////////////////// TODO move to function
+        int stop_input = process_x_input(dp->ui.input_text, event);
         if(stop_input==1){
-          switch(dp->input){
+          switch(dp->ui.input){
             case(1):
               {
-                int frame = atoi(dp->input_text);
+                int frame = atoi(dp->ui.input_text);
                 frame = MAX(1, MIN(frame, dp->N));
                 dp->n = frame-1;
               }; break;
           }
         }
         if(stop_input){
-          memset(dp->input_text, 0, STRLEN);
-          dp->input=0;
+          memset(dp->ui.input_text, 0, STRLEN);
+          dp->ui.input=0;
         }
         exp_redraw(ent, dp);
       }
       else{
         if(kp[event->xkey.keycode]){
-          dp->modkey = event->xkey.state & (ShiftMask | ControlMask);
+          dp->ui.modkey = event->xkey.state & (ShiftMask | ControlMask);
           kp[event->xkey.keycode](ent, dp);
         }
       }
@@ -108,23 +108,23 @@ void main_loop(object * ent, drawpars * dp, ptf kp[NKP]){
       }
     }
 
-    if(dp->closed){
+    if(dp->ui.closed){
       return;
     }
 
-    if(dp->fbw){
+    if(dp->anim.dir){
       if(dp->task == AT3COORDS){
-        if(dp->fbw > 0){
+        if(dp->anim.dir > 0){
           kp_frame_inc(ent, dp);
         }
         else{
           kp_frame_dec(ent, dp);
         }
-        usleep(dp->dt);
+        usleep(dp->anim.dt);
       }
 
       else if(dp->task == VIBRO){
-        /* We draw 5 times for each dp->t,
+        /* We draw 5 times for each dp->anim.t,
          * because dt is too small to look good
          * and 5*dt is too big to behave well (keyboard control).
          * Also we cannot draw only when tr==4,
@@ -133,9 +133,9 @@ void main_loop(object * ent, drawpars * dp, ptf kp[NKP]){
          */
         if(++tr == VIBRO_SUBSTEPS){
           tr = 0;
-          dp->t++;
+          dp->anim.t++;
         }
-        usleep(dp->dt);
+        usleep(dp->anim.dt);
         time_gone(ent, dp);
       }
     }

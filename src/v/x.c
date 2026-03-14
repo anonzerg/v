@@ -247,7 +247,9 @@ static void autosize_font(char * fontname){
 }
 
 void init_font(char * fontname){
-  if(!fontname[0]){
+  if(!fontname){
+    styp s;
+    fontname = s;
     autosize_font(fontname);
   }
   fontInfo = XLoadQueryFont(dis, fontname);

@@ -7,7 +7,7 @@ void run_commands(FILE * f, char * command, drawpars * dp, object * ent){
 
   while(1){
 
-    if(command[0]){
+    if(command && command[0]){
       c = *(com++);
     }
     else if(f){
@@ -30,7 +30,7 @@ void run_commands(FILE * f, char * command, drawpars * dp, object * ent){
       case('.'):
         {
           atcoord * ac = ent->m[dp->n];
-          pg(ac, dp->symtol);
+          pg(ac, dp->anal.symtol);
           PRINTOUT(stdout, "%s\n", ac->sym);
         }; break;
 
@@ -49,13 +49,11 @@ void run_commands(FILE * f, char * command, drawpars * dp, object * ent){
 
 int headless(drawpars * dp, object * ent){
   atcoord * ac = ent->m[dp->n];
-  if(dp->b>0 && !ac->bond_flag){
-    bonds_fill(dp->rl, dp->bmax, ac);
+  if(dp->rend.bonds>0 && !ac->bond_flag){
+    bonds_fill(dp->bond, ac);
   }
-  run_commands(stdin, dp->com, dp, ent);
+  run_commands(stdin, dp->ui.com, dp, ent);
   obj_free(ent);
-  if(dp->f){
-    fclose(dp->f);
-  }
+  CLOSE0(dp->read.f);
   return 0;
 }
