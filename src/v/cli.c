@@ -72,14 +72,13 @@ static int sscan_cell(const char * arg, cellpars * cp){
     r3cp(c, cell+6);
   }
 
-  r3sums3(cp->vertices+ 0, a, -0.5, b, -0.5, c, -0.5);
-  r3sums3(cp->vertices+ 3, a, +0.5, b, -0.5, c, -0.5);
-  r3sums3(cp->vertices+ 6, a, -0.5, b, +0.5, c, -0.5);
-  r3sums3(cp->vertices+ 9, a, -0.5, b, -0.5, c, +0.5);
-  r3sums3(cp->vertices+12, a, +0.5, b, +0.5, c, -0.5);
-  r3sums3(cp->vertices+15, a, +0.5, b, -0.5, c, +0.5);
-  r3sums3(cp->vertices+18, a, -0.5, b, +0.5, c, +0.5);
-  r3sums3(cp->vertices+21, a, +0.5, b, +0.5, c, +0.5);
+  for(int i=0; i<2; i++){
+    for(int j=0; j<2; j++){
+      for(int k=0; k<2; k++){
+        r3sums3(cp->vertices + (i*4+j*2+k)*3, a, i-0.5, b, j-0.5, c, k-0.5);
+      }
+    }
+  }
 
   double rot_to_lab_basis[9] = {a[0], b[0], c[0],
                                 a[1], b[1], c[1],

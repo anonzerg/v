@@ -77,18 +77,15 @@ void ac3_print2fig(atcoord * ac, rendpars rend, double * v){
 
   if(v){
 #define LINE(I,J)   PRINTOUT(stdout, "bond %3d %3d % 3d\n", (J)+n+1, (I)+n+1, -1)
-    LINE(0,1);
-    LINE(0,2);
-    LINE(0,3);
-    LINE(1,4);
-    LINE(1,5);
-    LINE(2,4);
-    LINE(2,6);
-    LINE(3,5);
-    LINE(3,6);
-    LINE(4,7);
-    LINE(5,7);
-    LINE(6,7);
+    for(int i=0; i<8; i+=2){
+      LINE(i,i+1); // || z-axis
+    }
+    for(int j=0; j<2; j++){
+      for(int i=0; i<2; i++){
+        LINE(i*4+j, i*4+2+j);  // || y-axis
+        LINE(i*2+j, i*2+4+j);  // || x-axis
+      }
+    }
 #undef LINE
   }
 

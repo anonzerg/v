@@ -1,5 +1,6 @@
 #include "v.h"
 #include "x.h"
+#include "vec2.h"
 
 extern Display * dis;
 extern int       screen;
@@ -279,40 +280,44 @@ void textincorner2(const char * const text1){
 
 void setcaption(const char * const capt){
   XStoreName(dis, win, capt);
+  return;
+}
+
+void draw_edge(double vi[3], double vj[3], double scale, double xy0[2]){
+  int iw = (vi[2]>0.0 || vj[2]>0.0) ? 0 : 1;
+  double pi[2], pj[2];
+  r2sum(pi, xy0, vi);
+  r2sum(pj, xy0, vj);
+  XDrawLine(dis, win, gc_dot[iw],
+      W/2+scale*pi[0], H/2-scale*pi[1],
+      W/2+scale*pj[0], H/2-scale*pj[1]);
+  return;
 }
 
 void drawvertices(double * v, double scale, double xy0[2]){
   double d = MIN(H, W)*scale;
-  int iw;
-#define LINE(I,J) \
-  iw=( v[(I)*3+2]>0.0 || v[(J)*3+2]>0.0) ? 0 : 1; \
-  XDrawLine(dis, win, gc_dot[iw],\
-      W/2+d*(xy0[0]+v[(I)*3]), H/2-d*(xy0[1]+v[(I)*3+1]),\
-      W/2+d*(xy0[0]+v[(J)*3]), H/2-d*(xy0[1]+v[(J)*3+1]));
-  LINE(0,1);
-  LINE(0,2);
-  LINE(0,3);
-  LINE(1,4);
-  LINE(1,5);
-  LINE(2,4);
-  LINE(2,6);
-  LINE(3,5);
-  LINE(3,6);
-  LINE(4,7);
-  LINE(5,7);
-  LINE(6,7);
+#define LINE(i,j) draw_edge(v+(i)*3, v+(j)*3, d, xy0)
+  for(int i=0; i<8; i+=2){
+    LINE(i,i+1); // || z-axis
+  }
+  for(int j=0; j<2; j++){
+    for(int i=0; i<2; i++){
+      LINE(i*4+j, i*4+2+j);  // || y-axis
+      LINE(i*2+j, i*2+4+j);  // || x-axis
+    }
+  }
 #undef LINE
   return;
 }
 
 void drawshell(double rmin, double rmax, double scale, double xy0[2]){
   double d = MIN(H,W)*scale;
-  rmax *= d;
-  rmin *= d;
+  double r[] = {rmax*d, rmin*d};
   int x = W/2+d*xy0[0];
   int y = H/2-d*xy0[1];
-  XDrawArc(dis, win, gc_dot[0], x-rmax, y-rmax, 2*rmax, 2*rmax, 0, 360*64);
-  XDrawArc(dis, win, gc_dot[1], x-rmin, y-rmin, 2*rmin, 2*rmin, 0, 360*64);
+  for(int i=0; i<2; i++){
+    XDrawArc(dis, win, gc_dot[i], x-r[i], y-r[i], 2*r[i], 2*r[i], 0, 360*64);
+  }
   return;
 }
 
