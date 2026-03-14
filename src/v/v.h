@@ -88,7 +88,7 @@ int get_element(char * s);
 
 // x.c
 void close_x      (void);
-void init_x(const char * const capt, const colorscheme_t colorscheme);
+void init_x       (const char * const capt, const colorscheme_t colorscheme);
 void init_font    (char * fontname);
 void textincorner (const char * const text1, const char * const text2);
 void textincorner2(const char * const text1);
@@ -97,7 +97,7 @@ void drawvertices (double * v, double scale, double xy0[2]);
 void drawshell    (double rmin, double rmax, double scale, double * xy0);
 int  savepic      (char * s);
 // xinput.c
-int process_x_input(char input_text[STRLEN], void * event);
+int process_x_input(char input_text[STRLEN], unsigned int keycode);
 
 // tools.c
 void obj_free(object * ent);
