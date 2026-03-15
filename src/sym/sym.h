@@ -10,12 +10,12 @@
 typedef enum {INV, SIGMA, CN, SN} elsym;
 
 typedef struct {
-  styp     s;
+  double * r;  // vectors associated with generators
+  int    * o;  // orders of generators
+  elsym  * e;  // types  of generators
+  styp     s;  // point group
   int      a;  // number of atoms
   int      n;  // number of group generators
-  elsym  * e;  // types  of generators
-  int    * o;  // orders of generators
-  double * r;  // vectors associated with generators
 } molsym;
 
 molsym * pointgroup(mol * m, double eps);

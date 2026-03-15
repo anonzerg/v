@@ -8,13 +8,9 @@
 #define STRLEN 256
 #define BIGSTRLEN 4096
 
-typedef void (* ptf )();
+#include "pars.h"
 
-typedef enum {
-  UNKNOWN,
-  AT3COORDS,
-  VIBRO,
-} task_t;
+typedef void (* ptf )();
 
 typedef enum {
   UNKNOWN_FORMAT,
@@ -23,137 +19,71 @@ typedef enum {
   OUT,
 } format_t;
 
-typedef enum {
-  V_COLORS,
-  CPK_COLORS,
-} colorscheme_t;
+typedef struct {
+  int      flag;    // whether bonds are up-to-date. 0: no, 1: yes
+  double   rl;      // the last used bond length scale factor
+  int    * a;       // lists of bonded atoms
+  double * r;       // distances to the bonded atoms
+} bondstr;
 
 typedef struct {
   int      n;            // number of atoms
-  int      bond_flag;    // whether bonds are up-to-date. 0: no, 1: yes, -1: disabled
-  double   bond_rl;      // the last used bond length scale factor
   int    * q;            // charges of atoms
   double * r;            // coordinates of atoms
-  styp   sym;            // point group
-  int    * bond_a;       // lists of bounded atoms
-  double * bond_r;       // distances to the bonded atoms
   const char * fname;    // file name
+
   int nf[2];             // number of molecule in file, file size
+  styp   sym;            // point group
+  bondstr bonds;
 } atcoord;
+
+typedef struct {
+  int      n;       // number of modes
+  double * freq;    // frequencies
+  double * disp;    // displacements
+  double * r0;      // atom configuration at the central point
+} vibr_t;
 
 typedef struct {
   int n, Nmem;
   atcoord ** m;
-} atcoords;
-
-typedef struct {
-  int      n;
-  double * f;
-  double * d;
-} modestr;
-
-typedef struct {
-  modestr * modes;
-  double  * mode0;
-  atcoord * ac;
-} vibrstr;
-
-typedef struct {
-
-  task_t task;          // data type
-  unsigned int dt;      // animation timeout
-  char fontname[STRLEN];// font
-  int gui;              //
-
-  int input;            // 0=no input regime, 1=jump, ...
-  char input_text[STRLEN];
-
-  double xy0[2];        // translation vector
-  double ac3rmx[9];     // rotational matrix
-
-  double scale;         // zoom
-  double r;             // atom size scale factor
-  double rl;            // bond length scale factor
-
-  FILE * f;             // opened file for kp_readmore()
-  const char * fname;   // file name
-  double vertices[3*8]; // parameters of cell/shell
-  double rot_to_lab_basis[3*3];   // "rotation" matrix for PBC
-  double rot_to_cell_basis[3*3];  // "rotation" matrix for PBC
-  double symtol;        // tolerance for symmetry determination
-  double bmax;          // max. bond length to show
-  int    z[5];          // internal coordinate to show
-  int    modkey;        // whether ctrl of shift are pressed
-
-  int    N;             // number of structures / modes
-  int    n;             // current structure / mode
-  int    t;             // counter for mode animation
-
-  int    b;             // 0: do not show; 1: show bonds;     2: show bond+lengths; -1: never show
-  int    fbw;           // 0: nothing;     1: play forwards; -1: play backwards
-  int    num;           // 0: do not show; 1: show numbers;  -1: show atom types
-  int    vert;          // 0: nothing;     1: show cell;      2: show shell
-
-  int    center;        // 0: nothing;     1: center each molecule upon reading ; 2: center wrt center of mass
-  int    inertia;       // 0: nothing;     1: rotate each molecule upon reading wrt axis of inertia
-  int    bohr;          // 0: Å            1: Bohr
-                        //
-  int    closed;        // 1: time to go
-  char   com[STRLEN];   // command string for gui:0
-  char on_exit[STRLEN]; // command string to run on exit
-
-  int  input_files_n;   // number of input files
-  char ** input_files;  // input files
-                        //
-  colorscheme_t colors; // colorscheme (v or cpk)
-
-} drawpars;
-
-typedef struct {
-  int    t;
-  double r[3];
-} txyz;
-
-typedef struct {
-  int      n;
-  int    * q;
-  double * r;
-  char   * name;
-} inp_mols_t;
+  vibr_t * vib;
+} object;
 
 
 // load.c
-atcoords * get_in_str(int N, inp_mols_t * inp_mols, drawpars * dp);
-void acs_readmore  (FILE * f, int b, int center, int inertia, int bohr, atcoords * acs, const char * fname);
-void * read_files(drawpars * dp);
+object * acs_from_var(int n, mol * m, allpars * ap);
+void acs_readmore  (readpars read, int b, geompars geom, object * acs);
+object * read_files(allpars * ap);
 // scale.c
 double ac3_scale(atcoord * ac);
-double acs_scale(atcoords * acs);
+double acs_scale(object * acs);
 // mode_read.c
-modestr * mode_read(FILE * f, int na);
+vibr_t * mode_read(FILE * f, int na);
 // ac3_read*.c
-atcoord * atcoord_fill(int n, txyz * a, const char * fname, int b, int center, int inertia, int bohr);
-atcoord * ac3_read(FILE * f, int b, int center, int inertia, int bohr, const char * fname, format_t * format);
-txyz * ac3_read_in (int * n_p, int * zmat, FILE * f);
-txyz * ac3_read_out(int * n_p, FILE * f);
-txyz * ac3_read_xyz(int * n_p, FILE * f);
+int read_cart_atom(FILE * f, int n, mol * m);
+atcoord * atcoord_fill(mol * m, int b, geompars geom);
+atcoord * ac3_read(readpars read, int b, geompars geom, format_t * format);
+mol * ac3_read_in (FILE * f);
+mol * ac3_read_out(FILE * f);
+mol * ac3_read_xyz(FILE * f);
 
 // man.c
 void printman(FILE * f, char * exename);
 // cli.c
-drawpars cli_parse(int argc, char ** argv);
+allpars cli_parse(int argc, char ** argv);
 
 // loop.c
-void main_loop(void * ent, drawpars * dp, ptf kp[NKP]);
+void main_loop(object * ent, drawpars * dp, ptf kp[NKP]);
 
 // ac3_draw.c
-void ac3_draw      (atcoord * ac, double r0, double scale, double xy0[2], int b, int num);
+void ac3_draw      (atcoord * ac, rendpars rend);
 // ac3_print.c
-void ac3_print    (atcoord * ac, double xy0[2], int b);
-void ac3_print_xyz(atcoord * ac, double xy0[2]);
-void ac3_print2fig(atcoord * ac, double xy0[2], int b, double * v);
+void ac3_print    (atcoord * ac, rendpars rend);
+void ac3_print_xyz(atcoord * ac, rendpars rend);
+void ac3_print2fig(atcoord * ac, rendpars rend, double * v);
 // bonds.c
-void bonds_fill(double rl, double bmax, atcoord * ac);
+void bonds_fill(bondpars bond, atcoord * ac);
 
 // get_atpar.c
 double getradius(int q);
@@ -163,7 +93,7 @@ int get_element(char * s);
 
 // x.c
 void close_x      (void);
-void init_x(const char * const capt, const colorscheme_t colorscheme);
+void init_x       (const char * const capt, const colorscheme_t colorscheme);
 void init_font    (char * fontname);
 void textincorner (const char * const text1, const char * const text2);
 void textincorner2(const char * const text1);
@@ -172,24 +102,23 @@ void drawvertices (double * v, double scale, double xy0[2]);
 void drawshell    (double rmin, double rmax, double scale, double * xy0);
 int  savepic      (char * s);
 // xinput.c
-int process_x_input(drawpars * dp, void * event);
+int process_x_input(char input_text[STRLEN], unsigned int keycode);
 
 // tools.c
-void ent_free(void * ent, drawpars * dp);
-void acs_free(atcoords * acs);
-void newmol_prep(atcoords * acs, drawpars * dp);
+void obj_free(object * ent);
+void newmol_prep(object * acs, drawpars * dp);
 void ac3_text(atcoord * ac, drawpars * dp);
-void vibro_text(modestr * ms, drawpars * dp);
-void pg(atcoord * a, styp s, double symtol);
+void vibro_text(vibr_t * ms, drawpars * dp);
+void pg(atcoord * a, double symtol);
 
 // headless.c
-void run_commands(FILE * f, char * command, drawpars * dp, void * ent);
-int headless(drawpars * dp, void * ent);
+void run_commands(FILE * f, char * command, drawpars * dp, object * ent);
+int headless(drawpars * dp, object * ent);
 
 // main.c
 int main (int argc, char * argv[]);
 
 // api.c
 void PRINTOUT(FILE * f, char * format, ...);
-void * READ_FILES(drawpars * dp);
+object * READ_FILES(allpars * ap);
 int SHOULD_PRINT_MAN(int argc);

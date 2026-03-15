@@ -2,19 +2,79 @@
 #include "x.h"
 #include "evr.h"
 
+#define VIBRO_SUBSTEPS 4
+
 extern int W,H;
 extern Display * dis;
 extern Window    win;
 
-void main_loop(void * ent, drawpars * dp, ptf kp[NKP]){
+typedef struct {
+  int click;
+  int x0;
+  int y0;
+} mouse_state_t;
+
+static void process_mouse(XMotionEvent * event, object * ent, drawpars * dp, mouse_state_t * mouse){
+  if(mouse->click){
+    int x = event->x;
+    int y = event->y;
+    rot_ent_pointer(ent, dp, x-mouse->x0, y-mouse->y0, POINTER_SPEED/MIN(W,H));
+    exp_redraw(ent, dp);
+    mouse->x0 = x;
+    mouse->y0 = y;
+  }
+  return;
+}
+
+static void process_input(XKeyEvent * event, drawpars * dp){
+  int stop_input = process_x_input(dp->ui.input_text, event->keycode);
+  if(stop_input){
+    if(stop_input==1){
+      switch(dp->ui.input){
+        case(1):
+          {
+            int frame = atoi(dp->ui.input_text);
+            frame = MAX(1, MIN(frame, dp->N));
+            dp->n = frame-1;
+          }; break;
+      }
+    }
+    memset(dp->ui.input_text, 0, STRLEN);
+    dp->ui.input=0;
+  }
+  return;
+}
+
+static void run_animation(object * ent, drawpars * dp, int * tr){
+  if(dp->task == AT3COORDS){
+    dp->anim.dir > 0 ?  kp_frame_inc(ent, dp) : kp_frame_dec(ent, dp);
+    usleep(dp->anim.dt);
+  }
+  else{
+    /* We draw 5 times for each dp->anim.t,
+     * because dt is too small to look good
+     * and 5*dt is too big to behave well (keyboard control).
+     * Also we cannot draw only when *tr==4,
+     * because we need an XEvent to reiterate the main loop.
+     * Alternatively, we can send an event manually.
+     */
+    if(++*tr == VIBRO_SUBSTEPS){
+      *tr = 0;
+      dp->anim.t++;
+    }
+    usleep(dp->anim.dt);
+    time_gone(ent, dp);
+  }
+  return;
+}
+
+void main_loop(object * ent, drawpars * dp, ptf kp[NKP]){
 
   // To handle window closing. Thanks to https://stackoverflow.com/a/1186544
   Atom wm_delete_window = XInternAtom(dis, "WM_DELETE_WINDOW", False);
   XSetWMProtocols(dis, win, &wm_delete_window, 1);
 
-  int mouse_click = 0;
-  int mouse_x0 = 0;
-  int mouse_y0 = 0;
+  mouse_state_t mouse = {.click=0, .x0=0, .y0=0};
   int tr = 0;
   while(1) {
     XEvent event_rec;
@@ -33,42 +93,30 @@ void main_loop(void * ent, drawpars * dp, ptf kp[NKP]){
     } while(XEventsQueued(dis, QueuedAlready));
 
     if (event->type == ClientMessage) {
-        if ((Atom)event->xclient.data.l[0] == wm_delete_window) {
-          kp_exit(ent, dp);
-        }
+      if ((Atom)event->xclient.data.l[0] == wm_delete_window) {
+        kp_exit(ent, dp);
+      }
     }
 
     else if(event->type == Expose && event->xexpose.count == 0) {
       exp_redraw(ent, dp);
     }
+
     else if(event->type == ConfigureNotify){
       W = event->xconfigure.width;
       H = event->xconfigure.height;
-      dp->xy0[0] = dp->xy0[1] = 0.0;
+      dp->rend.xy0[0] = dp->rend.xy0[1] = 0.0;
       exp_redraw(ent, dp);
     }
+
     else if(event->type == KeyPress) {
-      if(dp->input){
-        int stop_input = process_x_input(dp, event);
-        if(stop_input==1){
-          switch(dp->input){
-            case(1):
-              {
-                int frame = atoi(dp->input_text);
-                frame = MAX(1, MIN(frame, dp->N));
-                dp->n = frame-1;
-              }; break;
-          }
-        }
-        if(stop_input){
-          memset(dp->input_text, 0, STRLEN);
-          dp->input=0;
-        }
+      if(dp->ui.input){
+        process_input(&(event->xkey), dp);
         exp_redraw(ent, dp);
       }
       else{
         if(kp[event->xkey.keycode]){
-          dp->modkey = event->xkey.state & (ShiftMask | ControlMask);
+          dp->ui.modkey = event->xkey.state & (ShiftMask | ControlMask);
           kp[event->xkey.keycode](ent, dp);
         }
       }
@@ -78,64 +126,36 @@ void main_loop(void * ent, drawpars * dp, ptf kp[NKP]){
       (event->xbutton.button==Button1 ||
        event->xbutton.button==Button2 ||
        event->xbutton.button==Button3)){
-      mouse_click = 1;
-      mouse_x0 = event->xbutton.x;
-      mouse_y0 = event->xbutton.y;
+      mouse.click = 1;
+      mouse.x0 = event->xbutton.x;
+      mouse.y0 = event->xbutton.y;
     }
+
     else if(event->type == ButtonRelease &&
       (event->xbutton.button==Button1 ||
        event->xbutton.button==Button2 ||
        event->xbutton.button==Button3)){
-      mouse_click = 0;
+      mouse.click = 0;
     }
+
     else if(event->type == ButtonPress && event->xbutton.button==Button4){
       kp_zoom_in(ent, dp);
     }
+
     else if(event->type == ButtonPress && event->xbutton.button==Button5){
       kp_zoom_out(ent, dp);
     }
 
     else if(event->type == MotionNotify){
-      if(mouse_click){
-        int x = event->xmotion.x;
-        int y = event->xmotion.y;
-        rot_ent_pointer(ent, dp, x-mouse_x0, y-mouse_y0, POINTER_SPEED/MIN(W,H));
-        exp_redraw(ent, dp);
-        mouse_x0 = x;
-        mouse_y0 = y;
-      }
+      process_mouse(&(event->xmotion), ent, dp, &mouse);
     }
 
-    if(dp->closed){
+    if(dp->ui.closed){
       return;
     }
 
-    if(dp->fbw){
-      if(dp->task == AT3COORDS){
-        if(dp->fbw > 0){
-          kp_frame_inc(ent, dp);
-        }
-        else{
-          kp_frame_dec(ent, dp);
-        }
-        usleep(dp->dt);
-      }
-
-      else if(dp->task == VIBRO){
-        /* We draw 5 times for each dp->t,
-         * because dt is too small to look good
-         * and 5*dt is too big to behave well (keyboard control).
-         * Also we cannot draw only when tr==4,
-         * because we need an XEvent to reiterate the main loop.
-         * Alternatively, we can send an event manually.
-         */
-        if(++tr == 4){
-          tr = 0;
-          dp->t++;
-        }
-        usleep(dp->dt);
-        time_gone(ent, dp);
-      }
+    if(dp->anim.dir){
+      run_animation(ent, dp, &tr);
     }
   }
 }

@@ -78,31 +78,32 @@ int main (int argc, char * argv[]) {
 
   /*= Input ==================================================================*/
 
-  drawpars dp = cli_parse(argc, argv);
+  allpars ap = cli_parse(argc, argv);
 
-  void * ent = READ_FILES(&dp);
+  object * ent = READ_FILES(&ap);
 
   if(!ent){
     PRINT_ERR("no files to read\n");
     return 1;
   }
 
-  if(dp.n >= dp.N){
-    dp.n = dp.n%dp.N;
+  drawpars * dp = &ap.dp;
+  if(dp->n >= dp->N){
+    dp->n = dp->n%dp->N;
   }
-  else if(dp.n<0){
-    dp.n = dp.N-(-dp.n)%dp.N;
+  else if(dp->n<0){
+    dp->n = dp->N-(-dp->n)%dp->N;
   }
 
-  if(!dp.gui){
-    return headless(&dp, ent);
+  if(!ap.ip.gui){
+    return headless(dp, ent);
   }
 
   /*= X11 init ===============================================================*/
   ptf kp[NKP];
-  init_x(dp.fname, dp.colors);
+  init_x(dp->read.fname, ap.ip.colors);
   init_keys(kp);
-  init_font(dp.fontname);
+  init_font(ap.ip.fontname);
 #if 0
   myDrawString = &XDrawString;
 #else
@@ -115,7 +116,7 @@ int main (int argc, char * argv[]) {
 #endif
 
   /*= Main loop ==============================================================*/
-  main_loop(ent, &dp, kp);
+  main_loop(ent, dp, kp);
 
   return 0;
 }

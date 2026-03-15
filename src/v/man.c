@@ -71,7 +71,7 @@ void printman(FILE * f, char * exename){
   \n\
   q / esc                  quit                  \n\
   \n\
-", exename, DEFAULT_TIMEOUT*1e-6, DEFAULT_SYMTOL);
+", exename, DEFAULT_TIMEOUT*MS_TO_S, DEFAULT_SYMTOL);
   return;
 }
 

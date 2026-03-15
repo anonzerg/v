@@ -5,7 +5,7 @@
 
 #define N_MIN 256
 
-static inline void fill_nf(atcoords * acs, int n0){
+static inline void fill_nf(object * acs, int n0){
   for(int j=n0; j<acs->n; j++){
     acs->m[j]->nf[0] = j-n0;
     acs->m[j]->nf[1] = acs->n-n0;
@@ -13,12 +13,12 @@ static inline void fill_nf(atcoords * acs, int n0){
   return;
 }
 
-void acs_readmore(FILE * f, int b, int center, int inertia, int bohr, atcoords * acs, const char * fname){
+void acs_readmore(readpars read, int b, geompars geom, object * acs){
 
   // needed to reset nf
   int n0 = acs->n;
   // if continue reading from a previously opened file, find the first molecule from it
-  if(ftell(f) && acs->n){
+  if(ftell(read.f) && acs->n){
     for(int i=1; i<=acs->n; i++){
       int n1 = acs->n-i;
       if(acs->m[n1]->nf[0]==0){
@@ -30,12 +30,12 @@ void acs_readmore(FILE * f, int b, int center, int inertia, int bohr, atcoords *
 
   atcoord * m;
   format_t format = UNKNOWN_FORMAT;
-  while((m = ac3_read(f, b, center, inertia, bohr, fname, &format))!=NULL){
+  while((m = ac3_read(read, b, geom, &format))!=NULL){
     if(acs->n==acs->Nmem){
       int N = acs->Nmem ? acs->Nmem*2 : N_MIN;
       atcoord ** ms = realloc(acs->m, N*sizeof(atcoord *));
       if(!ms){
-        acs_free(acs);
+        obj_free(acs);
         free(m);
         PRINT_ERR("cannot reallocate memory\n");
         abort();
@@ -49,21 +49,22 @@ void acs_readmore(FILE * f, int b, int center, int inertia, int bohr, atcoords *
   return;
 }
 
-static vibrstr * mode_read_try(FILE * f, atcoord * ac){
+static object * mode_read_try(FILE * f, atcoord * ac){
 
   long pos = ftell(f);
   rewind(f);
 
   int n = ac->n;
-  modestr * modes = mode_read(f, n);
+  vibr_t * modes = mode_read(f, n);
 
   if(modes){
-    vibrstr * vib = malloc(sizeof(vibrstr) + sizeof(double)*n*3);
-    vib->ac    = ac;
-    vib->modes = modes;
-    vib->mode0 = (double *)(vib + 1);
-    veccp(n*3, vib->mode0, ac->r);
-    return vib;
+    object * ent = malloc(sizeof(object));
+    ent->Nmem  = ent->n = 1;
+    ent->m     = malloc(ent->Nmem*sizeof(atcoord *));
+    ent->m[0]  = ac;
+    ent->vib   = modes;
+    veccp(n*3, ent->vib->r0, ac->r);
+    return ent;
   }
   else{
     fseek(f, pos, SEEK_SET);
@@ -71,7 +72,7 @@ static vibrstr * mode_read_try(FILE * f, atcoord * ac){
   }
 }
 
-static FILE * acs_read_newfile(atcoords * acs, char * fname, drawpars * dp){
+static FILE * acs_read_newfile(object * acs, char * fname, drawpars * dp){
   FILE * f;
   if(!strcmp(fname, "-")){
     f = stdin;
@@ -82,32 +83,33 @@ static FILE * acs_read_newfile(atcoords * acs, char * fname, drawpars * dp){
       return NULL;
     }
   }
-  acs_readmore(f, dp->b, dp->center, dp->inertia, dp->bohr, acs, fname);
+  acs_readmore((readpars){f, fname}, dp->rend.bonds, dp->geom, acs);
   return f;
 }
 
-static void * ent_read(char * fname, drawpars * dp){
+static object * ent_read(char * fname, drawpars * dp){
 
-  atcoords * acs = malloc(sizeof(atcoords));
+  object * acs = malloc(sizeof(object));
   acs->Nmem = 0;
   acs->n = 0;
   acs->m = NULL;
+  acs->vib = NULL;
 
   FILE * f = acs_read_newfile(acs, fname, dp);
   if(!f || !acs->n){
     free(acs);
     return NULL;
   }
-  dp->fname = fname;
+  dp->read.fname = fname;
 
   if(dp->task==UNKNOWN || dp->task==VIBRO){
-    vibrstr * vib = mode_read_try(f, acs->m[acs->n-1]);
+    object * vib = mode_read_try(f, acs->m[acs->n-1]);
     if(vib){
       acs->n--;
-      acs_free(acs);
+      obj_free(acs);
       fclose(f);
-      dp->scale = ac3_scale(vib->ac);
-      dp->N = vib->modes->n;
+      dp->rend.scale = ac3_scale(vib->m[0]);
+      dp->N = vib->vib->n;
       dp->task = VIBRO;
       return vib;
     }
@@ -119,15 +121,17 @@ static void * ent_read(char * fname, drawpars * dp){
   }
 
   dp->task = AT3COORDS;
-  dp->f = f;
+  dp->read.f = f;
   return acs;
 }
 
-void * read_files(drawpars * dp){
+object * read_files(allpars * ap){
+  drawpars * dp = &ap->dp;
+  initpars * ip = &ap->ip;
 
-  int fn = dp->input_files_n;
-  char ** flist = dp->input_files;
-  void * ent = NULL;
+  int fn = ip->input_files_n;
+  char ** flist = ip->input_files;
+  object * ent = NULL;
   int i=0;
 
   // read the first available file
@@ -138,7 +142,7 @@ void * read_files(drawpars * dp){
 
   // if the first file does not contain normal modes, try to read other files
   if(ent && (dp->task == AT3COORDS)){
-    atcoords * acs = ent;
+    object * acs = ent;
     int n0 = acs->n;
     for(i++; i<fn; i++){
       FILE * f = acs_read_newfile(acs, flist[i], dp);
@@ -149,58 +153,53 @@ void * read_files(drawpars * dp){
         PRINT_WARN("cannot find molecules in file '%s'\n", flist[i]);
       }
       else{
-        fclose(dp->f);
-        dp->f = f;
-        dp->fname = flist[i];
+        fclose(dp->read.f);
+        dp->read.f = f;
+        dp->read.fname = flist[i];
         n0 = acs->n;
       }
     }
-    dp->scale = acs_scale(acs);
+    dp->rend.scale = acs_scale(acs);
     newmol_prep(acs, dp);
-    intcoord_check(INT_MAX, dp->z);
+    intcoord_check(INT_MAX, dp->anal.intcoord);
   }
   else{
-    dp->z[0] = 0;
+    dp->anal.intcoord[0] = 0;
   }
 
   return ent;
 }
 
-atcoords * get_in_str(int N, inp_mols_t * inp_mols, drawpars * dp){
+object * acs_from_var(int n, mol * m, allpars * ap){
+  drawpars * dp = &ap->dp;
+  initpars * ip = &ap->ip;
 
-  for(int i=0; i<dp->input_files_n; i++){
-    PRINT_WARN("ignoring file '%s'\n", dp->input_files[i]);
+  for(int i=0; i<ip->input_files_n; i++){
+    PRINT_WARN("ignoring file '%s'\n", ip->input_files[i]);
   }
   if(dp->task==VIBRO){
     PRINT_WARN("cannot read vibrations from input variable\n");
   }
   dp->task = AT3COORDS;
 
-  atcoords * acs = malloc(sizeof(atcoords));
-  acs->Nmem = N;
+  object * acs = malloc(sizeof(object));
+  acs->Nmem = acs->n = n;
   acs->m = malloc(acs->Nmem*sizeof(atcoord *));
-  acs->n = N;
+  acs->vib = NULL;
 
-  int nmax = 0;
-  for(int i=0; i<N; i++){
-    nmax = MAX(nmax, inp_mols[i].n);
-  }
-  txyz * xyz = malloc(sizeof(txyz)*nmax);
-
-  for(int i=0; i<N; i++){
-    inp_mols_t * inmol = inp_mols + i;
-    for(int i=0; i<inmol->n; i++){
-      xyz[i].t = inmol->q[i];
-      r3cp(xyz[i].r, inmol->r+i*3);
-    }
-    acs->m[i] = atcoord_fill(inmol->n, xyz, inmol->name, dp->b, dp->center, dp->inertia, dp->bohr);
+  for(int i=0; i<n; i++){
+    acs->m[i] = atcoord_fill(m+i, dp->rend.bonds, dp->geom);
   }
 
-  free(xyz);
   fill_nf(acs, 0);
-  dp->scale = acs_scale(acs);
+  dp->rend.scale = acs_scale(acs);
   newmol_prep(acs, dp);
-  intcoord_check(nmax, dp->z);
+
+  int natmax = 0;
+  for(int i=0; i<n; i++){
+    natmax = MAX(natmax, m[i].n);
+  }
+  intcoord_check(natmax, dp->anal.intcoord);
 
   return acs;
 }

@@ -1,113 +1,96 @@
 #include "v.h"
+#include "vecn.h"
 #include "vec3.h"
 
-
-#define END(S,X) ( (S)->X + (X##_size)/sizeof(*((S)->X)) )
-
-
-atcoord * atcoord_fill(int n, txyz * a, const char * fname, int b, int center, int inertia, int bohr){
+atcoord * atcoord_fill(mol * m0, int b, const geompars geom){
+  int n = m0->n;
 
   size_t q_size = sizeof(int   ) * n;
   size_t r_size = sizeof(double) * n*3;
-  atcoord * m;
-  if(b != -1){
-    size_t bond_a_size = sizeof(int   ) * n*BONDS_MAX;
-    size_t bond_r_size = sizeof(double) * n*BONDS_MAX;
-    size_t size = sizeof(atcoord) + q_size + r_size + bond_a_size + bond_r_size;
-    m = malloc(size);
-    m->n = n;
-    m->r      = (double *) (m + 1);
-    m->bond_r = (double *) END(m,r);
-    m->q      = (int    *) END(m,bond_r);
-    m->bond_a = (int    *) END(m,q);
-    m->bond_flag = 0;
-    m->bond_rl = 0.0;
+  struct {size_t r_size; size_t a_size;} bonds = {0, 0};
+  if(b!=-1){
+    bonds.a_size = sizeof(int   ) * n*BONDS_MAX;
+    bonds.r_size = sizeof(double) * n*BONDS_MAX;
+  }
+  size_t size = sizeof(atcoord) + q_size + r_size + bonds.a_size + bonds.r_size;
+  atcoord * m = calloc(size, 1);
+
+  if(b==-1){
+    m->r       = (double *) (m + 1);
+    m->q       = (int    *) MEM_END(m,r);
   }
   else{
-    size_t size = sizeof(atcoord) + q_size + r_size;
-    m = malloc(size);
-    m->n = n;
-    m->r      = (double *) (m + 1);
-    m->bond_r = NULL;
-    m->q      = (int    *) END(m,r);
-    m->bond_a = NULL;
-    m->bond_flag = -1;
-    m->bond_rl = 0.0;
+    m->r       = (double *) (m + 1);
+    m->bonds.r = (double *) MEM_END(m,r);
+    m->q       = (int    *) MEM_END(m,bonds.r);
+    m->bonds.a = (int    *) MEM_END(m,q);
   }
 
-  memset(m->sym, 0, sizeof(m->sym));
-  m->fname = fname;
-
+  m->n = n;
+  m->fname = m0->name;
   for(int i=0; i<n; i++){
-    m->q[i] = a[i].t;
-    if(bohr){
-      r3scal(a[i].r, BA);
-    }
-    r3cp(m->r+i*3, a[i].r);
+    m->q[i] = m0->q[i];
+    r3cp(m->r+i*3, m0->r+i*3);
   }
-  if(inertia){
-    mol M = {.n=m->n, .q=m->q, .r=m->r};
-    position(&M, NULL, 1);
+
+  if(geom.bohr){
+    vecscal(n*3, m->r, BA);
   }
-  if(center){
-    center_mol(n, m->r, center==2 ? m->q : NULL);
+  if(geom.inertia){
+    // should not change m0
+    position(&((mol){.n=n, .q=m->q, .r=m->r}), NULL, 1);
+  }
+  if(geom.center){
+    center_mol(n, m->r, geom.center==2 ? m->q : NULL);
   }
 
   return m;
 }
 
+atcoord * ac3_read(readpars read, int b, const geompars geom, format_t * format){
 
-atcoord * ac3_read(FILE * f, int b, int center, int inertia, int bohr, const char * fname, format_t * format){
-
-  int n;
-  int zmat=0;
-  txyz * a;
+  mol * m = NULL;
+  FILE * f = read.f;
 
   switch(*format){
     case XYZ:
-      if((a=ac3_read_xyz(&n, f))){
+      if((m=ac3_read_xyz(f))){
         *format = XYZ;
       }
       break;
     case IN:
-      if((a=ac3_read_in(&n, &zmat, f))){
+      if((m=ac3_read_in(f))){
         *format = IN;
       }
       break;
     case OUT:
-      if((a=ac3_read_out(&n, f))){
+      if((m=ac3_read_out(f))){
         *format = OUT;
       }
       break;
     default:
-      if((a=ac3_read_xyz(&n, f))){
+      if((m=ac3_read_xyz(f))){
         *format = XYZ;
       }
-      if(!a){
-        if((a=ac3_read_in(&n, &zmat, f))){
+      if(!m){
+        if((m=ac3_read_in(f))){
           *format = IN;
         }
       }
-      if(!a){
-        if((a=ac3_read_out(&n, f))){
+      if(!m){
+        if((m=ac3_read_out(f))){
           *format = OUT;
         }
       }
       break;
   }
-  if(!a){
+  if(!m){
     return NULL;
   }
+  m->name = read.fname;
 
-  atcoord * m = atcoord_fill(n, a, fname, b, center, inertia, bohr);
-
-#if 0
-  printf("%d\n\n", n);
-  for(int i=0; i<n; i++){
-    printf("%d\t%lf\t%lf\t%lf\n", m->q[i], m->r[i*3  ], m->r[i*3+1], m->r[i*3+2]);
-  }
-#endif
-  free(a);
-  return m;
+  atcoord * M = atcoord_fill(m, b, geom);
+  free(m);
+  return M;
 }
 

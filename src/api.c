@@ -2,21 +2,24 @@
 #include "v.h"
 
 #define PRINTBUFLEN (1024*128)
-#define FREE0(PTR) { free(PTR); PTR = NULL; }
 
 struct {
-  int n_inp_mols;
-  inp_mols_t * inp_mols;
+  mol * inp_mols;
   char * out_str;
+  int n_inp_mols;
 } globals;
 
 char * main_wrap_out(int argc, char * argv[], int * ret) {
   globals.out_str = calloc(PRINTBUFLEN, 1);
+  if(!globals.out_str){
+    *ret = -1;
+    return NULL;
+  }
   *ret = main(argc, argv);
   return globals.out_str;
 }
 
-int main_wrap_in(int argc, char * argv[], int n_inp_mols, inp_mols_t * inp_mols) {
+int main_wrap_in(int argc, char * argv[], int n_inp_mols, mol * inp_mols) {
   globals.inp_mols = inp_mols;
   globals.n_inp_mols = n_inp_mols;
   int ret = main(argc, argv);
@@ -26,9 +29,13 @@ int main_wrap_in(int argc, char * argv[], int n_inp_mols, inp_mols_t * inp_mols)
 }
 
 char * main_wrap_in_out(int argc, char * argv[],
-                        int n_inp_mols, inp_mols_t * inp_mols,
+                        int n_inp_mols, mol * inp_mols,
                         int * ret){
   globals.out_str = calloc(PRINTBUFLEN, 1);
+  if(!globals.out_str){
+    *ret = -1;
+    return NULL;
+  }
   *ret = main_wrap_in(argc, argv, n_inp_mols, inp_mols);
   return globals.out_str;
 }
@@ -65,7 +72,12 @@ void PRINTOUT(FILE * f, char * format, ...){
 
     if(m >= size){
       N = m < N ? N * 2 : N + 2*m;
-      globals.out_str = realloc(globals.out_str, N);
+      char * tmp = realloc(globals.out_str, N);
+      if(!tmp){
+        PRINT_ERR("cannot reallocate output buffer\n");
+        abort();
+      }
+      globals.out_str = tmp;
       va_start(args, format);
       vsnprintf(globals.out_str+n, N-n, format, args);
       va_end(args);
@@ -75,15 +87,15 @@ void PRINTOUT(FILE * f, char * format, ...){
   }
 }
 
-void * READ_FILES(drawpars * dp){
-  void * ret;
+object * READ_FILES(allpars * ap){
+  object * ret;
   if(!globals.inp_mols){
-    ret = read_files(dp);
+    ret = read_files(ap);
   }
   else{
-    ret = get_in_str(globals.n_inp_mols, globals.inp_mols, dp);
+    ret = acs_from_var(globals.n_inp_mols, globals.inp_mols, ap);
   }
-  FREE0(dp->input_files);
+  FREE0(ap->ip.input_files);
   return ret;
 }
 

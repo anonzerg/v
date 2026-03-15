@@ -1,6 +1,10 @@
 #include "v.h"
 #include "x.h"
 
+#define EPS 1e-15
+#define BOND_OFFSET 0.666          // bond line starts this fraction of the atom radius away from the atom center
+#define RESOL_SCALE (128.0/768.0)  // reference resolution for atom sizes
+
 extern int W,H;
 extern int       screen;
 extern Display * dis;
@@ -30,27 +34,27 @@ static int cmpz(const void * p1, const void * p2){
     return  0;
 }
 
-void ac3_draw(atcoord * ac, double r0, double scale, double xy0[2], int b, int num){
+void ac3_draw(atcoord * ac, rendpars rend){
 
-#define SCREEN_X(X)  (W/2 + d*(xy0[0] + (X)))
-#define SCREEN_Y(Y)  (H/2 - d*(xy0[1] + (Y)))
+#define SCREEN_X(X)  (W/2 + d*(rend.xy0[0] + (X)))
+#define SCREEN_Y(Y)  (H/2 - d*(rend.xy0[1] + (Y)))
 
   CLEARCANV;
 
   int n = ac->n;
   kzstr * kz = malloc(sizeof(kzstr)*n);
-  int   * ks = (b>0) ? malloc(sizeof(int)*n) : NULL;
+  int   * ks = (rend.bonds>0) ? malloc(sizeof(int)*n) : NULL;
 
-  double d     = MIN(H,W) * scale;
-  double resol = MIN(H,W) * (128.0/768.0);
-  double r1  = r0 * resol * scale;
+  double d     = MIN(H,W) * rend.scale;
+  double resol = MIN(H,W) * RESOL_SCALE;
+  double r1  = rend.r * resol * rend.scale;
 
   for(int k=0; k<n; k++){
     kz[k].k = k;
     kz[k].z = ac->r[k*3+2];
   }
   qsort(kz, n, sizeof(kzstr), cmpz);
-  if(b>0){
+  if(rend.bonds>0){
     for(int i=0; i<n; i++){
       ks[ kz[i].k ] = i;
     }
@@ -70,21 +74,21 @@ void ac3_draw(atcoord * ac, double r0, double scale, double xy0[2], int b, int n
       XDrawArc(dis, canv, q>0?gc_black:gc_dot[1], x-r, y-r, 2*r, 2*r, 0, 360*64);
     }
 
-    if(num == 1){
+    if(rend.num == 1){
       char text[16];
       snprintf(text, sizeof(text), "%d", k+1);
       myDrawString(dis, canv, gc_black, x, y, text, strlen(text));
     }
-    else if(num == -1){
+    else if(rend.num == -1){
       char text[16];
       const char * s = getname(q);
       s ? snprintf(text, sizeof(text), "%s", s) :  snprintf(text, sizeof(text), "%d", q );
       myDrawString(dis, canv, gc_black, x, y, text, strlen(text));
     }
 
-    if(b>0){
+    if(rend.bonds>0){
       for(int j=k*BONDS_MAX; j<(k+1)*BONDS_MAX; j++){
-        int k1 = ac->bond_a[j];
+        int k1 = ac->bonds.a[j];
         if(k1 == -1 ){
           break;
         }
@@ -96,14 +100,14 @@ void ac3_draw(atcoord * ac, double r0, double scale, double xy0[2], int b, int n
         int dx = x1-x;
         int dy = y1-y;
         double r2d = dx*dx+dy*dy;
-        if(r2d < 1e-15){
+        if(r2d < EPS){
           continue;
         }
-        double dd = 0.666 * r / sqrt(r2d);
+        double dd = BOND_OFFSET * r / sqrt(r2d);
         XDrawLine(dis, canv, gc_black, x+dd*dx, y+dd*dy, x1, y1);
-        if(b==2){
+        if(rend.bonds==2){
           char text[16];
-          snprintf(text, sizeof(text), "%.3lf", ac->bond_r[j]);
+          snprintf(text, sizeof(text), "%.3lf", ac->bonds.r[j]);
           myDrawString(dis, canv, gc_black, x+dx/2, y+dy/2, text, strlen(text));
         }
       }

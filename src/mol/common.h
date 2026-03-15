@@ -6,6 +6,14 @@
 #define   BA    0.5291772
 #define   AB    1.88972616356109068947
 
+#define S_TO_MS 1e6
+#define MS_TO_S (1.0/(S_TO_MS))
+
+#define CLOSE0(F) {if(F){ fclose(F); F = NULL; }}
+#define FREE0(PTR) {if(PTR){ free(PTR); PTR = NULL; }}
+
+#define MEM_END(S,X) ( (S)->X + (X##_size)/sizeof(*((S)->X)) )
+
 #define MAX(x,y) ( ((x) > (y)) ? (x) : (y) )
 #define MIN(x,y) ( ((x) < (y)) ? (x) : (y) )
 

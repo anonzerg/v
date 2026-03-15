@@ -1,6 +1,7 @@
 #include "v.h"
 #include "vec3.h"
 
+#define DMAX_SCALE 2.01  // look for bonds within max. atom diameter + eps
 #define boxnumber(BOX,NB) (BOX[0]*NB[1]*NB[2] + BOX[1]*NB[2] + BOX[2])
 
 static int cmpint(const void * p1, const void * p2){
@@ -32,9 +33,10 @@ static void makelist(int bsize_max, int * bsize, int * list,
   return;
 }
 
-static void bonds_add(double rl, double bmax, atcoord * ac){
-
-  double dmax = (bmax > 0.0) ? bmax : (2.01 * rl * getmaxradius(ac->n, ac->q));
+static void bonds_add(bondpars bond, atcoord * ac){
+  double bmax = bond.bmax;
+  double rl   = bond.rl;
+  double dmax = (bmax > 0.0) ? bmax : (DMAX_SCALE * rl * getmaxradius(ac->n, ac->q));
 
   double rmin[3], rmax[3];
   r3cp(rmin, ac->r);
@@ -86,8 +88,8 @@ static void bonds_add(double rl, double bmax, atcoord * ac){
         for(int ii=0; ii<bsize[i]; ii++){
           int k1 = list[bsize_max*i+ii];
 
-          if(ac->bond_rl > 0.0 && ac->bond_a[k1*BONDS_MAX+BONDS_MAX-1] != -1){
-            // at the 1st time ac->bond_rl==0.0
+          if(ac->bonds.rl > 0.0 && ac->bonds.a[k1*BONDS_MAX+BONDS_MAX-1] != -1){
+            // at the 1st time ac->bond->rl==0.0
             if(!warned){
               PRINT_WARN("too many bonds (>= %d)\n", BONDS_MAX);
               warned = 1;
@@ -96,7 +98,7 @@ static void bonds_add(double rl, double bmax, atcoord * ac){
           }
 
           for(int l=0; l<BONDS_MAX; l++){
-            ac->bond_a[k1*BONDS_MAX+l] = -1;
+            ac->bonds.a[k1*BONDS_MAX+l] = -1;
           }
 
           int nb = 0;
@@ -122,7 +124,7 @@ static void bonds_add(double rl, double bmax, atcoord * ac){
                     continue;
                   }
                   if(nb<BONDS_MAX){
-                    ac->bond_a[k1*BONDS_MAX+nb] = k2;
+                    ac->bonds.a[k1*BONDS_MAX+nb] = k2;
                     nb++;
                   }
                   else{
@@ -137,10 +139,10 @@ static void bonds_add(double rl, double bmax, atcoord * ac){
             }
           }
 toomany:
-          qsort(ac->bond_a+k1*BONDS_MAX, nb, sizeof(int), cmpint);
+          qsort(ac->bonds.a+k1*BONDS_MAX, nb, sizeof(int), cmpint);
           for(int l=0; l<nb; l++){
-            int k2 = ac->bond_a[k1*BONDS_MAX+l];
-            ac->bond_r[k1*BONDS_MAX+l] = sqrt(r3d2(ac->r+k1*3, ac->r+k2*3));
+            int k2 = ac->bonds.a[k1*BONDS_MAX+l];
+            ac->bonds.r[k1*BONDS_MAX+l] = sqrt(r3d2(ac->r+k1*3, ac->r+k2*3));
           }
 
         }
@@ -153,36 +155,34 @@ toomany:
   return;
 }
 
-static void bonds_reduce(double rl, atcoord * ac){
+static void bonds_reduce(bondpars bond, atcoord * ac){
   for(int k1=0; k1<ac->n; k1++){
     double r1 = getradius(ac->q[k1]);
     int nb = 0;
     for(int j=0; j<BONDS_MAX; j++){
-      int    k2 = ac->bond_a[k1*BONDS_MAX+j];
+      int    k2 = ac->bonds.a[k1*BONDS_MAX+j];
       if(k2==-1) break;
-      double r  = ac->bond_r[k1*BONDS_MAX+j];
+      double r  = ac->bonds.r[k1*BONDS_MAX+j];
       double r2 = getradius(ac->q[k2]);
-      if( r < rl*(r1+r2) ){
-        ac->bond_a[k1*BONDS_MAX+nb] = k2;
-        ac->bond_r[k1*BONDS_MAX+nb] = r;
+      if( r < bond.rl*(r1+r2) ){
+        ac->bonds.a[k1*BONDS_MAX+nb] = k2;
+        ac->bonds.r[k1*BONDS_MAX+nb] = r;
         nb++;
       }
     }
     for(int j=nb; j<BONDS_MAX; j++){
-      ac->bond_a[k1*BONDS_MAX+j] = -1;
+      ac->bonds.a[k1*BONDS_MAX+j] = -1;
     }
   }
   return;
 }
 
-void bonds_fill(double rl, double bmax, atcoord * ac){
-  if(rl > ac->bond_rl){
-    bonds_add   (rl, bmax, ac);
+void bonds_fill(bondpars bond, atcoord * ac){
+  if(ac->bonds.flag){
+    return;
   }
-  else{
-    bonds_reduce(rl, ac);
-  }
-  ac->bond_rl = rl;
+  (bond.rl > ac->bonds.rl) ? bonds_add(bond, ac) : bonds_reduce(bond, ac);
+  ac->bonds.rl = bond.rl;
+  ac->bonds.flag = 1;
   return;
 }
-

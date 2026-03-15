@@ -15,15 +15,17 @@
 * Add CLI option to disable centering of molecules (#14)
 * Disable default rotation wrt inertia axis for z-matrix input and add a CLI option to force it (#14)
 * Read molecules from the standard input
+* Improve data structures and code readability
 
 ### Fixes
 * Exit correctly when window closed (#10)
 * Fix chiral z-matrix input (#14)
 * Fix NaNs when compute dihedrals (#14)
+* Fix the "readagain" (`r`) and "readmore" (`tab`) bugs (#31)
+* Fix z-matrix input with unit=bohr (8554864)
 
 ### Coming in the next version:
 * extended xyz (#16, #17)
-* fix `readmore` bug (#7)
 * high-symmetry determination bugs (#21)
 * how to build on mac
 
