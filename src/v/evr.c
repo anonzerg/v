@@ -16,7 +16,7 @@ static const double vibration_amplitude = 0.1;
 static void redraw_ac3(object * ent, drawpars * dp){
   atcoord * ac = ent->m[dp->n];
 
-  if(dp->rend.bonds>0 && !ac->bond_flag){
+  if(dp->rend.bonds>0){
     bonds_fill(dp->bond, ac);
   }
 
@@ -43,7 +43,7 @@ static void redraw_vibro(object * ent, drawpars * dp){
   double  * r0 = ent->vib->r0;
   double  * dr = ent->vib->disp + dp->n * m->n*3;
 
-  if(dp->rend.bonds>0 && !m->bond_flag){
+  if(dp->rend.bonds>0){
     bonds_fill(dp->bond, m);
   }
 
@@ -138,7 +138,7 @@ void kp_print2fig(object * ent, drawpars * dp){
 
 static void rl_changed(object * ent, drawpars * dp){
   for(int i=0; i<ent->n; i++){
-    ent->m[i]->bond_flag = 0;
+    ent->m[i]->bonds.flag = 0;
   }
   exp_redraw(ent, dp);
   return;
@@ -304,8 +304,8 @@ static void move_pbc(object * acs, drawpars * dp, int dir, double d){
       mol2cell(r, dp);
     }
     if(dp->rend.bonds>0){
-      acs->m[i]->bond_flag = 0;
-      acs->m[i]->bond_rl *= rl_move_pbc_scale;
+      acs->m[i]->bonds.flag = 0;
+      acs->m[i]->bonds.rl *= rl_move_pbc_scale;
     }
   }
   return;

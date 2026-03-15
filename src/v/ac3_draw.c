@@ -88,7 +88,7 @@ void ac3_draw(atcoord * ac, rendpars rend){
 
     if(rend.bonds>0){
       for(int j=k*BONDS_MAX; j<(k+1)*BONDS_MAX; j++){
-        int k1 = ac->bond_a[j];
+        int k1 = ac->bonds.a[j];
         if(k1 == -1 ){
           break;
         }
@@ -107,7 +107,7 @@ void ac3_draw(atcoord * ac, rendpars rend){
         XDrawLine(dis, canv, gc_black, x+dd*dx, y+dd*dy, x1, y1);
         if(rend.bonds==2){
           char text[16];
-          snprintf(text, sizeof(text), "%.3lf", ac->bond_r[j]);
+          snprintf(text, sizeof(text), "%.3lf", ac->bonds.r[j]);
           myDrawString(dis, canv, gc_black, x+dx/2, y+dy/2, text, strlen(text));
         }
       }

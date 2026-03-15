@@ -3,44 +3,35 @@
 #include "vec3.h"
 
 atcoord * atcoord_fill(mol * m0, int b, const geompars geom){
-
   int n = m0->n;
 
   size_t q_size = sizeof(int   ) * n;
   size_t r_size = sizeof(double) * n*3;
-  atcoord * m;
-  if(b != -1){
-    size_t bond_a_size = sizeof(int   ) * n*BONDS_MAX;
-    size_t bond_r_size = sizeof(double) * n*BONDS_MAX;
-    size_t size = sizeof(atcoord) + q_size + r_size + bond_a_size + bond_r_size;
-    m = malloc(size);
-    m->n = n;
-    m->r      = (double *) (m + 1);
-    m->bond_r = (double *) MEM_END(m,r);
-    m->q      = (int    *) MEM_END(m,bond_r);
-    m->bond_a = (int    *) MEM_END(m,q);
-    m->bond_flag = 0;
-    m->bond_rl = 0.0;
+  struct {size_t r_size; size_t a_size;} bonds = {0, 0};
+  if(b!=-1){
+    bonds.a_size = sizeof(int   ) * n*BONDS_MAX;
+    bonds.r_size = sizeof(double) * n*BONDS_MAX;
+  }
+  size_t size = sizeof(atcoord) + q_size + r_size + bonds.a_size + bonds.r_size;
+  atcoord * m = calloc(size, 1);
+
+  if(b==-1){
+    m->r       = (double *) (m + 1);
+    m->q       = (int    *) MEM_END(m,r);
   }
   else{
-    size_t size = sizeof(atcoord) + q_size + r_size;
-    m = malloc(size);
-    m->n = n;
-    m->r      = (double *) (m + 1);
-    m->bond_r = NULL;
-    m->q      = (int    *) MEM_END(m,r);
-    m->bond_a = NULL;
-    m->bond_flag = -1;
-    m->bond_rl = 0.0;
+    m->r       = (double *) (m + 1);
+    m->bonds.r = (double *) MEM_END(m,r);
+    m->q       = (int    *) MEM_END(m,bonds.r);
+    m->bonds.a = (int    *) MEM_END(m,q);
   }
 
-  memset(m->sym, 0, sizeof(m->sym));
-
+  m->n = n;
+  m->fname = m0->name;
   for(int i=0; i<n; i++){
     m->q[i] = m0->q[i];
     r3cp(m->r+i*3, m0->r+i*3);
   }
-  m->fname = m0->name;
 
   if(geom.bohr){
     vecscal(n*3, m->r, BA);

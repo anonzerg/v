@@ -10,7 +10,7 @@ void ac3_print(atcoord * ac, rendpars rend){
                  ac->r[k*3+2]);
     if(rend.bonds>0){
       for(int j=0; j<BONDS_MAX; j++){
-        int k1 = ac->bond_a[k*BONDS_MAX+j];
+        int k1 = ac->bonds.a[k*BONDS_MAX+j];
         if(k1 == -1 ){
           break;
         }
@@ -64,7 +64,7 @@ void ac3_print2fig(atcoord * ac, rendpars rend, double * v){
   if(rend.bonds>0){
     for(int k=0; k<n; k++){
       for(int j=0; j<BONDS_MAX; j++){
-        int k1 = ac->bond_a[k*BONDS_MAX+j];
+        int k1 = ac->bonds.a[k*BONDS_MAX+j];
         if(k1 == -1 ){
           break;
         }

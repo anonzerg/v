@@ -49,7 +49,7 @@ void run_commands(FILE * f, char * command, drawpars * dp, object * ent){
 
 int headless(drawpars * dp, object * ent){
   atcoord * ac = ent->m[dp->n];
-  if(dp->rend.bonds>0 && !ac->bond_flag){
+  if(dp->rend.bonds>0){
     bonds_fill(dp->bond, ac);
   }
   run_commands(stdin, dp->ui.com, dp, ent);

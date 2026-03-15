@@ -20,23 +20,28 @@ typedef enum {
 } format_t;
 
 typedef struct {
+  int      flag;    // whether bonds are up-to-date. 0: no, 1: yes
+  double   rl;      // the last used bond length scale factor
+  int    * a;       // lists of bonded atoms
+  double * r;       // distances to the bonded atoms
+} bondstr;
+
+typedef struct {
   int      n;            // number of atoms
-  int      bond_flag;    // whether bonds are up-to-date. 0: no, 1: yes, -1: disabled
-  double   bond_rl;      // the last used bond length scale factor
   int    * q;            // charges of atoms
   double * r;            // coordinates of atoms
-  styp   sym;            // point group
-  int    * bond_a;       // lists of bounded atoms
-  double * bond_r;       // distances to the bonded atoms
   const char * fname;    // file name
+
   int nf[2];             // number of molecule in file, file size
+  styp   sym;            // point group
+  bondstr bonds;
 } atcoord;
 
 typedef struct {
-  int      n;
-  double * freq;
-  double * disp;
-  double * r0;
+  int      n;       // number of modes
+  double * freq;    // frequencies
+  double * disp;    // displacements
+  double * r0;      // atom configuration at the central point
 } vibr_t;
 
 typedef struct {

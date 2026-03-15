@@ -88,8 +88,8 @@ static void bonds_add(bondpars bond, atcoord * ac){
         for(int ii=0; ii<bsize[i]; ii++){
           int k1 = list[bsize_max*i+ii];
 
-          if(ac->bond_rl > 0.0 && ac->bond_a[k1*BONDS_MAX+BONDS_MAX-1] != -1){
-            // at the 1st time ac->bond_rl==0.0
+          if(ac->bonds.rl > 0.0 && ac->bonds.a[k1*BONDS_MAX+BONDS_MAX-1] != -1){
+            // at the 1st time ac->bond->rl==0.0
             if(!warned){
               PRINT_WARN("too many bonds (>= %d)\n", BONDS_MAX);
               warned = 1;
@@ -98,7 +98,7 @@ static void bonds_add(bondpars bond, atcoord * ac){
           }
 
           for(int l=0; l<BONDS_MAX; l++){
-            ac->bond_a[k1*BONDS_MAX+l] = -1;
+            ac->bonds.a[k1*BONDS_MAX+l] = -1;
           }
 
           int nb = 0;
@@ -124,7 +124,7 @@ static void bonds_add(bondpars bond, atcoord * ac){
                     continue;
                   }
                   if(nb<BONDS_MAX){
-                    ac->bond_a[k1*BONDS_MAX+nb] = k2;
+                    ac->bonds.a[k1*BONDS_MAX+nb] = k2;
                     nb++;
                   }
                   else{
@@ -139,10 +139,10 @@ static void bonds_add(bondpars bond, atcoord * ac){
             }
           }
 toomany:
-          qsort(ac->bond_a+k1*BONDS_MAX, nb, sizeof(int), cmpint);
+          qsort(ac->bonds.a+k1*BONDS_MAX, nb, sizeof(int), cmpint);
           for(int l=0; l<nb; l++){
-            int k2 = ac->bond_a[k1*BONDS_MAX+l];
-            ac->bond_r[k1*BONDS_MAX+l] = sqrt(r3d2(ac->r+k1*3, ac->r+k2*3));
+            int k2 = ac->bonds.a[k1*BONDS_MAX+l];
+            ac->bonds.r[k1*BONDS_MAX+l] = sqrt(r3d2(ac->r+k1*3, ac->r+k2*3));
           }
 
         }
@@ -160,32 +160,29 @@ static void bonds_reduce(bondpars bond, atcoord * ac){
     double r1 = getradius(ac->q[k1]);
     int nb = 0;
     for(int j=0; j<BONDS_MAX; j++){
-      int    k2 = ac->bond_a[k1*BONDS_MAX+j];
+      int    k2 = ac->bonds.a[k1*BONDS_MAX+j];
       if(k2==-1) break;
-      double r  = ac->bond_r[k1*BONDS_MAX+j];
+      double r  = ac->bonds.r[k1*BONDS_MAX+j];
       double r2 = getradius(ac->q[k2]);
       if( r < bond.rl*(r1+r2) ){
-        ac->bond_a[k1*BONDS_MAX+nb] = k2;
-        ac->bond_r[k1*BONDS_MAX+nb] = r;
+        ac->bonds.a[k1*BONDS_MAX+nb] = k2;
+        ac->bonds.r[k1*BONDS_MAX+nb] = r;
         nb++;
       }
     }
     for(int j=nb; j<BONDS_MAX; j++){
-      ac->bond_a[k1*BONDS_MAX+j] = -1;
+      ac->bonds.a[k1*BONDS_MAX+j] = -1;
     }
   }
   return;
 }
 
 void bonds_fill(bondpars bond, atcoord * ac){
-  if(bond.rl > ac->bond_rl){
-    bonds_add   (bond, ac);
+  if(ac->bonds.flag){
+    return;
   }
-  else{
-    bonds_reduce(bond, ac);
-  }
-  ac->bond_rl = bond.rl;
-  ac->bond_flag = 1;
+  (bond.rl > ac->bonds.rl) ? bonds_add(bond, ac) : bonds_reduce(bond, ac);
+  ac->bonds.rl = bond.rl;
+  ac->bonds.flag = 1;
   return;
 }
-
