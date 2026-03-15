@@ -4,11 +4,13 @@
 
 mol * ac3_read_out(FILE * f){
 
+  long pos0 = ftell(f);
+
   // find where the molecule begins
   char s[STRLEN];
   while(1){
     if(!fgets(s, sizeof(s), f)){
-      return NULL;
+      goto hell;
     }
     if(strstr(s, "Atomic Coordinates:")){
       break;
@@ -16,21 +18,24 @@ mol * ac3_read_out(FILE * f){
   }
 
   // count atoms
-  long pos = ftell(f);
+  long pos1 = ftell(f);
   int n=0;
   while(read_cart_atom(f, n, NULL)){
     n++;
   }
   if(!n){
-    return NULL;
+    goto hell;
   }
-  fseek(f, pos, SEEK_SET);
+  fseek(f, pos1, SEEK_SET);
 
   // fill in
   mol * m = alloc_mol(n);
   for(int i=0; i<n; i++){
     read_cart_atom(f, i, m);
   }
-
   return m;
+
+hell:
+  fseek(f, pos0, SEEK_SET);
+  return NULL;
 }
