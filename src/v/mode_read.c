@@ -13,35 +13,15 @@ static inline vibr_t * make_vibr_t(int n_modes, int n_atoms){
   return v;
 }
 
-static int readb(FILE * f, int i, int Nmax, int N, int na, vibr_t * m){
+static int readb(FILE * f, int i, int Nmax, int N, int na, vibr_t * vib){
   double d;
   char   s[STRLEN];
   int    t,k,j;
 
-  for (j=0; j<3; j++){
+  for (j=0; j<5; j++){
     if (!fgets(s, sizeof(s), f)) {
       return -1;
     }
-  }
-
-  for (j=0; j<N; j++){
-    if (fscanf (f, (j ? "%lf" : " freq. %lf" ), &d) != 1) {
-      return -1;
-    }
-    if (fscanf (f, "%c%c", s, s+1) != 2) {
-      return -1;
-    }
-    if(s[1]=='i'){
-      d = -d;
-    }
-    m->freq[i*Nmax+j] = d;
-  }
-
-  if (!fgets(s, sizeof(s), f)) {
-    return -1;
-  }
-  if (!fgets(s, sizeof(s), f)) {
-    return -1;
   }
 
   for (k=0; k<na*3; k++){
@@ -54,13 +34,13 @@ static int readb(FILE * f, int i, int Nmax, int N, int na, vibr_t * m){
       if (fscanf (f, "%lf", &d) != 1) {
         return -1;
       }
-      m->disp[3*na*(i*Nmax+j)+k] = d;
+      vib->disp[3*na*(i*Nmax+j)+k] = d;
     }
   }
 #if 0
   for (j=0; j<N; j++){
     for (k=0; k<na*3; k++){
-      printf("%lf\t", m->d[3*na*(i*Nmax+j)+k]);
+      printf("%lf\t", vib->d[3*na*(i*Nmax+j)+k]);
     }
     printf("\n");
   }
@@ -85,6 +65,8 @@ vibr_t * mode_read (FILE * f, int na){
   if (!fgets(s, sizeof(s), f)){
     return NULL;
   }
+
+  long pos = ftell(f);
   while(1){
     if (!fgets(s, sizeof(s), f)) {
       return NULL;
@@ -96,10 +78,39 @@ vibr_t * mode_read (FILE * f, int na){
       n++;
     }
   }
+  fseek(f, pos, SEEK_SET);
 
-  vibr_t * m = make_vibr_t(n, na);
+  vibr_t * vib = make_vibr_t(n, na);
 
-  for (int i=0; i<3; i++){
+  for(int i=0; i<n; i++){
+    double intens;
+    fgets(s, sizeof(s), f);
+
+    for(int j=0; j<5; j++){
+      char * s_end;
+      char * ts = strtok(j?NULL:s, "|");
+      if(!ts){
+        goto hell;
+      }
+      else if(j==2){
+        vib->freq[i] = strtod(ts, &s_end);
+        if(s_end == ts){
+          goto hell;
+        }
+        else if(strchr(ts, 'i')){
+          vib->freq[i] *= -1;
+        }
+      }
+      else if(j==4){
+        intens = strtod(ts, &s_end);
+        if(s_end == ts){
+          goto hell;
+        }
+      }
+    }
+  }
+
+  for (int i=0; i<4; i++){
     if (!fgets(s, sizeof(s), f)) {
       goto hell;
     }
@@ -109,20 +120,20 @@ vibr_t * mode_read (FILE * f, int na){
   int nb  = n/N;
   int i;
   for (i=0; i<nb; i++){
-    if (readb(f, i, N, N, na, m)){
+    if (readb(f, i, N, N, na, vib)){
       goto hell;
     }
   }
   if(nb1){
-    if (readb(f, i, N, nb1, na, m)){
+    if (readb(f, i, N, nb1, na, vib)){
       goto hell;
     }
   }
 
-  return m;
+  return vib;
 
 hell:
-  free(m);
+  free(vib);
   return NULL;
 }
 
