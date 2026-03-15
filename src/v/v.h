@@ -38,10 +38,11 @@ typedef struct {
 } atcoord;
 
 typedef struct {
-  int      n;       // number of modes
-  double * freq;    // frequencies
-  double * disp;    // displacements
-  double * r0;      // atom configuration at the central point
+  int      n;     // number of modes
+  double * freq;  // frequencies (cm-1)
+  double * ints;  // intensities
+  double * disp;  // displacements
+  double * r0;    // atom configuration at the central point
 } vibr_t;
 
 typedef struct {
