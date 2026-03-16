@@ -94,7 +94,8 @@ jobs:
       - name: Download build artifacts from this run
         uses: actions/download-artifact@v4
         with:
-          name: vmol-wheels-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_number }}
+          pattern: vmol-wheels-*-${{ github.ref_name }}-${{ github.run_number }}
+          merge-multiple: true
           path: dist
 
       - name: Publish to TestPyPI
