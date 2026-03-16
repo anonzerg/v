@@ -193,7 +193,7 @@ int savepic(char * s){
   a.valuemask = (0 | XpmSize) ;
   a.width     = world.W;
   a.height    = world.H;
-  return XpmWriteFileFromPixmap(world.dis, s, world.px, 0, &a);
+  return XpmWriteFileFromPixmap(world.dis, s, world.px, 0, &a)==XpmSuccess;
 }
 
 void clear_canv(){ // TODO other canvases?

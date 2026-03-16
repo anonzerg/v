@@ -81,6 +81,10 @@ allpars cli_parse(int argc, char ** argv);
 // loop.c
 void main_loop(object * ent, drawpars * dp, ptf kp[NKP]);
 
+// redraw.c
+void redraw_ac3(object * ent, drawpars * dp);
+void redraw_vibro(object * ent, drawpars * dp);
+
 // ac3_draw.c
 void ac3_draw      (atcoord * ac, rendpars rend);
 // ac3_print.c

@@ -1,5 +1,11 @@
-#include "3d.h"
 #define TMAX 20
+#define VIBR_AMP   0.1
+#define STEP_ROT  (M_PI/90.0)
+#define STEP_MOVE  0.2
+#define STEP_ZOOM  1.1
+#define STEP_R     1.1
+#define STEP_MOD   0.03125
+#define RL_MOVE_PBC_SCALE 0.9
 
 void kp_readmore (object * ent, drawpars * dp);
 void kp_readagain(object * ent, drawpars * dp);
