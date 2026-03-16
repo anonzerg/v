@@ -170,7 +170,7 @@ object * read_files(allpars * ap){
   return ent;
 }
 
-object * acs_from_var(int n, mol * m, allpars * ap){
+object * acs_from_var(int n, mol * m, vibr_t vib, allpars * ap){
   drawpars * dp = &ap->dp;
   initpars * ip = &ap->ip;
 
