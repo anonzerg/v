@@ -42,6 +42,7 @@ typedef struct {
   double * freq;  // frequencies (cm-1)
   double * ints;  // intensities
   double * disp;  // displacements
+  double * mass;  // masses
   double * r0;    // atom configuration at the central point
 } vibr_t;
 
