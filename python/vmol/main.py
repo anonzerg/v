@@ -422,6 +422,8 @@ def vib2struct(nat, vib=None):
                 msg = f"vib must contain '{key}'"
                 raise ValueError(msg)
             x = np.zeros(shape, dtype=dtype)
+            msg = f"vib does not contain '{key}'"
+            warn(msg, RuntimeWarning, stacklevel=3)
         else:
             try:
                 x = np.require(x, dtype=dtype, requirements=['C_CONTIGUOUS', 'OWNDATA'])

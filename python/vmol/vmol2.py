@@ -20,8 +20,10 @@ def read_mols_from_cclib(path):
         path (str): Path to the file to read.
 
     Returns:
-        list[dict]: Dictionaries containing atomic numbers ('q'), coordinates ('r'),
-                    and a name for each molecule, i.e. suitable argument for vmol.run().
+        tuple containing:
+            list[dict]: Dictionaries containing atomic numbers ('q'), coordinates ('r'),
+                        and a name for each molecule, i.e. suitable argument for vmol.run().
+            dict or None: Dictionary containing vibrational frequencies ('freq') and modes ('disp').
 
     Raises:
         FileNotFoundError: If the specified file is not found.
@@ -47,7 +49,12 @@ def read_mols_from_cclib(path):
         msg = f"No coordinates found in {path}."
         raise RuntimeError(msg)
 
-    return [{'q': data.atomnos, 'r': r, 'name': str(parser)} for r in data.atomcoords]
+    cclib2vmol = {"vibdisps":"disp", "vibfreqs":"freq", "vibrmasses":"mass", "vibirs":"ints"}
+    vib = {key2: getattr(data, key1, None) for key1, key2 in cclib2vmol.items()}
+    if vib["disp"] is None or vib["freq"] is None:
+        vib = None
+
+    return [{'q': data.atomnos, 'r': r, 'name': str(parser)} for r in data.atomcoords], vib
 
 
 def main():
@@ -74,21 +81,29 @@ def main():
 
     to_pop = []
     mols = []
+    vib = None
     for i, arg in enumerate(sys.argv[1:], start=1):
         if ':' in arg:
             continue
         to_pop.append(i)
         try:
-            mols.extend(read_mols_from_cclib(arg))
+            m, v = read_mols_from_cclib(arg)
         except (FileNotFoundError, RuntimeError) as e:
+            m, v = [], None
             warnings.warn(str(e), RuntimeWarning, stacklevel=2)
+        if len(mols)==0 and v is not None:
+            mols, vib = m, v
+            break
+        mols.extend(m)
+
     if not mols:
         msg = "No valid molecular data found in any provided files."
         raise RuntimeError(msg)
 
     for i in reversed(to_pop):
         sys.argv.pop(i)
-    return vmol.run(mols=mols, args=sys.argv, with_arg0=True)
+
+    return vmol.run(mols=mols, vib=vib, args=sys.argv, with_arg0=True)
 
 
 if __name__ == "__main__":
