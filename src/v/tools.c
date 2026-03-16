@@ -61,7 +61,7 @@ void vibro_text(vibr_t * ms, drawpars * dp){
   double fq = ms->freq[dp->n];
   char i = fq > 0.0 ? ' ' : 'i';
   snprintf(text, sizeof(text),
-           "%*d / %d   freq = %.1lf%c cm-1   int = %.1lf   mass = %.1lf  |  r = %.1lf   rl = %.1lf",
+           "%*d / %d   freq = %.1lf%c cm-1   int = %.1lf km/mole   mass = %.1lf amu  |  r = %.1lf   rl = %.1lf",
            1+(int)(log10(ms->n)), dp->n+1, ms->n, fabs(fq), i, ms->ints[dp->n], ms->mass[dp->n], dp->rend.r, dp->bond.rl);
   textincorner(text, dp->read.fname);
   if(dp->ui.input==1){
