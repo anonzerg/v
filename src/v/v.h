@@ -7,6 +7,7 @@
 #define POINTER_SPEED 2.0
 #define STRLEN 256
 #define BIGSTRLEN 4096
+#define MAX_LINES 3
 
 #include "pars.h"
 
@@ -99,8 +100,7 @@ int get_element(char * s);
 void close_x      (void);
 void init_x       (const char * const capt, const colorscheme_t colorscheme);
 void init_font    (char * fontname);
-void textincorner (const char * const text1, const char * const text2);
-void textincorner2(const char * const text1);
+void textincorner (const char * const lines[MAX_LINES], const int red[MAX_LINES]);
 void setcaption   (const char * const capt);
 void drawvertices (double * v, double scale, double xy0[2]);
 void drawshell    (double rmin, double rmax, double scale, double * xy0);
@@ -112,8 +112,6 @@ int process_x_input(char input_text[STRLEN], unsigned int keycode);
 
 // tools.c
 void obj_free(object * ent);
-void ac3_text(atcoord * ac, drawpars * dp);
-void vibro_text(vibr_t * ms, drawpars * dp);
 void pg(atcoord * a, double symtol);
 
 // headless.c

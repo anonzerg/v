@@ -127,6 +127,7 @@ void init_font(char * fontname){
   world.fontInfo = XLoadQueryFont(world.dis, fontname);
   if(world.fontInfo){
     XSetFont (world.dis, world.gc_black, world.fontInfo->fid);
+    XSetFont (world.dis, world.gc_red,   world.fontInfo->fid);
   }
   else{
     PRINT_WARN("cannot load font '%s'\n", fontname);
@@ -134,18 +135,13 @@ void init_font(char * fontname){
   return;
 }
 
-void textincorner(const char * const text1, const char * const text2){
+void textincorner(const char * const lines[MAX_LINES], const int red[MAX_LINES]){
   int voffset = world.fontInfo ? (world.fontInfo->ascent + world.fontInfo->descent + 5) : 20;
-  XDrawString(world.dis, world.canv, world.gc_black, 10, voffset, text1, strlen(text1));
-  if(text2){
-    XDrawString(world.dis, world.canv, world.gc_black, 10, voffset*2, text2, strlen(text2));
+  for(int i=0; i<MAX_LINES; i++){
+    if(lines[i]){
+      XDrawString(world.dis, world.canv, red[i] ? world.gc_red:world.gc_black, 10, voffset*(i+1), lines[i], strlen(lines[i]));
+    }
   }
-  return;
-}
-
-void textincorner2(const char * const text1){
-  int voffset = world.fontInfo ? (world.fontInfo->ascent + world.fontInfo->descent + 5) : 20;
-  XDrawString(world.dis, world.canv, world.gc_red, 10, voffset*3, text1, strlen(text1));
   return;
 }
 
