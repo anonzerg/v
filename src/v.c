@@ -2,61 +2,54 @@
 #include "x.h"
 #include "evr.h"
 
-Display * dis;
-int       screen;
-Window    win;
-GC        gc_white, gc_black, gc_red, gc_dot[2], gcc[NCOLORS];
-Pixmap    px;
-Drawable  canv;
-XFontStruct * fontInfo;
-int       W,H;
-int (*myDrawString)();
-
+draw_world_t world;
 
 static void init_keys(ptf kp[NKP]){
   memset(kp, 0, sizeof(ptf)*NKP);
-  kp[ XKeysymToKeycode(dis, XK_Escape    ) ] = kp_exit      ;
-  kp[ XKeysymToKeycode(dis, XK_period    ) ] = kp_pg        ;
-  kp[ XKeysymToKeycode(dis, XK_1         ) ] = kp_rl_dec    ;
-  kp[ XKeysymToKeycode(dis, XK_2         ) ] = kp_rl_inc    ;
-  kp[ XKeysymToKeycode(dis, XK_3         ) ] = kp_r_dec     ;
-  kp[ XKeysymToKeycode(dis, XK_4         ) ] = kp_r_inc     ;
-  kp[ XKeysymToKeycode(dis, XK_0         ) ] = kp_goto_1st  ;
-  kp[ XKeysymToKeycode(dis, XK_equal     ) ] = kp_goto_last ;
-  kp[ XKeysymToKeycode(dis, XK_BackSpace ) ] = kp_frame_dec ;
-  kp[ XKeysymToKeycode(dis, XK_Tab       ) ] = kp_readmore  ;
-  kp[ XKeysymToKeycode(dis, XK_q         ) ] = kp_exit      ;
-  kp[ XKeysymToKeycode(dis, XK_w         ) ] = kp_move_u    ;
-  kp[ XKeysymToKeycode(dis, XK_r         ) ] = kp_readagain ;
-  kp[ XKeysymToKeycode(dis, XK_t         ) ] = kp_t_toggle  ;
-  kp[ XKeysymToKeycode(dis, XK_u         ) ] = kp_printrot  ;
-  kp[ XKeysymToKeycode(dis, XK_p         ) ] = kp_print2fig ;
-  kp[ XKeysymToKeycode(dis, XK_Return    ) ] = kp_frame_inc ;
-  kp[ XKeysymToKeycode(dis, XK_a         ) ] = kp_move_l    ;
-  kp[ XKeysymToKeycode(dis, XK_s         ) ] = kp_move_d    ;
-  kp[ XKeysymToKeycode(dis, XK_d         ) ] = kp_move_r    ;
-  kp[ XKeysymToKeycode(dis, XK_f         ) ] = kp_film      ;
-  kp[ XKeysymToKeycode(dis, XK_j         ) ] = kp_jump      ;
-  kp[ XKeysymToKeycode(dis, XK_l         ) ] = kp_l_toggle  ;
-  kp[ XKeysymToKeycode(dis, XK_z         ) ] = kp_print_xyz ;
-  kp[ XKeysymToKeycode(dis, XK_x         ) ] = kp_print     ;
-  kp[ XKeysymToKeycode(dis, XK_b         ) ] = kp_b_toggle  ;
-  kp[ XKeysymToKeycode(dis, XK_n         ) ] = kp_n_toggle  ;
-  kp[ XKeysymToKeycode(dis, XK_m         ) ] = kp_savepic   ;
-  kp[ XKeysymToKeycode(dis, XK_End       ) ] = kp_zoom_out  ;
-  kp[ XKeysymToKeycode(dis, XK_Up        ) ] = kp_rotx_r    ;
-  kp[ XKeysymToKeycode(dis, XK_Page_Up   ) ] = kp_rotz_l    ;
-  kp[ XKeysymToKeycode(dis, XK_Left      ) ] = kp_roty_l    ;
-  kp[ XKeysymToKeycode(dis, XK_Right     ) ] = kp_roty_r    ;
-  kp[ XKeysymToKeycode(dis, XK_Home      ) ] = kp_zoom_in   ;
-  kp[ XKeysymToKeycode(dis, XK_Down      ) ] = kp_rotx_l    ;
-  kp[ XKeysymToKeycode(dis, XK_Page_Down ) ] = kp_rotz_r    ;
-  kp[ XKeysymToKeycode(dis, XK_Insert    ) ] = kp_fw_toggle ;
-  kp[ XKeysymToKeycode(dis, XK_Delete    ) ] = kp_bw_toggle ;
-  kp[ XKeysymToKeycode(dis, XK_KP_Up     ) ] = kp_move_u    ;
-  kp[ XKeysymToKeycode(dis, XK_KP_Left   ) ] = kp_move_l    ;
-  kp[ XKeysymToKeycode(dis, XK_KP_Right  ) ] = kp_move_r    ;
-  kp[ XKeysymToKeycode(dis, XK_KP_Down   ) ] = kp_move_d    ;
+#define ASSIGN_KEY(KEY, ACTION)  { kp[XKeysymToKeycode(world.dis, (KEY))] = (ACTION); }
+  ASSIGN_KEY( XK_Escape     ,  kp_exit      );
+  ASSIGN_KEY( XK_period     ,  kp_pg        );
+  ASSIGN_KEY( XK_1          ,  kp_rl_dec    );
+  ASSIGN_KEY( XK_2          ,  kp_rl_inc    );
+  ASSIGN_KEY( XK_3          ,  kp_r_dec     );
+  ASSIGN_KEY( XK_4          ,  kp_r_inc     );
+  ASSIGN_KEY( XK_0          ,  kp_goto_1st  );
+  ASSIGN_KEY( XK_equal      ,  kp_goto_last );
+  ASSIGN_KEY( XK_BackSpace  ,  kp_frame_dec );
+  ASSIGN_KEY( XK_Tab        ,  kp_readmore  );
+  ASSIGN_KEY( XK_q          ,  kp_exit      );
+  ASSIGN_KEY( XK_w          ,  kp_move_u    );
+  ASSIGN_KEY( XK_r          ,  kp_readagain );
+  ASSIGN_KEY( XK_t          ,  kp_t_toggle  );
+  ASSIGN_KEY( XK_u          ,  kp_printrot  );
+  ASSIGN_KEY( XK_p          ,  kp_print2fig );
+  ASSIGN_KEY( XK_Return     ,  kp_frame_inc );
+  ASSIGN_KEY( XK_a          ,  kp_move_l    );
+  ASSIGN_KEY( XK_s          ,  kp_move_d    );
+  ASSIGN_KEY( XK_d          ,  kp_move_r    );
+  ASSIGN_KEY( XK_f          ,  kp_film      );
+  ASSIGN_KEY( XK_j          ,  kp_jump      );
+  ASSIGN_KEY( XK_l          ,  kp_l_toggle  );
+  ASSIGN_KEY( XK_z          ,  kp_print_xyz );
+  ASSIGN_KEY( XK_x          ,  kp_print     );
+  ASSIGN_KEY( XK_b          ,  kp_b_toggle  );
+  ASSIGN_KEY( XK_n          ,  kp_n_toggle  );
+  ASSIGN_KEY( XK_m          ,  kp_savepic   );
+  ASSIGN_KEY( XK_End        ,  kp_zoom_out  );
+  ASSIGN_KEY( XK_Up         ,  kp_rotx_r    );
+  ASSIGN_KEY( XK_Page_Up    ,  kp_rotz_l    );
+  ASSIGN_KEY( XK_Left       ,  kp_roty_l    );
+  ASSIGN_KEY( XK_Right      ,  kp_roty_r    );
+  ASSIGN_KEY( XK_Home       ,  kp_zoom_in   );
+  ASSIGN_KEY( XK_Down       ,  kp_rotx_l    );
+  ASSIGN_KEY( XK_Page_Down  ,  kp_rotz_r    );
+  ASSIGN_KEY( XK_Insert     ,  kp_fw_toggle );
+  ASSIGN_KEY( XK_Delete     ,  kp_bw_toggle );
+  ASSIGN_KEY( XK_KP_Up      ,  kp_move_u    );
+  ASSIGN_KEY( XK_KP_Left    ,  kp_move_l    );
+  ASSIGN_KEY( XK_KP_Right   ,  kp_move_r    );
+  ASSIGN_KEY( XK_KP_Down    ,  kp_move_d    );
+#undef ASSIGN_KEY
   return;
 }
 
@@ -104,16 +97,6 @@ int main (int argc, char * argv[]) {
   init_x(dp->read.fname, ap.ip.colors);
   init_keys(kp);
   init_font(ap.ip.fontname);
-#if 0
-  myDrawString = &XDrawString;
-#else
-  myDrawString = &XDrawImageString;
-#endif
-#if 0
-  canv = win;
-#else
-  canv = px;
-#endif
 
   /*= Main loop ==============================================================*/
   main_loop(ent, dp, kp);

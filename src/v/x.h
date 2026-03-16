@@ -6,16 +6,12 @@
 
 #define NCOLORS 110
 
-#define CLEARCANV \
-  if(canv == px){\
-    XFillRectangle(dis, px, gc_white, 0, 0, W, H);\
-  }\
-  else if(canv == win){\
-    XClearWindow(dis, win);\
-  }
-
-#define FILLCANV \
-  if(canv == px){\
-    XCopyArea(dis, px, win, gc_white, 0, 0, W, H, 0, 0);\
-  }
-
+typedef struct {
+  Display * dis;
+  Window    win;
+  GC        gc_white, gc_black, gc_red, gc_dot[2], gcc[NCOLORS];
+  Pixmap    px;
+  Drawable  canv;
+  XFontStruct * fontInfo;
+  int       W,H;
+} draw_world_t;

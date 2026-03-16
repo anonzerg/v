@@ -54,6 +54,7 @@ typedef struct {
 
 
 // load.c
+void newmol_prep(object * acs, drawpars * dp);
 object * acs_from_var(int n, mol * m, vibr_t vib, allpars * ap);
 void acs_readmore  (readpars read, int b, geompars geom, object * acs);
 object * read_files(allpars * ap);
@@ -109,7 +110,6 @@ int process_x_input(char input_text[STRLEN], unsigned int keycode);
 
 // tools.c
 void obj_free(object * ent);
-void newmol_prep(object * acs, drawpars * dp);
 void ac3_text(atcoord * ac, drawpars * dp);
 void vibro_text(vibr_t * ms, drawpars * dp);
 void pg(atcoord * a, double symtol);

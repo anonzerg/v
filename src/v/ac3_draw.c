@@ -2,17 +2,24 @@
 #include "x.h"
 
 #define EPS 1e-15
-#define BOND_OFFSET 0.666          // bond line starts this fraction of the atom radius away from the atom center
-#define RESOL_SCALE (128.0/768.0)  // reference resolution for atom sizes
+#define BOND_OFFSET 0.666             // bond line starts this fraction of the atom radius away from the atom center
+#define RESOL_SCALE (128.0/768.0)     // reference resolution for atom sizes
+#define XDRAWSTRING XDrawImageString  // change to XDrawString to remove white boxes behind atom/bond labels
 
-extern int W,H;
-extern int       screen;
-extern Display * dis;
-extern GC        gc_white, gc_black, gc_dot[2], gcc[NCOLORS];
-extern Window    win;
-extern Pixmap    px;
-extern Drawable  canv;
-extern int (*myDrawString)();
+#define CLEARCANV \
+  if(world.canv == world.px){\
+    XFillRectangle(world.dis, world.px, world.gc_white, 0, 0, world.W, world.H);\
+  }\
+  else if(world.canv == world.win){\
+    XClearWindow(world.dis, world.win);\
+  }
+
+#define FILLCANV \
+  if(world.canv == world.px){\
+    XCopyArea(world.dis, world.px, world.win, world.gc_white, 0, 0, world.W, world.H, 0, 0);\
+  }
+
+extern draw_world_t world;
 
 static inline int getgci(int q){
   return abs(q)<NCOLORS ? abs(q) : 0;
@@ -36,8 +43,8 @@ static int cmpz(const void * p1, const void * p2){
 
 void ac3_draw(atcoord * ac, rendpars rend){
 
-#define SCREEN_X(X)  (W/2 + d*(rend.xy0[0] + (X)))
-#define SCREEN_Y(Y)  (H/2 - d*(rend.xy0[1] + (Y)))
+#define SCREEN_X(X)  (world.W/2 + d*(rend.xy0[0] + (X)))
+#define SCREEN_Y(Y)  (world.H/2 - d*(rend.xy0[1] + (Y)))
 
   CLEARCANV;
 
@@ -45,8 +52,8 @@ void ac3_draw(atcoord * ac, rendpars rend){
   kzstr * kz = malloc(sizeof(kzstr)*n);
   int   * ks = (rend.bonds>0) ? malloc(sizeof(int)*n) : NULL;
 
-  double d     = MIN(H,W) * rend.scale;
-  double resol = MIN(H,W) * RESOL_SCALE;
+  double d     = MIN(world.H,world.W) * rend.scale;
+  double resol = MIN(world.H,world.W) * RESOL_SCALE;
   double r1  = rend.r * resol * rend.scale;
 
   for(int k=0; k<n; k++){
@@ -69,21 +76,21 @@ void ac3_draw(atcoord * ac, rendpars rend){
     double rt = r1 * getradius(ac->q[k]);
     int r = MAX(1, rt);
 
-    XFillArc (dis, canv, gcc[getgci(q)], x-r, y-r, 2*r, 2*r, 0, 360*64);
+    XFillArc (world.dis, world.canv, world.gcc[getgci(q)], x-r, y-r, 2*r, 2*r, 0, 360*64);
     if(r>1){
-      XDrawArc(dis, canv, q>0?gc_black:gc_dot[1], x-r, y-r, 2*r, 2*r, 0, 360*64);
+      XDrawArc(world.dis, world.canv, q>0?world.gc_black:world.gc_dot[1], x-r, y-r, 2*r, 2*r, 0, 360*64);
     }
 
     if(rend.num == 1){
       char text[16];
       snprintf(text, sizeof(text), "%d", k+1);
-      myDrawString(dis, canv, gc_black, x, y, text, strlen(text));
+      XDRAWSTRING(world.dis, world.canv, world.gc_black, x, y, text, strlen(text));
     }
     else if(rend.num == -1){
       char text[16];
       const char * s = getname(q);
       s ? snprintf(text, sizeof(text), "%s", s) :  snprintf(text, sizeof(text), "%d", q );
-      myDrawString(dis, canv, gc_black, x, y, text, strlen(text));
+      XDRAWSTRING(world.dis, world.canv, world.gc_black, x, y, text, strlen(text));
     }
 
     if(rend.bonds>0){
@@ -104,11 +111,11 @@ void ac3_draw(atcoord * ac, rendpars rend){
           continue;
         }
         double dd = BOND_OFFSET * r / sqrt(r2d);
-        XDrawLine(dis, canv, gc_black, x+dd*dx, y+dd*dy, x1, y1);
+        XDrawLine(world.dis, world.canv, world.gc_black, x+dd*dx, y+dd*dy, x1, y1);
         if(rend.bonds==2){
           char text[16];
           snprintf(text, sizeof(text), "%.3lf", ac->bonds.r[j]);
-          myDrawString(dis, canv, gc_black, x+dx/2, y+dy/2, text, strlen(text));
+          XDRAWSTRING(world.dis, world.canv, world.gc_black, x+dx/2, y+dy/2, text, strlen(text));
         }
       }
     }

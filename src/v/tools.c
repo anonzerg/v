@@ -13,19 +13,6 @@ void obj_free(object * ent){
   return;
 }
 
-void newmol_prep(object * acs, drawpars * dp){
-  for(int j=dp->N; j<acs->n; j++){
-    atcoord * ac = acs->m[j];
-    for(int i=0; i<ac->n; i++){
-      double v[3];
-      r3mx(v, ac->r+3*i, dp->rend.ac3rmx);
-      r3cp(ac->r+3*i, v);
-    }
-  }
-  dp->N = acs->n;
-  return;
-}
-
 void ac3_text(atcoord * ac, drawpars * dp){
   char text[STRLEN];
   int tp = snprintf(text, sizeof(text),

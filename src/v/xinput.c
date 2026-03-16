@@ -1,11 +1,11 @@
 #include "v.h"
 #include "x.h"
 
-extern Display * dis;
+extern draw_world_t world;
 
 int process_x_input(char input_text[STRLEN], unsigned int keycode){
   int keysyms_per_keycode_return;
-  KeySym * keysym = XGetKeyboardMapping(dis, keycode, 1, &keysyms_per_keycode_return);
+  KeySym * keysym = XGetKeyboardMapping(world.dis, keycode, 1, &keysyms_per_keycode_return);
   int input_length = strlen(input_text);
   if(!((keysym[0]>='0' && keysym[0]<='9')||(keysym[0]>='a' && keysym[0]<='z'))){
     if(keysym[0]==XK_Escape){
