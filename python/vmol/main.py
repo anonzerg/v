@@ -357,10 +357,10 @@ class VmolFunctions:
             argc, argv, _argv = make_array(args[0], c_char_p, convert_func=lambda x: x.encode('utf-8'))
             args.pop(0)
             if add_molecules:
-                nmol, mols, _mols = make_array(args[0], mol_t, convert_func=lambda x: mol2struct(self.f.get_element, x))
+                nmol, mols, keep_mols = make_array(args[0], mol_t, convert_func=lambda x: mol2struct(self.f.get_element, x))
                 args.pop(0)
                 if convert_vib:
-                    args[0] = vib2struct(_mols[-1].n, args[0])
+                    args[0] = vib2struct(keep_mols[-1].n, args[0])
                 args = [nmol, mols, *args]
             args = [argc, argv, *args]
             if last_arg_ret_code:
@@ -394,6 +394,7 @@ def vib2struct(nat, vib=None):
         - 'ints': a 1D array-like of floats with shape (len(freq),) for intensities in km/mole.
 
     Args:
+        nat (int): Number of atoms in a molecule.
         vib (dict, optional): The dictionary to convert.
 
     Returns:
