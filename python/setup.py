@@ -1,6 +1,7 @@
 from setuptools import setup, Extension
 import subprocess
 import os
+import sys
 import tempfile
 import shutil
 from pathlib import Path
@@ -29,6 +30,32 @@ def rel_posix(path):
     return os.path.relpath(path, start=setup_dir).replace(os.sep, "/")
 
 
+def get_x11_config():
+    # On Linux, X11 headers/libs are in standard system paths — nothing extra needed.
+    # On macOS, Homebrew installs them to non-default locations, so we probe for them.
+    if sys.platform != 'darwin':
+        return [], []
+    try:
+        inc = subprocess.run(
+            ['pkg-config', '--cflags-only-I', 'x11', 'xpm'],
+            check=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
+        ).stdout.split()
+        lib = subprocess.run(
+            ['pkg-config', '--libs-only-L', 'x11', 'xpm'],
+            check=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
+        ).stdout.split()
+        return [f[2:] for f in inc if f.startswith('-I')], \
+               [f[2:] for f in lib if f.startswith('-L')]
+    except Exception:
+        pass
+    for prefix in ['/opt/homebrew', '/usr/local']:
+        if Path(f'{prefix}/include/X11/Xlib.h').exists():
+            return [f'{prefix}/include'], [f'{prefix}/lib']
+    raise RuntimeError(
+        'X11 headers not found. Install with: brew install libx11 libxpm pkg-config'
+    )
+
+
 setup_dir = Path(__file__).parent
 src_dir = setup_dir.parent / "src"
 
@@ -45,12 +72,15 @@ VERSION_FLAGS = [f'-DGIT_HASH="{GIT_HASH}"',
                  f'-DBUILD_USER="{os.getenv("USER")}@{os.getenv("HOSTNAME")}"',
                  f'-DBUILD_DIRECTORY="{os.getcwd()}"']
 
+x11_inc, x11_lib = get_x11_config()
+
 setup(
     version=get_git_version_hash(),
     include_package_data=True,
     ext_modules=[Extension('vmol.v',
                            sources=c_files,
-                           include_dirs=include_dirs,
+                           include_dirs=include_dirs + x11_inc,
+                           library_dirs=x11_lib,
 
                            libraries = ['X11', 'Xpm'],
                            extra_compile_args=['-std=gnu11', '-O2', ] + VERSION_FLAGS,

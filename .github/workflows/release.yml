@@ -24,9 +24,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-latest]
 
     steps:
+
+      - name: Install X11 dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install libx11 libxpm pkg-config
 
       - name: install X11 dependencies
         if: ${{ runner.os == 'Linux' }}

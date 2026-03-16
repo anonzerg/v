@@ -26,8 +26,11 @@ on:
 
 jobs:
   build_wheels:
-    name: Build wheels
-    runs-on: ubuntu-latest
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
 
     steps:
 
@@ -56,6 +59,8 @@ jobs:
         env:
           CIBW_BUILD: ${{ inputs.cibw-build }}
           CIBW_SKIP: ${{ inputs.cibw-skip }}
+          CIBW_BEFORE_ALL_MACOS: |
+            brew install libx11 libxpm pkg-config
           CIBW_BEFORE_ALL_LINUX: |
             if [ -f /etc/alpine-release ]; then # musllinux (Alpine)
               apk add --no-cache libx11-dev libxpm-dev pkgconf
