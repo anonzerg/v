@@ -4,8 +4,9 @@
 #define PRINTBUFLEN (1024*128)
 
 struct {
-  mol * inp_mols;
   char * out_str;
+  mol * inp_mols;
+  vibr_t inp_vib;
   int n_inp_mols;
 } globals;
 
@@ -19,9 +20,10 @@ char * main_wrap_out(int argc, char * argv[], int * ret) {
   return globals.out_str;
 }
 
-int main_wrap_in(int argc, char * argv[], int n_inp_mols, mol * inp_mols) {
+int main_wrap_in(int argc, char * argv[], int n_inp_mols, mol * inp_mols, vibr_t inp_vib) {
   globals.inp_mols = inp_mols;
   globals.n_inp_mols = n_inp_mols;
+  globals.inp_vib = inp_vib;
   int ret = main(argc, argv);
   globals.inp_mols = NULL;
   globals.n_inp_mols = 0;
@@ -30,13 +32,14 @@ int main_wrap_in(int argc, char * argv[], int n_inp_mols, mol * inp_mols) {
 
 char * main_wrap_in_out(int argc, char * argv[],
                         int n_inp_mols, mol * inp_mols,
+                        vibr_t inp_vib,
                         int * ret){
   globals.out_str = calloc(PRINTBUFLEN, 1);
   if(!globals.out_str){
     *ret = -1;
     return NULL;
   }
-  *ret = main_wrap_in(argc, argv, n_inp_mols, inp_mols);
+  *ret = main_wrap_in(argc, argv, n_inp_mols, inp_mols, inp_vib);
   return globals.out_str;
 }
 
@@ -93,7 +96,7 @@ object * READ_FILES(allpars * ap){
     ret = read_files(ap);
   }
   else{
-    ret = acs_from_var(globals.n_inp_mols, globals.inp_mols, ap);
+    ret = acs_from_var(globals.n_inp_mols, globals.inp_mols, globals.inp_vib, ap);
   }
   FREE0(ap->ip.input_files);
   return ret;

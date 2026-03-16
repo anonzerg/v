@@ -7,7 +7,7 @@
 * Add `bmax` CLI argument for max. bond length (920202b)
 * Add `com` and `exitcom` CLI argument for `gui:0` and on-exit command sequences, respectively
 * Add `colors` CLI argument for colorscheme (#29)
-* Python integration (#28, see https://github.com/aligfellow/xyzrender)
+* Python integration (#28, see https://github.com/aligfellow/xyzrender, #35)
 
 ### Improvements
 * New colors by @iribirii (#2, #13, #15, #29)
@@ -15,6 +15,7 @@
 * Add CLI option to disable centering of molecules (#14)
 * Disable default rotation wrt inertia axis for z-matrix input and add a CLI option to force it (#14)
 * Read molecules from the standard input
+* Show infrared intensities and mode masses
 * Improve data structures and code readability
 
 ### Fixes
@@ -27,7 +28,7 @@
 ### Coming in the next version:
 * extended xyz (#16, #17)
 * high-symmetry determination bugs (#21)
-* how to build on mac
+* how to build on mac (#34)
 
 **Full Changelog**: https://github.com/briling/v/compare/v2.0...v3.0rc5
 

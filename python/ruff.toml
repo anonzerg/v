@@ -29,6 +29,8 @@ ignore = [
   "E221",  # multiple-spaces-before-operator
   "E222",  # multiple-spaces-after-operator
   "E225",  # missing-whitespace-around-operator
+  "E226",  # missing-whitespace-around-arithmetic-operator
+  "E231",  # missing-whitespace
   "E241",  # multiple-spaces-after-comma
   "E501",  # line-too-long
   "D203",  # incorrect-blank-line-before-class

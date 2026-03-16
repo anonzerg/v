@@ -5,6 +5,7 @@ import ctypes
 from ctypes import c_int, c_double, c_char_p
 import functools
 from warnings import warn
+from pprint import pformat
 
 
 __all__ = ["Vmol"]
@@ -29,10 +30,36 @@ class mol_t(ctypes.Structure):  # noqa: N801
     """
 
     _fields_ = (
-            ("r", c_double_p),
-            ("q", c_int_p),
+            ("r",    c_double_p),
+            ("q",    c_int_p),
             ("name", c_char_p),
-            ("n", c_int),
+            ("n",    c_int),
+            )
+
+
+class vibr_t(ctypes.Structure):  # noqa: N801
+    """C structure for the input molecule data, containing the number of atoms, charge array, coordinate array, and name.
+
+    Declared in src/v/v.h as
+    ```
+        typedef struct {
+          double * freq;
+          double * ints;
+          double * disp;
+          double * mass;
+          double * r0;
+          int      n;
+        } vibr_t;
+    ```
+    """
+
+    _fields_ = (
+            ("freq", c_double_p),
+            ("ints", c_double_p),
+            ("disp", c_double_p),
+            ("mass", c_double_p),
+            ("r0",   c_double_p),
+            ("n",    c_int),
             )
 
 
@@ -47,12 +74,12 @@ def mol2struct(get_element, mol):
 
         1) Dictionary with the following keys:
            - 'q': a 1D array-like of integers or strings representing the atomic numbers or element symbols,
-           - 'r': a 2D array-like of floats with shape (n, 3) representing the atomic coordinates,
+           - 'r': a 2D array-like of floats with shape (len(q), 3) representing the atomic coordinates,
            - 'name' (optional): a string representing the name of the molecule.
 
         2) ase.atoms.Atoms-like object with the following attributes:
            - `numbers`: a 1D array of integers representing the atomic numbers,
-           - `positions`: a 2D array of floats with shape (n, 3) representing the atomic coordinates.
+           - `positions`: a 2D array of floats with shape (len(q), 3) representing the atomic coordinates.
 
     Args:
         get_element (callable): A function that takes a byte string representing an element symbol
@@ -63,7 +90,7 @@ def mol2struct(get_element, mol):
         mol_t: An instance of `mol_t` with the fields set according to the input molecule.
 
     Raises:
-        TypeError: If mol is not a dictionary.
+        TypeError: If mol is neither a dictionary nor an ase.atoms.Atoms-like.
         ValueError: If the required keys are missing or their values have wrong shapes.
     """
     import numpy as np  # noqa: PLC0415
@@ -232,19 +259,19 @@ class VmolFunctions:
         self.f.main_raw        = self._declare('main', argtypes=ARGS_T, restype=c_int)
         self.f.main_out_raw    = self._declare('main_wrap_out',    argtypes=[*ARGS_T, c_int_p],
                                                restype=c_char_p, errcheck=errcheck)
-        self.f.main_in_out_raw = self._declare('main_wrap_in_out', argtypes=[*ARGS_T, *INP_MOLS_T, c_int_p],
+        self.f.main_in_out_raw = self._declare('main_wrap_in_out', argtypes=[*ARGS_T, *INP_MOLS_T, vibr_t, c_int_p],
                                                restype=c_char_p, errcheck=errcheck)
-        self.f.main_in_raw = self._declare('main_wrap_in', argtypes=[*ARGS_T, *INP_MOLS_T], restype=c_int)
+        self.f.main_in_raw = self._declare('main_wrap_in', argtypes=[*ARGS_T, *INP_MOLS_T, vibr_t], restype=c_int)
 
         self.f.main        = self._convert_in(self.f.main_raw)
         self.f.main_out    = self._convert_in(self.f.main_out_raw, last_arg_ret_code=True)
-        self.f.main_in_out = self._convert_in(self.f.main_in_out_raw, add_molecules=True, last_arg_ret_code=True)
-        self.f.main_in     = self._convert_in(self.f.main_in_raw, add_molecules=True)
+        self.f.main_in_out = self._convert_in(self.f.main_in_out_raw, add_molecules=True, convert_vib=True, last_arg_ret_code=True)
+        self.f.main_in     = self._convert_in(self.f.main_in_raw, add_molecules=True, convert_vib=True)
 
-    def _convert_in(self, func, add_molecules=False, last_arg_ret_code=False):
+    def _convert_in(self, func, add_molecules=False, convert_vib=False, last_arg_ret_code=False):
         """Decorate a function to convert Python arguments to the expected C types.
 
-        The function is expected to take an integer and a pointer to an array of C strings as its first two arguments,
+        The function is expected to take an integer and a pointer to an array of C strings as its first 2 arguments,
         which represent the argument count and argument values, respectively, i.e.,
         ```
         void func(int argc, char ** argv, ...)
@@ -256,12 +283,18 @@ class VmolFunctions:
         ```
 
         If `add_molecules` is True, the function is also expected to take an integer
-        and a pointer to an array of `mol_t` structures as additional arguments after the first two,
-        which represent the number of molecules and the molecule data, respectively, i.e.,
+        and a pointer to an array of `mol_t` structures as additional arguments after the first 2,
+        which represent the number of molecules and the molecule data, respectively.
+        The decorator will convert a molecule or a list of molecules passed as the 3rd argument to the wrapped function:
         ```
         void func(int argc, char ** argv, int nmol, mol_t * mols, ...) -> def wrapped_func(argv: list[str], mols: object or list[object], ...)
         ```
-        The decorator will convert a molecule or a list of molecules passed as the last argument to the wrapped function.
+
+        If `convert_vib` is also True, the function is expected to take a `vibr_t` argument after the first 4.
+        The decorator will convert a dictionary passed as the 5th argument to the wrapped function:
+        ```
+        void func(int argc, char ** argv, int nmol, mol_t * mols, vibr_t vib, ...) -> def wrapped_func(argv: list[str], mols: object or list[object], vib: dict, ...)
+        ```
 
         If `last_arg_ret_code` is True, the decorator also passes a pointer to an integer
         as the last argument to the original function to store the return code, i.e.,
@@ -273,6 +306,7 @@ class VmolFunctions:
         Args:
             func (callable): The function to wrap.
             add_molecules (bool, optional): Whether the function also takes molecule data as additional arguments after the first two.
+            convert_vib (bool, optional): Whether the function also takes normal modes data as additional argument after the first four.
             last_arg_ret_code (bool, optional): If the last argument is `int *` to store the return value in.
 
         Returns:
@@ -296,12 +330,21 @@ class VmolFunctions:
             raise TypeError(msg)
 
         if begin_differently(func.argtypes, ARGS_T):
-            msg = f"function must have a signature that starts with {ARGS_T} to convert the input list of strings"
+            msg = f"function must have a signature that starts with\n{pformat(ARGS_T)}\nto convert the input list of strings, but got\n{pformat(func.argtypes)}"
             raise ValueError(msg)
 
         if add_molecules and begin_differently(func.argtypes[len(ARGS_T):], INP_MOLS_T):
-            msg = f"function must have a signature that starts with {ARGS_T + INP_MOLS_T} to convert the input list of strings and molecule data"
+            msg = f"function must have a signature that starts with\n{pformat(ARGS_T + INP_MOLS_T)}\nto convert the input list of strings and molecule data, but got\n{pformat(func.argtypes)}"
             raise ValueError(msg)
+
+        if convert_vib:
+            if add_molecules:
+                if func.argtypes[len(ARGS_T)+len(INP_MOLS_T)] != vibr_t:
+                    msg = f"function must have a signature that starts with\n{pformat(ARGS_T + INP_MOLS_T + (vibr_t,))}\nto convert the input list of strings, molecule data, and normal modes data, but got\n{pformat(func.argtypes)}"
+                    raise ValueError(msg)
+            else:
+                msg = f"{convert_vib=} is incompatible with {add_molecules=}"
+                raise ValueError(msg)
 
         if last_arg_ret_code and func.argtypes[-1] != c_int_p:
             msg = f"return code argument must be a pointer to an integer ({c_int_p}), but got {func.argtypes[-1]}"
@@ -314,8 +357,10 @@ class VmolFunctions:
             argc, argv, _argv = make_array(args[0], c_char_p, convert_func=lambda x: x.encode('utf-8'))
             args.pop(0)
             if add_molecules:
-                nmol, mols, _mols = make_array(args[0], mol_t, convert_func=lambda x: mol2struct(self.f.get_element, x))
+                nmol, mols, keep_mols = make_array(args[0], mol_t, convert_func=lambda x: mol2struct(self.f.get_element, x))
                 args.pop(0)
+                if convert_vib:
+                    args[0] = vib2struct(keep_mols[-1].n, args[0])
                 args = [nmol, mols, *args]
             args = [argc, argv, *args]
             if last_arg_ret_code:
@@ -325,10 +370,97 @@ class VmolFunctions:
         return myinner
 
 
+def check_shape(x, name, shape):
+    if x.shape != shape:
+        msg = f"{name} must be a {len(shape)}D array with shape {shape}, but has shape {x.shape}"
+        raise ValueError(msg)
+
+
+def check_dims(x, name, ndim):
+    if x.ndim !=ndim:
+        msg = f"{name} must be a {ndim}D array, but has shape {x.shape}"
+        raise ValueError(msg)
+
+
+def vib2struct(nat, vib=None):
+    """Convert a normal modes dictionary to the expected C structure for input.
+
+    The dictionary has to have the following keys:
+        - 'freq': a 1D array-like of floats representing the harmonic frequencies (wave numbers) in cm-1,
+        - 'disp': a 3D array-like of floats with shape (len(freq), nat, 3) representing the atom displacements,
+                which will be renormalized to 1.
+    Optional keys:
+        - 'mass': a 1D array-like of floats with shape (len(freq),) for requced massed in amu,
+        - 'ints': a 1D array-like of floats with shape (len(freq),) for intensities in km/mole.
+
+    Args:
+        nat (int): Number of atoms in a molecule.
+        vib (dict, optional): The dictionary to convert.
+
+    Returns:
+        vibr_t: An instance of `vibr_t` with the fields set.  If missing, the optional fields are set to 0,
+            and the `r0` is set to NULL.  If the input dictionary is None, everything is set to 0/NULL.
+
+    Raises:
+        TypeError: If mol is neither a dictionary nor None.
+    """
+    if vib is None:
+        return vibr_t(n=c_int(0), disp=None, freq=None, ints=None, mass=None, r0=None)
+
+    if not isinstance(vib, dict):
+        msg = f"vib must be None or a dictionary, but got {type(vib)}"
+        raise TypeError(msg)
+
+    import numpy as np  # noqa: PLC0415
+
+    def check_array(key, required=True, shape=None, ndim=None, dtype=c_double):
+        if not required and shape is None:
+            msg = "shape should be known for non-required members"
+            raise RuntimeError(msg)
+        x = vib.get(key, None)
+        if x is None:
+            if required:
+                msg = f"vib must contain '{key}'"
+                raise ValueError(msg)
+            x = np.zeros(shape, dtype=dtype)
+            msg = f"vib does not contain '{key}'"
+            warn(msg, RuntimeWarning, stacklevel=3)
+        else:
+            try:
+                x = np.require(x, dtype=dtype, requirements=['C_CONTIGUOUS', 'OWNDATA'])
+            except ValueError as e:
+                msg = f"cannot convert '{key}' to an array of {dtype}: {e}"
+                raise ValueError(msg) from None
+            if shape is not None:
+                check_shape(x, key, shape)
+            if ndim is not None:
+                check_dims(x, key, ndim)
+        return x
+
+    vdict = {'freq': check_array('freq', ndim=1)}
+    nvib = len(vdict['freq'])
+
+    vdict['disp'] = check_array('disp', shape=(nvib, nat, 3))
+    disp_norm = np.linalg.norm(vdict['disp'].reshape(nvib, -1), axis=1)
+    vdict['disp'] /= disp_norm[:,None,None]
+    vdict['disp'] = vdict['disp'].flatten()
+
+    for key in ['mass', 'ints']:
+        vdict[key] = check_array(key, shape=(nvib,), required=None)
+
+    nvib = c_int(nvib)
+    for key, val in vdict.items():
+        vdict[key] = val.ctypes.data_as(c_double_p)
+
+    v = vibr_t(n=nvib, disp=vdict['disp'], freq=vdict['freq'], ints=vdict['ints'], mass=vdict['mass'], r0=None)
+    v._keepalive = (nvib, vdict['disp'], vdict['freq'], vdict['ints'], vdict['mass'])  # keep strong references
+    return v
+
+
 class Vmol(VmolFunctions):
     """Run the viewer with specified command-line arguments and/or molecule data and capture the output."""
 
-    def run(self, *, args=None, mols=None, with_arg0=False):
+    def run(self, *, args=None, mols=None, vib=None, with_arg0=False):
         """Run the viewer with the given command-line arguments.
 
         If `args` is provided, it will be passed as command-line arguments to the main function.
@@ -342,6 +474,8 @@ class Vmol(VmolFunctions):
             args (list of str, optional): The command-line arguments to pass to the main function.
             mols (object or list[object], optional): An object or a list thereof representing the molecule(s).
                  See `mol2struct()` for the expected format.
+            vib (dict, optional): A dictionary representing the normal modes. Used only with mols!=None.
+                See `vib2struct()` for the expected format.
             with_arg0 (bool, optional): Whether the first argument in `args` is the program name (e.g., `sys.argv[0]`).
                       If False or if `args` is None or empty, the program name is automatically added as the first argument.
                       Otherwise, `args` is used as is. Defaults to False.
@@ -351,9 +485,9 @@ class Vmol(VmolFunctions):
         """
         self._check_so()
         args = (args if with_arg0 else [self.so, *args]) if args else [self.so]
-        return self.f.main_in(args, mols) if mols else self.f.main(args)
+        return self.f.main_in(args, mols, vib) if mols else self.f.main(args)
 
-    def capture(self, *, mols=None, args=None, return_code=False):
+    def capture(self, *, mols=None, args=None, vib=None, return_code=False):
         """Run the viewer with the given structure and/or command-line arguments and capture the output.
 
         If `args` is provided, it will be passed as command-line arguments to the main function.
@@ -366,6 +500,8 @@ class Vmol(VmolFunctions):
         Args:
             mols (object or list[object], optional): An object or a list thereof representing the molecule(s).
                  See `mol2struct()` for the expected format.
+            vib (dict, optional): A dictionary representing the normal modes. Used only with mols!=None.
+                See `vib2struct()` for the expected format.
             args (list of str, optional): Command-line arguments to pass to the main function (without the program name).
             return_code (bool, optional): Whether to return the return code along with the output. Defaults to False.
 
@@ -377,5 +513,5 @@ class Vmol(VmolFunctions):
         """
         self._check_so()
         args = [self.so, *args] if args else [self.so]
-        ret, out = self.f.main_in_out(args, mols) if mols else self.f.main_out(args)
+        ret, out = self.f.main_in_out(args, mols, vib) if mols else self.f.main_out(args)
         return (ret, out) if return_code else out

@@ -38,10 +38,12 @@ typedef struct {
 } atcoord;
 
 typedef struct {
-  int      n;       // number of modes
-  double * freq;    // frequencies
-  double * disp;    // displacements
-  double * r0;      // atom configuration at the central point
+  double * freq;  // frequencies (cm-1)
+  double * ints;  // intensities
+  double * disp;  // displacements
+  double * mass;  // masses
+  double * r0;    // atom configuration at the central point
+  int      n;     // number of modes
 } vibr_t;
 
 typedef struct {
@@ -52,13 +54,14 @@ typedef struct {
 
 
 // load.c
-object * acs_from_var(int n, mol * m, allpars * ap);
+object * acs_from_var(int n, mol * m, vibr_t vib, allpars * ap);
 void acs_readmore  (readpars read, int b, geompars geom, object * acs);
 object * read_files(allpars * ap);
 // scale.c
 double ac3_scale(atcoord * ac);
 double acs_scale(object * acs);
 // mode_read.c
+vibr_t * make_vibr_t(int n_modes, int n_atoms);
 vibr_t * mode_read(FILE * f, int na);
 // ac3_read*.c
 int read_cart_atom(FILE * f, int n, mol * m);

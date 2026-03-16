@@ -15,7 +15,7 @@ Inspired by @aligfellow's [xyzrender](https://github.com/aligfellow/xyzrender).
 ## Installation
 PyPI has the wheels for CPython 10 through 14 @ manylinux.
 See [install-other.md](install-other.md) for other ways to build and install.
-```
+```bash
 pip install vmol[all]       #  install cclib to parse unsupported file formats and open them with vmol2
 
 pip install vmol            #  base version
@@ -43,9 +43,14 @@ python -m vmol../mol/periodic.in bonds:0
 ```
 
 Unsupported quantum-chemical outputs, e.g., Orca:
-```
+```bash
 vmol2 ../mol/CEHZOF_1_SPE.out
 python -m vmol.vmol2 ../mol/AJALIH_5_SPE.out
+```
+or Gaussian:
+```bash
+vmol2 mol/Cat1_TSOA_CfA_Cf0.log vib:0  #  geometry optimization
+vmol2 mol/Cat1_TSOA_CfA_Cf0.log        #  normal modes (default for files containing both)
 ```
 
 ### Library
@@ -144,5 +149,15 @@ out = vmol.capture(mols=mols)
 ```
 
 File formats which are not supported natively can be read with `cclib` and passed
-(see [example](examples/ex_cclib) and [vmol2 source](vmol/vmol2.py)).
+(see [example](examples/ex_cclib.py) and [vmol2 source](vmol/vmol2.py)).
+
+One can also pass normal modes data with
+```python
+from vmol import vmol
+CO2 = {'q': [8, 6, 8], 'r': [(x,0,0) for x in [-1.16, 0, 1.16]], name='CO2'}
+sym_stretch  = {'freq': [1480], 'ints': [0], 'mass': [16], 'disp': [[(dx,0,0) for dx in [-1, 0, 1]]]}
+vmol.run(mols=CO2, vib=sym_stretch)
+```
+Press insert to play the animation.
+(See [example](examples/ex3.py) and [vmol2 source](vmol/vmol2.py) for more details).
 
