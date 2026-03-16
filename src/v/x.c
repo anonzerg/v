@@ -59,6 +59,7 @@ void init_x(const char * const capt, const colorscheme_t colorscheme){
   int screen = DefaultScreen(dis);
   world.W = DisplayWidth  (dis, screen);
   world.H = DisplayHeight (dis, screen);
+  world.size = MIN(world.H, world.W);
 
   unsigned long bp = BlackPixel (dis, screen);
   unsigned long wp = WhitePixel (dis, screen);
@@ -105,11 +106,10 @@ void init_x(const char * const capt, const colorscheme_t colorscheme){
 
 static void autosize_font(char * fontname){
   const int screen_sizes[] = {1200, 1080, 960, 900, 840, 768};
-  const int font_sizes[]   = {  24,   20,  18,  16,  15,  14}; //  font_size='ceil'(screen_size) / 60
+  const int font_sizes[]   = {  24,   20,  18,  16,  15,  14}; //  font_size='ceil'(world.size) / 60
   int font_size = 13;
-  int screen_size = MIN(world.W, world.H);
   for(int i=0; i<sizeof(screen_sizes)/sizeof(screen_sizes[0]); i++){
-    if(screen_size>screen_sizes[i]){
+    if(world.size>screen_sizes[i]){
       font_size = font_sizes[i];
       break;
     }
@@ -162,7 +162,7 @@ void draw_edge(double vi[3], double vj[3], double scale, double xy0[2]){
 }
 
 void drawvertices(double * v, double scale, double xy0[2]){
-  double d = MIN(world.H, world.W)*scale;
+  double d = world.size * scale;
 #define LINE(i,j) draw_edge(v+(i)*3, v+(j)*3, d, xy0)
   for(int i=0; i<8; i+=2){
     LINE(i,i+1); // || z-axis
@@ -178,7 +178,7 @@ void drawvertices(double * v, double scale, double xy0[2]){
 }
 
 void drawshell(double rmin, double rmax, double scale, double xy0[2]){
-  double d = MIN(world.H,world.W)*scale;
+  double d = world.size * scale;
   double r[] = {rmax*d, rmin*d};
   int x = world.W/2+d*xy0[0];
   int y = world.H/2-d*xy0[1];

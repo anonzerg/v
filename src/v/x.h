@@ -13,5 +13,5 @@ typedef struct {
   Pixmap    px;
   Drawable  canv;
   XFontStruct * fontInfo;
-  int       W,H;
+  int       W, H, size;
 } draw_world_t;

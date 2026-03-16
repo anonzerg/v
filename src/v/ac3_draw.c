@@ -37,8 +37,8 @@ void ac3_draw(atcoord * ac, rendpars rend){
   kzstr * kz = malloc(sizeof(kzstr)*n);
   int   * ks = (rend.bonds>0) ? malloc(sizeof(int)*n) : NULL;
 
-  double d     = MIN(world.H,world.W) * rend.scale;
-  double resol = MIN(world.H,world.W) * RESOL_SCALE;
+  double d     = world.size * rend.scale;
+  double resol = world.size * RESOL_SCALE;
   double r1  = rend.r * resol * rend.scale;
 
   for(int k=0; k<n; k++){

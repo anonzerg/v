@@ -16,7 +16,7 @@ static void process_mouse(XMotionEvent * event, object * ent, drawpars * dp, mou
   if(mouse->click){
     int x = event->x;
     int y = event->y;
-    rot_ent_pointer(ent, dp, x-mouse->x0, y-mouse->y0, POINTER_SPEED/MIN(world.W,world.H));
+    rot_ent_pointer(ent, dp, x-mouse->x0, y-mouse->y0, POINTER_SPEED/world.size);
     exp_redraw(ent, dp);
     mouse->x0 = x;
     mouse->y0 = y;
@@ -103,6 +103,7 @@ void main_loop(object * ent, drawpars * dp, ptf kp[NKP]){
     else if(event->type == ConfigureNotify){
       world.W = event->xconfigure.width;
       world.H = event->xconfigure.height;
+      world.size = MIN(world.H, world.W);
       dp->rend.xy0[0] = dp->rend.xy0[1] = 0.0;
       exp_redraw(ent, dp);
     }
