@@ -20,6 +20,7 @@ static void redraw_ac3(object * ent, drawpars * dp){
     bonds_fill(dp->bond, ac);
   }
 
+  clear_canv();
   ac3_draw(ac, dp->rend);
   ac3_text(ac, dp);
 
@@ -33,6 +34,7 @@ static void redraw_ac3(object * ent, drawpars * dp){
   else if(dp->cell.vert == 2){
     drawshell(dp->cell.vertices[0], dp->cell.vertices[1], dp->rend.scale, dp->rend.xy0);
   }
+  fill_canv();
 
   return;
 }
@@ -54,9 +56,10 @@ static void redraw_vibro(object * ent, drawpars * dp){
     r3cp(m->r+3*j, v);
   }
 
+  clear_canv();
   ac3_draw(m, dp->rend);
   vibro_text(ent->vib, dp);
-
+  fill_canv();
   return;
 }
 

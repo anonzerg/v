@@ -6,19 +6,6 @@
 #define RESOL_SCALE (128.0/768.0)     // reference resolution for atom sizes
 #define XDRAWSTRING XDrawImageString  // change to XDrawString to remove white boxes behind atom/bond labels
 
-#define CLEARCANV \
-  if(world.canv == world.px){\
-    XFillRectangle(world.dis, world.px, world.gc_white, 0, 0, world.W, world.H);\
-  }\
-  else if(world.canv == world.win){\
-    XClearWindow(world.dis, world.win);\
-  }
-
-#define FILLCANV \
-  if(world.canv == world.px){\
-    XCopyArea(world.dis, world.px, world.win, world.gc_white, 0, 0, world.W, world.H, 0, 0);\
-  }
-
 extern draw_world_t world;
 
 static inline int getgci(int q){
@@ -45,8 +32,6 @@ void ac3_draw(atcoord * ac, rendpars rend){
 
 #define SCREEN_X(X)  (world.W/2 + d*(rend.xy0[0] + (X)))
 #define SCREEN_Y(Y)  (world.H/2 - d*(rend.xy0[1] + (Y)))
-
-  CLEARCANV;
 
   int n = ac->n;
   kzstr * kz = malloc(sizeof(kzstr)*n);
@@ -119,11 +104,9 @@ void ac3_draw(atcoord * ac, rendpars rend){
         }
       }
     }
-
   }
   free(kz);
   free(ks);
-  FILLCANV;
   return;
 }
 

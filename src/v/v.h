@@ -105,6 +105,8 @@ void setcaption   (const char * const capt);
 void drawvertices (double * v, double scale, double xy0[2]);
 void drawshell    (double rmin, double rmax, double scale, double * xy0);
 int  savepic      (char * s);
+void clear_canv();
+void fill_canv();
 // xinput.c
 int process_x_input(char input_text[STRLEN], unsigned int keycode);
 

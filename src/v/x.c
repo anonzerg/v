@@ -99,11 +99,7 @@ void init_x(const char * const capt, const colorscheme_t colorscheme){
   XMapRaised     (dis, world.win);
 
   world.px = XCreatePixmap(dis, world.win, world.W, world.H, DefaultDepth(dis, 0));
-#if 1
-  world.canv = world.win;
-#else
   world.canv = world.px;
-#endif
   return;
 };
 
@@ -140,16 +136,16 @@ void init_font(char * fontname){
 
 void textincorner(const char * const text1, const char * const text2){
   int voffset = world.fontInfo ? (world.fontInfo->ascent + world.fontInfo->descent + 5) : 20;
-  XDrawString(world.dis, world.win, world.gc_black, 10, voffset, text1, strlen(text1));
+  XDrawString(world.dis, world.canv, world.gc_black, 10, voffset, text1, strlen(text1));
   if(text2){
-    XDrawString(world.dis, world.win, world.gc_black, 10, voffset*2, text2, strlen(text2));
+    XDrawString(world.dis, world.canv, world.gc_black, 10, voffset*2, text2, strlen(text2));
   }
   return;
 }
 
 void textincorner2(const char * const text1){
   int voffset = world.fontInfo ? (world.fontInfo->ascent + world.fontInfo->descent + 5) : 20;
-  XDrawString(world.dis, world.win, world.gc_red, 10, voffset*3, text1, strlen(text1));
+  XDrawString(world.dis, world.canv, world.gc_red, 10, voffset*3, text1, strlen(text1));
   return;
 }
 
@@ -163,7 +159,7 @@ void draw_edge(double vi[3], double vj[3], double scale, double xy0[2]){
   double pi[2], pj[2];
   r2sum(pi, xy0, vi);
   r2sum(pj, xy0, vj);
-  XDrawLine(world.dis, world.win, world.gc_dot[iw],
+  XDrawLine(world.dis, world.canv, world.gc_dot[iw],
       world.W/2+scale*pi[0], world.H/2-scale*pi[1],
       world.W/2+scale*pj[0], world.H/2-scale*pj[1]);
   return;
@@ -191,7 +187,7 @@ void drawshell(double rmin, double rmax, double scale, double xy0[2]){
   int x = world.W/2+d*xy0[0];
   int y = world.H/2-d*xy0[1];
   for(int i=0; i<2; i++){
-    XDrawArc(world.dis, world.win, world.gc_dot[i], x-r[i], y-r[i], 2*r[i], 2*r[i], 0, 360*64);
+    XDrawArc(world.dis, world.canv, world.gc_dot[i], x-r[i], y-r[i], 2*r[i], 2*r[i], 0, 360*64);
   }
   return;
 }
@@ -201,7 +197,19 @@ int savepic(char * s){
   a.valuemask = (0 | XpmSize) ;
   a.width     = world.W;
   a.height    = world.H;
-  XCopyArea (world.dis, world.win, world.px, world.gc_white, 0, 0, world.W, world.H, 0, 0);   /* with text */
   return XpmWriteFileFromPixmap(world.dis, s, world.px, 0, &a);
 }
 
+void clear_canv(){ // TODO other canvases?
+  if(world.canv == world.px){
+    XFillRectangle(world.dis, world.canv, world.gc_white, 0, 0, world.W, world.H);\
+  }
+  return;
+}
+
+void fill_canv(){
+  if(world.canv == world.px){ // TODO other canvases?
+    XCopyArea(world.dis, world.canv, world.win, world.gc_white, 0, 0, world.W, world.H, 0, 0);
+  }
+  return;
+}
