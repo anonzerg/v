@@ -65,10 +65,10 @@ void redraw_ac3(object * ent, drawpars * dp){
     for(int i=0; i<8; i++){
       r3mx (v+3*i, dp->cell.vertices+3*i, dp->rend.ac3rmx);
     }
-    drawvertices(v, dp->rend.scale, dp->rend.xy0);
+    drawvertices(v, dp->rend);
   }
   else if(dp->cell.vert == 2){
-    drawshell(dp->cell.vertices[0], dp->cell.vertices[1], dp->rend.scale, dp->rend.xy0);
+    drawshell(dp->cell.vertices, dp->rend);
   }
   fill_canv();
 

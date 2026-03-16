@@ -1,6 +1,5 @@
 #include "v.h"
 #include "x.h"
-#include "vec2.h"
 
 extern draw_world_t world;
 
@@ -150,20 +149,15 @@ void setcaption(const char * const capt){
   return;
 }
 
-void draw_edge(double vi[3], double vj[3], double scale, double xy0[2]){
+void draw_edge(double vi[3], double vj[3], rendpars rend){
   int iw = (vi[2]>0.0 || vj[2]>0.0) ? 0 : 1;
-  double pi[2], pj[2];
-  r2sum(pi, xy0, vi);
-  r2sum(pj, xy0, vj);
   XDrawLine(world.dis, world.canv, world.gc_dot[iw],
-      world.W/2+scale*pi[0], world.H/2-scale*pi[1],
-      world.W/2+scale*pj[0], world.H/2-scale*pj[1]);
+      SCREEN_X(vi[0]), SCREEN_Y(vi[1]), SCREEN_X(vj[0]), SCREEN_Y(vj[1]));
   return;
 }
 
-void drawvertices(double * v, double scale, double xy0[2]){
-  double d = world.size * scale;
-#define LINE(i,j) draw_edge(v+(i)*3, v+(j)*3, d, xy0)
+void drawvertices(double * v, rendpars rend){
+#define LINE(i,j) draw_edge(v+(i)*3, v+(j)*3, rend)
   for(int i=0; i<8; i+=2){
     LINE(i,i+1); // || z-axis
   }
@@ -177,13 +171,12 @@ void drawvertices(double * v, double scale, double xy0[2]){
   return;
 }
 
-void drawshell(double rmin, double rmax, double scale, double xy0[2]){
-  double d = world.size * scale;
-  double r[] = {rmax*d, rmin*d};
-  int x = world.W/2+d*xy0[0];
-  int y = world.H/2-d*xy0[1];
+void drawshell(double r[2], rendpars rend){
+  double d = world.size * rend.scale;
   for(int i=0; i<2; i++){
-    XDrawArc(world.dis, world.canv, world.gc_dot[i], x-r[i], y-r[i], 2*r[i], 2*r[i], 0, 360*64);
+    XDrawArc(world.dis, world.canv, world.gc_dot[1-i],
+        SCREEN_X(-r[i]), SCREEN_Y(r[i]),
+        2*r[i]*d, 2*r[i]*d, 0, 360*64);
   }
   return;
 }

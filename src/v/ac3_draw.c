@@ -29,15 +29,10 @@ static int cmpz(const void * p1, const void * p2){
 }
 
 void ac3_draw(atcoord * ac, rendpars rend){
-
-#define SCREEN_X(X)  (world.W/2 + d*(rend.xy0[0] + (X)))
-#define SCREEN_Y(Y)  (world.H/2 - d*(rend.xy0[1] + (Y)))
-
   int n = ac->n;
   kzstr * kz = malloc(sizeof(kzstr)*n);
   int   * ks = (rend.bonds>0) ? malloc(sizeof(int)*n) : NULL;
 
-  double d     = world.size * rend.scale;
   double resol = world.size * RESOL_SCALE;
   double r1  = rend.r * resol * rend.scale;
 
