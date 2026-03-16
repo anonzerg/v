@@ -177,29 +177,51 @@ object * acs_from_var(int n, mol * m, vibr_t vib, allpars * ap){
   for(int i=0; i<ip->input_files_n; i++){
     PRINT_WARN("ignoring file '%s'\n", ip->input_files[i]);
   }
-  if(dp->task==VIBRO){
-    PRINT_WARN("cannot read vibrations from input variable\n");
+  if(dp->task==UNKNOWN){
+    dp->task = vib.n ? VIBRO : AT3COORDS;
   }
-  dp->task = AT3COORDS;
-
-  object * acs = malloc(sizeof(object));
-  acs->Nmem = acs->n = n;
-  acs->m = malloc(acs->Nmem*sizeof(atcoord *));
-  acs->vib = NULL;
-
-  for(int i=0; i<n; i++){
-    acs->m[i] = atcoord_fill(m+i, dp->rend.bonds, dp->geom);
+  else if(!vib.n && dp->task==VIBRO){
+    PRINT_WARN("the input does not contain vibrations\n");
+    dp->task = AT3COORDS;
   }
 
-  fill_nf(acs, 0);
-  dp->rend.scale = acs_scale(acs);
-  newmol_prep(acs, dp);
+  object * ent = malloc(sizeof(object));
 
-  int natmax = 0;
-  for(int i=0; i<n; i++){
-    natmax = MAX(natmax, m[i].n);
+  if(dp->task == AT3COORDS){
+    ent->Nmem = ent->n = n;
+    ent->m = malloc(ent->Nmem*sizeof(atcoord *));
+    ent->vib = NULL;
+
+    for(int i=0; i<n; i++){
+      ent->m[i] = atcoord_fill(m+i, dp->rend.bonds, dp->geom);
+    }
+
+    fill_nf(ent, 0);
+    dp->rend.scale = acs_scale(ent);
+    newmol_prep(ent, dp);
+
+    int natmax = 0;
+    for(int i=0; i<n; i++){
+      natmax = MAX(natmax, m[i].n);
+    }
+    intcoord_check(natmax, dp->anal.intcoord);
   }
-  intcoord_check(natmax, dp->anal.intcoord);
+  else{
+    ent->Nmem = ent->n = 1;
+    ent->m     = malloc(ent->Nmem*sizeof(atcoord *));
+    ent->m[0] = atcoord_fill(m+n-1, dp->rend.bonds, dp->geom);
+    int nat = ent->m[0]->n;
+    ent->vib = make_vibr_t(vib.n, nat);
+    veccp(nat*3,       ent->vib->r0, ent->m[0]->r);
+    veccp(vib.n*nat*3, ent->vib->disp, vib.disp);
+    veccp(vib.n,       ent->vib->freq, vib.freq);
+    veccp(vib.n,       ent->vib->ints, vib.ints);
+    veccp(vib.n,       ent->vib->mass, vib.mass);
+    dp->rend.scale = ac3_scale(ent->m[0]);
+    dp->N = ent->vib->n;
+    dp->anal.intcoord[0] = 0;
+    dp->read.fname = ent->m[0]->fname;
+  }
 
-  return acs;
+  return ent;
 }

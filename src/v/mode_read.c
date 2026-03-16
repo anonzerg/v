@@ -5,7 +5,7 @@
 #define DISPL_LINES_SKIP 5
 #define SUMMARY_LINES_SKIP 4
 
-static inline vibr_t * make_vibr_t(int n_modes, int n_atoms){
+vibr_t * make_vibr_t(int n_modes, int n_atoms){
   size_t freq_size = sizeof(double) * n_modes;
   size_t ints_size = sizeof(double) * n_modes;
   size_t mass_size = sizeof(double) * n_modes;

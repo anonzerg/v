@@ -61,6 +61,7 @@ object * read_files(allpars * ap);
 double ac3_scale(atcoord * ac);
 double acs_scale(object * acs);
 // mode_read.c
+vibr_t * make_vibr_t(int n_modes, int n_atoms);
 vibr_t * mode_read(FILE * f, int na);
 // ac3_read*.c
 int read_cart_atom(FILE * f, int n, mol * m);
