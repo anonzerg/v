@@ -4,9 +4,7 @@
 
 #define VIBRO_SUBSTEPS 4
 
-extern int W,H;
-extern Display * dis;
-extern Window    win;
+extern draw_world_t world;
 
 typedef struct {
   int click;
@@ -18,7 +16,7 @@ static void process_mouse(XMotionEvent * event, object * ent, drawpars * dp, mou
   if(mouse->click){
     int x = event->x;
     int y = event->y;
-    rot_ent_pointer(ent, dp, x-mouse->x0, y-mouse->y0, POINTER_SPEED/MIN(W,H));
+    rot_ent_pointer(ent, dp, x-mouse->x0, y-mouse->y0, POINTER_SPEED/world.size);
     exp_redraw(ent, dp);
     mouse->x0 = x;
     mouse->y0 = y;
@@ -71,8 +69,8 @@ static void run_animation(object * ent, drawpars * dp, int * tr){
 void main_loop(object * ent, drawpars * dp, ptf kp[NKP]){
 
   // To handle window closing. Thanks to https://stackoverflow.com/a/1186544
-  Atom wm_delete_window = XInternAtom(dis, "WM_DELETE_WINDOW", False);
-  XSetWMProtocols(dis, win, &wm_delete_window, 1);
+  Atom wm_delete_window = XInternAtom(world.dis, "WM_DELETE_WINDOW", False);
+  XSetWMProtocols(world.dis, world.win, &wm_delete_window, 1);
 
   mouse_state_t mouse = {.click=0, .x0=0, .y0=0};
   int tr = 0;
@@ -80,7 +78,7 @@ void main_loop(object * ent, drawpars * dp, ptf kp[NKP]){
     XEvent event_rec;
     XEvent * event = NULL;
     do{
-      XNextEvent(dis, &event_rec);
+      XNextEvent(world.dis, &event_rec);
 #if 0
       printf("%d\n", event_rec.type);
 #endif
@@ -90,7 +88,7 @@ void main_loop(object * ent, drawpars * dp, ptf kp[NKP]){
       if(event->type == ButtonPress || event->type == ButtonRelease){
         break;
       }
-    } while(XEventsQueued(dis, QueuedAlready));
+    } while(XEventsQueued(world.dis, QueuedAlready));
 
     if (event->type == ClientMessage) {
       if ((Atom)event->xclient.data.l[0] == wm_delete_window) {
@@ -103,8 +101,9 @@ void main_loop(object * ent, drawpars * dp, ptf kp[NKP]){
     }
 
     else if(event->type == ConfigureNotify){
-      W = event->xconfigure.width;
-      H = event->xconfigure.height;
+      world.W = event->xconfigure.width;
+      world.H = event->xconfigure.height;
+      world.size = MIN(world.H, world.W);
       dp->rend.xy0[0] = dp->rend.xy0[1] = 0.0;
       exp_redraw(ent, dp);
     }

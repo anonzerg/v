@@ -11,7 +11,7 @@ void mx_id(unsigned int n, double * a){
 }
 
 void mx_multmx(unsigned int m, unsigned int n, unsigned int q,
-               double * p, double * a, double * b){
+               double * p, const double * a, const double * b){
   /* a: m*n
    * b: n*q
    * p = ab: m*q

@@ -14,8 +14,9 @@
 * Remove case sensitivity of xyz file inputs (#9)
 * Add CLI option to disable centering of molecules (#14)
 * Disable default rotation wrt inertia axis for z-matrix input and add a CLI option to force it (#14)
-* Read molecules from the standard input
-* Show infrared intensities and mode masses
+* Read molecules from the standard input (#28)
+* Show infrared intensities and mode masses (#35)
+* Improve the text-in-corner look (de242c7, #36)
 * Improve data structures and code readability
 
 ### Fixes
@@ -24,6 +25,7 @@
 * Fix NaNs when compute dihedrals (#14)
 * Fix the "readagain" (`r`) and "readmore" (`tab`) bugs (#31)
 * Fix z-matrix input with unit=bohr (8554864)
+* Fix text blinking when playing animation (80cae88, #36)
 
 ### Coming in the next version:
 * extended xyz (#16, #17)

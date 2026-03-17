@@ -9,15 +9,13 @@ vibr_t * make_vibr_t(int n_modes, int n_atoms){
   size_t freq_size = sizeof(double) * n_modes;
   size_t ints_size = sizeof(double) * n_modes;
   size_t mass_size = sizeof(double) * n_modes;
-  size_t r0_size   = sizeof(double) * n_atoms*3;
   size_t disp_size = sizeof(double) * n_modes*n_atoms*3;
-  size_t size = sizeof(vibr_t) + freq_size + r0_size + disp_size + ints_size + mass_size;
+  size_t size = sizeof(vibr_t) + freq_size + disp_size + ints_size + mass_size;
   vibr_t * v = malloc(size);
   v->n    = n_modes;
   v->freq = (double *) (v + 1);
   v->disp = (double *) MEM_END(v,freq);
-  v->r0   = (double *) MEM_END(v,disp);
-  v->ints = (double *) MEM_END(v,r0);
+  v->ints = (double *) MEM_END(v,disp);
   v->mass = (double *) MEM_END(v,ints);
   return v;
 }

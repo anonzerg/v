@@ -49,30 +49,32 @@ void acs_readmore(readpars read, int b, geompars geom, object * acs){
   return;
 }
 
-static object * mode_read_try(FILE * f, atcoord * ac){
+static object * mode_read_try(FILE * f, object * ent, drawpars * dp){
 
   long pos = ftell(f);
   rewind(f);
+  atcoord * m = ent->m[ent->n-1];
+  vibr_t * vib = mode_read(f, m->n);
 
-  int n = ac->n;
-  vibr_t * modes = mode_read(f, n);
-
-  if(modes){
-    object * ent = malloc(sizeof(object));
-    ent->Nmem  = ent->n = 1;
-    ent->m     = malloc(ent->Nmem*sizeof(atcoord *));
-    ent->m[0]  = ac;
-    ent->vib   = modes;
-    veccp(n*3, ent->vib->r0, ac->r);
-    return ent;
-  }
-  else{
+  if(!vib){
     fseek(f, pos, SEEK_SET);
     return NULL;
   }
+  else{
+    for(int i=0; i<ent->n-1; i++){
+      free(ent->m[i]);
+    }
+    ent->Nmem = ent->n = 1;
+    ent->m    = realloc(ent->m, sizeof(atcoord *));
+    ent->m[0] = m;
+    ent->vib  = vib;
+    dp->rend.scale = ac3_scale(m);
+    dp->N = vib->n;
+    return ent;
+  }
 }
 
-static FILE * acs_read_newfile(object * acs, char * fname, drawpars * dp){
+static FILE * acs_read_newfile(char * fname, object * acs, drawpars * dp){
   FILE * f;
   if(!strcmp(fname, "-")){
     f = stdin;
@@ -95,7 +97,7 @@ static object * ent_read(char * fname, drawpars * dp){
   acs->m = NULL;
   acs->vib = NULL;
 
-  FILE * f = acs_read_newfile(acs, fname, dp);
+  FILE * f = acs_read_newfile(fname, acs, dp);
   if(!f || !acs->n){
     free(acs);
     return NULL;
@@ -103,13 +105,9 @@ static object * ent_read(char * fname, drawpars * dp){
   dp->read.fname = fname;
 
   if(dp->task==UNKNOWN || dp->task==VIBRO){
-    object * vib = mode_read_try(f, acs->m[acs->n-1]);
+    object * vib = mode_read_try(f, acs, dp);
     if(vib){
-      acs->n--;
-      obj_free(acs);
       fclose(f);
-      dp->rend.scale = ac3_scale(vib->m[0]);
-      dp->N = vib->vib->n;
       dp->task = VIBRO;
       return vib;
     }
@@ -145,7 +143,7 @@ object * read_files(allpars * ap){
     object * acs = ent;
     int n0 = acs->n;
     for(i++; i<fn; i++){
-      FILE * f = acs_read_newfile(acs, flist[i], dp);
+      FILE * f = acs_read_newfile(flist[i], acs, dp);
       if(!f){
         PRINT_WARN("cannot read file '%s'\n", flist[i]);
       }
@@ -160,7 +158,7 @@ object * read_files(allpars * ap){
       }
     }
     dp->rend.scale = acs_scale(acs);
-    newmol_prep(acs, dp);
+    dp->N = acs->n;
     intcoord_check(INT_MAX, dp->anal.intcoord);
   }
   else{
@@ -198,7 +196,7 @@ object * acs_from_var(int n, mol * m, vibr_t vib, allpars * ap){
 
     fill_nf(ent, 0);
     dp->rend.scale = acs_scale(ent);
-    newmol_prep(ent, dp);
+    dp->N = ent->n;
 
     int natmax = 0;
     for(int i=0; i<n; i++){
@@ -212,7 +210,6 @@ object * acs_from_var(int n, mol * m, vibr_t vib, allpars * ap){
     ent->m[0] = atcoord_fill(m+n-1, dp->rend.bonds, dp->geom);
     int nat = ent->m[0]->n;
     ent->vib = make_vibr_t(vib.n, nat);
-    veccp(nat*3,       ent->vib->r0, ent->m[0]->r);
     veccp(vib.n*nat*3, ent->vib->disp, vib.disp);
     veccp(vib.n,       ent->vib->freq, vib.freq);
     veccp(vib.n,       ent->vib->ints, vib.ints);

@@ -7,6 +7,7 @@
 #define POINTER_SPEED 2.0
 #define STRLEN 256
 #define BIGSTRLEN 4096
+#define MAX_LINES 5
 
 #include "pars.h"
 
@@ -28,9 +29,12 @@ typedef struct {
 
 typedef struct {
   int      n;            // number of atoms
-  int    * q;            // charges of atoms
-  double * r;            // coordinates of atoms
+  int    * q;            // atom charges
+  double * r;            // atom coordinates (rotated)
   const char * fname;    // file name
+
+  int rotated;           // is `r` up-to-date
+  double * r0;           // atom coordinates (original)
 
   int nf[2];             // number of molecule in file, file size
   styp   sym;            // point group
@@ -42,7 +46,6 @@ typedef struct {
   double * ints;  // intensities
   double * disp;  // displacements
   double * mass;  // masses
-  double * r0;    // atom configuration at the central point
   int      n;     // number of modes
 } vibr_t;
 
@@ -79,6 +82,10 @@ allpars cli_parse(int argc, char ** argv);
 // loop.c
 void main_loop(object * ent, drawpars * dp, ptf kp[NKP]);
 
+// redraw.c
+void redraw_ac3(object * ent, drawpars * dp);
+void redraw_vibro(object * ent, drawpars * dp);
+
 // ac3_draw.c
 void ac3_draw      (atcoord * ac, rendpars rend);
 // ac3_print.c
@@ -98,20 +105,18 @@ int get_element(char * s);
 void close_x      (void);
 void init_x       (const char * const capt, const colorscheme_t colorscheme);
 void init_font    (char * fontname);
-void textincorner (const char * const text1, const char * const text2);
-void textincorner2(const char * const text1);
+void textincorner (const char * const lines[MAX_LINES], const int red[MAX_LINES]);
 void setcaption   (const char * const capt);
-void drawvertices (double * v, double scale, double xy0[2]);
-void drawshell    (double rmin, double rmax, double scale, double * xy0);
+void drawvertices (double * v, rendpars rend);
+void drawshell    (double r[2], rendpars rend);
 int  savepic      (char * s);
+void clear_canv();
+void fill_canv();
 // xinput.c
 int process_x_input(char input_text[STRLEN], unsigned int keycode);
 
 // tools.c
 void obj_free(object * ent);
-void newmol_prep(object * acs, drawpars * dp);
-void ac3_text(atcoord * ac, drawpars * dp);
-void vibro_text(vibr_t * ms, drawpars * dp);
 void pg(atcoord * a, double symtol);
 
 // headless.c

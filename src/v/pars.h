@@ -10,11 +10,11 @@ typedef enum {
 } colorscheme_t;
 
 typedef struct {
-  int               gui;   // if gui is enabled
-  char       * fontname;   // font
-  int     input_files_n;   // number of input files
-  char   ** input_files;   // input files
   colorscheme_t  colors;   // colorscheme (v or cpk)
+  int               gui;   // if gui is enabled
+  int     input_files_n;   // number of input files
+  char       * fontname;   // font
+  char   ** input_files;   // input files
 } initpars;
 
 typedef struct {
@@ -28,13 +28,12 @@ typedef struct {
   int bohr;     // 0: Å        1: Bohr
 } geompars;
 
-
 typedef struct {
-  int    closed;        // 1: time to go
+  char   input_text[STRLEN];
   char * com;           // command string for gui:0
   char * on_exit;       // command string to run on exit
-  int input;            // 0=no input regime, 1=jump, ...
-  char input_text[STRLEN];
+  int    closed;        // 1: time to go
+  int    input;         // 0=no input regime, 1=jump, ...
   int    modkey;        // whether ctrl or shift are pressed
 } uipars;
 

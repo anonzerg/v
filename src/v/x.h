@@ -5,17 +5,17 @@
 #include <X11/keysymdef.h>
 
 #define NCOLORS 110
+#define LINE_WIDTH 2
 
-#define CLEARCANV \
-  if(canv == px){\
-    XFillRectangle(dis, px, gc_white, 0, 0, W, H);\
-  }\
-  else if(canv == win){\
-    XClearWindow(dis, win);\
-  }
+#define SCREEN_X(X)  (world.W/2 + world.size * rend.scale*(rend.xy0[0] + (X)))
+#define SCREEN_Y(Y)  (world.H/2 - world.size * rend.scale*(rend.xy0[1] + (Y)))
 
-#define FILLCANV \
-  if(canv == px){\
-    XCopyArea(dis, px, win, gc_white, 0, 0, W, H, 0, 0);\
-  }
-
+typedef struct {
+  Display * dis;
+  Window    win;
+  GC        gc_white, gc_black, gc_red, gc_dot[2], gcc[NCOLORS];
+  Pixmap    px;
+  Drawable  canv;
+  XFontStruct * fontInfo;
+  int       W, H, size;
+} draw_world_t;

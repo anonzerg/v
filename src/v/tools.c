@@ -13,65 +13,6 @@ void obj_free(object * ent){
   return;
 }
 
-void newmol_prep(object * acs, drawpars * dp){
-  for(int j=dp->N; j<acs->n; j++){
-    atcoord * ac = acs->m[j];
-    for(int i=0; i<ac->n; i++){
-      double v[3];
-      r3mx(v, ac->r+3*i, dp->rend.ac3rmx);
-      r3cp(ac->r+3*i, v);
-    }
-  }
-  dp->N = acs->n;
-  return;
-}
-
-void ac3_text(atcoord * ac, drawpars * dp){
-  char text[STRLEN];
-  int tp = snprintf(text, sizeof(text),
-    "%*d / %d   r = %.1lf   rl = %.1lf",
-    1+(int)(log10(dp->N)), dp->n+1, dp->N, dp->rend.r, dp->bond.rl);
-  if( tp<sizeof(text)-1 && dp->anal.intcoord[0] ){
-    tp += snprintf(text+tp, sizeof(text)-tp, "  |  %d,%d,%d,%d,%d: %lf", dp->anal.intcoord[0], dp->anal.intcoord[1], dp->anal.intcoord[2], dp->anal.intcoord[3], dp->anal.intcoord[4], intcoord_calc(1, ac->n, dp->anal.intcoord, ac->r));
-  }
-  if( tp<sizeof(text)-1 && ac->sym[0] ){
-    tp += snprintf(text+tp, sizeof(text)-tp, "  |  PG: %s", ac->sym);
-  }
-  if(ac->nf[1]==dp->N){
-    textincorner(text, ac->fname);
-  }
-  else{
-    char text2[STRLEN];
-    snprintf(text2, sizeof(text2), "%s (%*d / %d)", ac->fname, 1+(int)(log10(ac->nf[1])), ac->nf[0]+1, ac->nf[1]);
-    textincorner(text, text2);
-  }
-
-  if(dp->ui.input==1){
-    char text3[STRLEN];
-    snprintf(text3, sizeof(text3), "JUMP TO >>> %s", dp->ui.input_text);
-    textincorner2(text3);
-  }
-
-  setcaption(ac->fname);
-  return;
-}
-
-void vibro_text(vibr_t * ms, drawpars * dp){
-  char text[STRLEN];
-  double fq = ms->freq[dp->n];
-  char i = fq > 0.0 ? ' ' : 'i';
-  snprintf(text, sizeof(text),
-           "%*d / %d   freq = %.1lf%c cm-1   int = %.1lf km/mole   mass = %.1lf amu  |  r = %.1lf   rl = %.1lf",
-           1+(int)(log10(ms->n)), dp->n+1, ms->n, fabs(fq), i, ms->ints[dp->n], ms->mass[dp->n], dp->rend.r, dp->bond.rl);
-  textincorner(text, dp->read.fname);
-  if(dp->ui.input==1){
-    char text3[STRLEN];
-    snprintf(text3, sizeof(text3), "JUMP TO >>> %s", dp->ui.input_text);
-    textincorner2(text3);
-  }
-  return;
-}
-
 void pg(atcoord * a, double symtol){
 
   int n = a->n;
