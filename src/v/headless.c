@@ -48,10 +48,8 @@ void run_commands(FILE * f, char * command, drawpars * dp, object * ent){
 }
 
 int headless(drawpars * dp, object * ent){
-  atcoord * ac = ent->m[dp->n];
-  if(dp->rend.bonds>0){
-    bonds_fill(dp->bond, ac);
-  }
+  fill_bonds(ent->m[dp->n], dp);
+  rotate_mol(ent->m[dp->n], dp);
   run_commands(stdin, dp->ui.com, dp, ent);
   obj_free(ent);
   CLOSE0(dp->read.f);

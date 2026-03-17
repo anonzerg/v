@@ -13,20 +13,6 @@ static inline void fill_nf(object * acs, int n0){
   return;
 }
 
-void newmol_prep(object * acs, drawpars * dp){
-  for(int j=dp->N; j<acs->n; j++){
-    atcoord * ac = acs->m[j];
-    for(int i=0; i<ac->n; i++){
-      double v[3];
-      r3mx(v, ac->r+3*i, dp->rend.ac3rmx);
-      r3cp(ac->r+3*i, v);
-    }
-  }
-  dp->N = acs->n;
-  return;
-}
-
-
 void acs_readmore(readpars read, int b, geompars geom, object * acs){
 
   // needed to reset nf
@@ -174,7 +160,7 @@ object * read_files(allpars * ap){
       }
     }
     dp->rend.scale = acs_scale(acs);
-    newmol_prep(acs, dp);
+    dp->N = acs->n;
     intcoord_check(INT_MAX, dp->anal.intcoord);
   }
   else{
@@ -212,7 +198,7 @@ object * acs_from_var(int n, mol * m, vibr_t vib, allpars * ap){
 
     fill_nf(ent, 0);
     dp->rend.scale = acs_scale(ent);
-    newmol_prep(ent, dp);
+    dp->N = ent->n;
 
     int natmax = 0;
     for(int i=0; i<n; i++){

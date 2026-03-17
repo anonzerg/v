@@ -1,7 +1,5 @@
 #include "v.h"
 #include "evr.h"
-#include "vec3.h"
-#include "vecn.h"
 
 static void ac3_text(atcoord * ac, drawpars * dp){
   char text[STRLEN], text2[STRLEN], text_inp[STRLEN];
@@ -50,28 +48,22 @@ void vibro_text(vibr_t * ms, drawpars * dp){
 }
 
 void redraw_ac3(object * ent, drawpars * dp){
-  atcoord * ac = ent->m[dp->n];
-
-  if(dp->rend.bonds>0){
-    bonds_fill(dp->bond, ac);
-  }
+  atcoord * m = ent->m[dp->n];
+  fill_bonds(m, dp);
+  rotate_mol(m, dp);
 
   clear_canv();
-  ac3_draw(ac, dp->rend);
-  ac3_text(ac, dp);
-
+  ac3_draw(m, dp->rend);
+  ac3_text(m, dp);
   if(dp->cell.vert == 1){
-    double v[24];
-    for(int i=0; i<8; i++){
-      r3mx (v+3*i, dp->cell.vertices+3*i, dp->rend.ac3rmx);
-    }
+    double v[8*3];
+    rot3d(8, v, dp->cell.vertices, dp->rend.ac3rmx);
     drawvertices(v, dp->rend);
   }
   else if(dp->cell.vert == 2){
     drawshell(dp->cell.vertices, dp->rend);
   }
   fill_canv();
-
   return;
 }
 
@@ -81,16 +73,9 @@ void redraw_vibro(object * ent, drawpars * dp){
   double  * r0 = ent->vib->r0;
   double  * dr = ent->vib->disp + dp->n * m->n*3;
 
-  if(dp->rend.bonds>0){
-    bonds_fill(dp->bond, m);
-  }
-
-  vecsums(m->n*3, m->r, r0, dr, sin( dp->anim.t * 2.0*M_PI/TMAX ) * VIBR_AMP*sqrt(m->n) );
-  for(int j=0; j<m->n; j++){
-    double v[3];
-    r3mx(v, m->r+3*j, dp->rend.ac3rmx);
-    r3cp(m->r+3*j, v);
-  }
+  fill_bonds(m, dp);
+  vecsums(m->n*3, m->r, r0, dr, VIBR_AMP*sqrt(m->n)*sin(dp->anim.t * 2.0*M_PI/TMAX));
+  rot3d_inplace(m->n, m->r, dp->rend.ac3rmx);
 
   clear_canv();
   ac3_draw(m, dp->rend);

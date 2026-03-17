@@ -15,7 +15,7 @@ static inline unsigned int mpos(unsigned int i, unsigned int j){
 #endif
 
 void     mx_id          (unsigned int n, double * a);
-void     mx_multmx      (unsigned int m, unsigned int n, unsigned int q, double * p, double * a, double * b);
+void     mx_multmx      (unsigned int m, unsigned int n, unsigned int q, double * p, const double * a, const double * b);
 int      mx_inv         (unsigned int n, unsigned int r, double * b, double * a, double eps);
 void     jacobi         (double * a, double * b, double * d, unsigned int n, double eps, unsigned int rot, FILE * f);
 

@@ -1,4 +1,5 @@
 #include "v.h"
+#include "vec3.h"
 
 void ac3_print(atcoord * ac, rendpars rend){
   PRINTOUT(stdout, "$molecule\ncart\n");
@@ -42,8 +43,7 @@ void ac3_print_xyz(atcoord * ac, rendpars rend){
   return;
 }
 
-void ac3_print2fig(atcoord * ac, rendpars rend, double * v){
-
+void ac3_print2fig(atcoord * ac, rendpars rend, double vert[9]){
   int n = ac->n;
   for(int i=0; i<n; i++){
     PRINTOUT(stdout, "atom %3d% 13.7lf% 13.7lf% 13.7lf\n", ac->q[i],
@@ -52,12 +52,12 @@ void ac3_print2fig(atcoord * ac, rendpars rend, double * v){
                  ac->r[i*3+2]);
   }
 
-  if(v){
+  if(vert){
     for(int i=0; i<8; i++){
+      double v[3];
+      r3mx(v, vert+3*i, rend.ac3rmx);
       PRINTOUT(stdout, "atom %3d% 13.7lf% 13.7lf% 13.7lf\n", 0,
-          rend.xy0[0] + v[i*3  ],
-          rend.xy0[1] + v[i*3+1],
-                   v[i*3+2]);
+          rend.xy0[0] + v[0], rend.xy0[1] + v[1], v[2]);
     }
   }
 
@@ -75,7 +75,7 @@ void ac3_print2fig(atcoord * ac, rendpars rend, double * v){
     }
   }
 
-  if(v){
+  if(vert){
 #define LINE(I,J)   PRINTOUT(stdout, "bond %3d %3d % 3d\n", (J)+n+1, (I)+n+1, -1)
     for(int i=0; i<8; i+=2){
       LINE(i,i+1); // || z-axis

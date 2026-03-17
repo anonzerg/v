@@ -29,9 +29,12 @@ typedef struct {
 
 typedef struct {
   int      n;            // number of atoms
-  int    * q;            // charges of atoms
-  double * r;            // coordinates of atoms
+  int    * q;            // atom charges
+  double * r;            // atom coordinates (rotated)
   const char * fname;    // file name
+
+  int rotated;           // is `r` up-to-date
+  double * r0;           // atom coordinates (original)
 
   int nf[2];             // number of molecule in file, file size
   styp   sym;            // point group
@@ -55,7 +58,6 @@ typedef struct {
 
 
 // load.c
-void newmol_prep(object * acs, drawpars * dp);
 object * acs_from_var(int n, mol * m, vibr_t vib, allpars * ap);
 void acs_readmore  (readpars read, int b, geompars geom, object * acs);
 object * read_files(allpars * ap);
