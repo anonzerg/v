@@ -47,7 +47,6 @@ class vibr_t(ctypes.Structure):  # noqa: N801
           double * ints;
           double * disp;
           double * mass;
-          double * r0;
           int      n;
         } vibr_t;
     ```
@@ -58,7 +57,6 @@ class vibr_t(ctypes.Structure):  # noqa: N801
             ("ints", c_double_p),
             ("disp", c_double_p),
             ("mass", c_double_p),
-            ("r0",   c_double_p),
             ("n",    c_int),
             )
 
@@ -399,13 +397,13 @@ def vib2struct(nat, vib=None):
 
     Returns:
         vibr_t: An instance of `vibr_t` with the fields set.  If missing, the optional fields are set to 0,
-            and the `r0` is set to NULL.  If the input dictionary is None, everything is set to 0/NULL.
+            If the input dictionary is None, everything is set to 0/NULL.
 
     Raises:
         TypeError: If mol is neither a dictionary nor None.
     """
     if vib is None:
-        return vibr_t(n=c_int(0), disp=None, freq=None, ints=None, mass=None, r0=None)
+        return vibr_t(n=c_int(0), disp=None, freq=None, ints=None, mass=None)
 
     if not isinstance(vib, dict):
         msg = f"vib must be None or a dictionary, but got {type(vib)}"
@@ -452,7 +450,7 @@ def vib2struct(nat, vib=None):
     for key, val in vdict.items():
         vdict[key] = val.ctypes.data_as(c_double_p)
 
-    v = vibr_t(n=nvib, disp=vdict['disp'], freq=vdict['freq'], ints=vdict['ints'], mass=vdict['mass'], r0=None)
+    v = vibr_t(n=nvib, disp=vdict['disp'], freq=vdict['freq'], ints=vdict['ints'], mass=vdict['mass'])
     v._keepalive = (nvib, vdict['disp'], vdict['freq'], vdict['ints'], vdict['mass'])  # keep strong references
     return v
 

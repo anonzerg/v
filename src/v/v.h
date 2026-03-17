@@ -46,7 +46,6 @@ typedef struct {
   double * ints;  // intensities
   double * disp;  // displacements
   double * mass;  // masses
-  double * r0;    // atom configuration at the central point
   int      n;     // number of modes
 } vibr_t;
 

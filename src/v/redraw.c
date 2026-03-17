@@ -70,11 +70,10 @@ void redraw_ac3(object * ent, drawpars * dp){
 void redraw_vibro(object * ent, drawpars * dp){
 
   atcoord * m  = ent->m[0];
-  double  * r0 = ent->vib->r0;
   double  * dr = ent->vib->disp + dp->n * m->n*3;
 
   fill_bonds(m, dp);
-  vecsums(m->n*3, m->r, r0, dr, VIBR_AMP*sqrt(m->n)*sin(dp->anim.t * 2.0*M_PI/TMAX));
+  vecsums(m->n*3, m->r, m->r0, dr, VIBR_AMP*sqrt(m->n)*sin(dp->anim.t * 2.0*M_PI/TMAX));
   rot3d_inplace(m->n, m->r, dp->rend.ac3rmx);
 
   clear_canv();
