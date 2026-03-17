@@ -5,6 +5,7 @@
 #include <X11/keysymdef.h>
 
 #define NCOLORS 110
+#define LINE_WIDTH 2
 
 #define SCREEN_X(X)  (world.W/2 + world.size * rend.scale*(rend.xy0[0] + (X)))
 #define SCREEN_Y(Y)  (world.H/2 - world.size * rend.scale*(rend.xy0[1] + (Y)))

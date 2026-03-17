@@ -77,7 +77,7 @@ void init_x(const char * const capt, const colorscheme_t colorscheme){
   world.gc_black = XCreateGC (dis, world.win, 0, 0);
   XSetBackground (dis, world.gc_black, wp);
   XSetForeground (dis, world.gc_black, bp);
-  XSetLineAttributes(dis, world.gc_black, 2, 0, 0, 0);
+  XSetLineAttributes(dis, world.gc_black, LINE_WIDTH, LineSolid, 0, 0);
 
   world.gc_red = XCreateGC (dis, world.win, 0, 0);
   XSetBackground (dis, world.gc_red, wp);
@@ -86,12 +86,12 @@ void init_x(const char * const capt, const colorscheme_t colorscheme){
   world.gc_dot[0] = XCreateGC (dis, world.win, 0, 0);
   XSetBackground (dis, world.gc_black, wp);
   XSetForeground (dis, world.gc_black, bp);
-  XSetLineAttributes(dis, world.gc_dot[0], 2, 1, 0, 0);
+  XSetLineAttributes(dis, world.gc_dot[0], LINE_WIDTH, LineOnOffDash, 0, 0);
 
   world.gc_dot[1] = XCreateGC (dis, world.win, 0, 0);
   XSetBackground (dis, world.gc_black, wp);
   XSetForeground (dis, world.gc_black, bp);
-  XSetLineAttributes(dis, world.gc_dot[1], 0, 1, 0, 0);
+  XSetLineAttributes(dis, world.gc_dot[1], 0, LineOnOffDash, 0, 0);
 
   setcolors(colorscheme);
 
@@ -135,10 +135,14 @@ void init_font(char * fontname){
 }
 
 void textincorner(const char * const lines[MAX_LINES], const int red[MAX_LINES]){
-  int voffset = world.fontInfo ? (world.fontInfo->ascent + world.fontInfo->descent + 5) : 20;
+  XCharStruct _o;
+  int _d, font_ascent, font_descent;
+  XQueryTextExtents(world.dis, XGContextFromGC(world.gc_black), ".", 1, &_d, &font_ascent, &font_descent, &_o);
+  int voffset = font_ascent + font_descent + 5;
+  int hoffset = 10;
   for(int i=0; i<MAX_LINES; i++){
     if(lines[i]){
-      XDrawString(world.dis, world.canv, red[i] ? world.gc_red:world.gc_black, 10, voffset*(i+1), lines[i], strlen(lines[i]));
+      XDrawString(world.dis, world.canv, red[i] ? world.gc_red:world.gc_black, hoffset, voffset*(i+1), lines[i], strlen(lines[i]));
     }
   }
   return;
