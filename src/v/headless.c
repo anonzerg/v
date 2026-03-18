@@ -27,6 +27,8 @@ void run_commands(FILE * f, char * command, drawpars * dp, object * ent){
         kp_print_xyz(ent, dp); break;
       case('x'):
         kp_print(ent, dp); break;
+      case('u'):
+        kp_printrot(ent, dp); break;
       case('.'):
         {
           atcoord * ac = ent->m[dp->n];
