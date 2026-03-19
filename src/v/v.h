@@ -6,7 +6,6 @@
 #define BONDS_MAX 32
 #define POINTER_SPEED 2.0
 #define STRLEN 256
-#define BIGSTRLEN 4096
 #define MAX_LINES 5
 
 #include "pars.h"
