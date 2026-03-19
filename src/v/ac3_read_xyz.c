@@ -1,4 +1,5 @@
 #include "v.h"
+#include "vecn.h"
 
 static inline int eat_line(FILE * f){
   char c;
@@ -45,7 +46,7 @@ int read_header(FILE * f, double cell[9]){
   return ret;
 }
 
-mol * ac3_read_xyz(FILE * f){
+mol * ac3_read_xyz(FILE * f, int * cell_found, double * cell){
 
   // count atoms
   int n = 0;
@@ -55,14 +56,14 @@ mol * ac3_read_xyz(FILE * f){
   fgetc(f);
 
   // read header
-  double cell[9];
-  int r = read_header(f, cell);
+  double tcell[9];
+  int r = read_header(f, tcell);
   if(r==-1){
     return NULL;
   }
   else if(r==1){
-    // read successfully -- TODO
-    printf("%d\n", r);
+    veccp(9, cell, tcell);
+    *cell_found = 1;
   }
 
   // fill in

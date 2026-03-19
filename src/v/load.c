@@ -191,7 +191,7 @@ object * acs_from_var(int n, mol * m, vibr_t vib, allpars * ap){
     ent->vib = NULL;
 
     for(int i=0; i<n; i++){
-      ent->m[i] = atcoord_fill(m+i, dp->rend.bonds, dp->geom);
+      ent->m[i] = atcoord_fill(m+i, dp->rend.bonds, dp->geom, NULL);
     }
 
     fill_nf(ent, 0);
@@ -207,7 +207,7 @@ object * acs_from_var(int n, mol * m, vibr_t vib, allpars * ap){
   else{
     ent->Nmem = ent->n = 1;
     ent->m     = malloc(ent->Nmem*sizeof(atcoord *));
-    ent->m[0] = atcoord_fill(m+n-1, dp->rend.bonds, dp->geom);
+    ent->m[0] = atcoord_fill(m+n-1, dp->rend.bonds, dp->geom, NULL);
     int nat = ent->m[0]->n;
     ent->vib = make_vibr_t(vib.n, nat);
     veccp(vib.n*nat*3, ent->vib->disp, vib.disp);

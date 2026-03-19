@@ -26,7 +26,7 @@ static void cell_fill(cellpars * cell, const double abc[9]){
   return;
 }
 
-atcoord * atcoord_fill(mol * m0, int b, const geompars geom){
+atcoord * atcoord_fill(mol * m0, const int b, const geompars geom, const double cell[9]){
   int n = m0->n;
 
   size_t q_size = sizeof(int   ) * n;
@@ -80,6 +80,9 @@ atcoord * atcoord_fill(mol * m0, int b, const geompars geom){
     m->cell.vertices[1] =  geom.shell[1];
     m->cell.vert = SHELL;
   }
+  else if(cell!=NULL){
+    cell_fill(&m->cell, cell);
+  }
 
   return m;
 }
@@ -88,10 +91,12 @@ atcoord * ac3_read(readpars read, int b, const geompars geom, format_t * format)
 
   mol * m = NULL;
   FILE * f = read.f;
+  int cell_found = 0;
+  double cell[9] = {};
 
   switch(*format){
     case XYZ:
-      if((m=ac3_read_xyz(f))){
+      if((m=ac3_read_xyz(f, &cell_found, cell))){
         *format = XYZ;
       }
       break;
@@ -106,7 +111,7 @@ atcoord * ac3_read(readpars read, int b, const geompars geom, format_t * format)
       }
       break;
     default:
-      if((m=ac3_read_xyz(f))){
+      if((m=ac3_read_xyz(f, &cell_found, cell))){
         *format = XYZ;
       }
       if(!m){
@@ -126,7 +131,7 @@ atcoord * ac3_read(readpars read, int b, const geompars geom, format_t * format)
   }
   m->name = read.fname;
 
-  atcoord * M = atcoord_fill(m, b, geom);
+  atcoord * M = atcoord_fill(m, b, geom, cell_found ? cell : NULL);
   free(m);
   return M;
 }
