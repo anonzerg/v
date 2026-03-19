@@ -231,7 +231,7 @@ static void move_ent(object * ent, drawpars * dp, int dir, double step){
     step *= STEP_MOD;
   }
 
-  if((dp->task==VIBRO) || (m->cell.vert != CELL)){
+  if((dp->task==VIBRO) || (m->cell.boundary != CELL)){
     dp->rend.xy0[dir] += step;
     return;
   }

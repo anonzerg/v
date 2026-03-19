@@ -27,7 +27,7 @@ void ac3_print(atcoord * ac, rendpars * rend){
 
 void ac3_print_xyz(atcoord * ac, rendpars * rend){
   PRINTOUT(stdout, "%d\n", ac->n);
-  if(ac->cell.vert==CELL){
+  if(ac->cell.boundary==CELL){
     double C[9];
     mx_multmx(3,3,3, C, rend->ac3rmx, ac->cell.rot_to_lab_basis);
     PRINTOUT(stdout, "Lattice=\"%lf %lf %lf %lf %lf %lf %lf %lf %lf\"\n",
@@ -65,7 +65,7 @@ void ac3_print2fig(atcoord * ac, rendpars * rend){
                  ac->r[i*3+2]);
   }
 
-  if(ac->cell.vert==CELL){
+  if(ac->cell.boundary==CELL){
     for(int i=0; i<8; i++){
       double v[3];
       r3mx(v, ac->cell.vertices+3*i, rend->ac3rmx);
@@ -88,7 +88,7 @@ void ac3_print2fig(atcoord * ac, rendpars * rend){
     }
   }
 
-  if(ac->cell.vert==CELL){
+  if(ac->cell.boundary==CELL){
 #define LINE(I,J)   PRINTOUT(stdout, "bond %3d %3d % 3d\n", (J)+n+1, (I)+n+1, -1)
     for(int i=0; i<8; i+=2){
       LINE(i,i+1); // || z-axis

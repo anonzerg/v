@@ -22,7 +22,7 @@ static void cell_fill(cellpars * cell, const double abc[9]){
   veccp(9,     cell->rot_to_lab_basis, rot_to_lab_basis);
   mx_id(3,     cell->rot_to_cell_basis);
   mx_inv(3, 3, cell->rot_to_cell_basis, rot_to_lab_basis, EPS_INV);
-  cell->vert = CELL;
+  cell->boundary = CELL;
   return;
 }
 
@@ -78,7 +78,7 @@ atcoord * atcoord_fill(mol * m0, const int b, const geompars geom, const double 
   else if(geom.boundary == SHELL){
     m->cell.vertices[0] =  geom.shell[0];
     m->cell.vertices[1] =  geom.shell[1];
-    m->cell.vert = SHELL;
+    m->cell.boundary = SHELL;
   }
   else if(cell!=NULL){
     cell_fill(&m->cell, cell);

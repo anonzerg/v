@@ -65,7 +65,7 @@ typedef struct {
   double vertices[3*8];           // parameters of cell/shell
   double rot_to_lab_basis[3*3];   // "rotation" matrix for PBC
   double rot_to_cell_basis[3*3];  // "rotation" matrix for PBC
-  boundary_t vert;
+  boundary_t boundary;
 } cellpars;
 
 typedef struct {

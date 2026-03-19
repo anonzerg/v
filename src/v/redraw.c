@@ -79,7 +79,7 @@ void redraw_ac3(object * ent, drawpars * dp){
   atcoord * m = ent->m[dp->n];
   fill_bonds(m, dp);
   rotate_mol(m, dp);
-  if(m->cell.vert == CELL){
+  if(m->cell.boundary== CELL){
     dp->rend.xy0[0] = 0.0;
     dp->rend.xy0[1] = 0.0;
   }
@@ -87,12 +87,12 @@ void redraw_ac3(object * ent, drawpars * dp){
   clear_canv();
   ac3_draw(m, dp->rend);
   ac3_text(m, dp);
-  if(m->cell.vert == CELL){
+  if(m->cell.boundary== CELL){
     double v[8*3];
     rot3d(8, v, m->cell.vertices, dp->rend.ac3rmx);
     drawvertices(v, dp->rend);
   }
-  else if(m->cell.vert == SHELL){
+  else if(m->cell.boundary== SHELL){
     drawshell(m->cell.vertices, dp->rend);
   }
   fill_canv();
