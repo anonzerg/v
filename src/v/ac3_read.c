@@ -80,7 +80,7 @@ atcoord * atcoord_fill(mol * m0, const int b, const geompars geom, const double 
     m->cell.vertices[1] =  geom.shell[1];
     m->cell.boundary = SHELL;
   }
-  else if(cell!=NULL){
+  else if(cell && geom.boundary!=CELL_DISABLED){
     cell_fill(&m->cell, cell);
   }
 

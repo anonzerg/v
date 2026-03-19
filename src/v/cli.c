@@ -2,7 +2,7 @@
 #include "vecn.h"
 #include "matrix.h"
 
-#define EPS_INV 1e-15
+#define EPS 1e-15
 
 static int lazysscanf(char * const s, const char * const template, char ** ret){
   // if the string `s` begins with the template,
@@ -40,11 +40,11 @@ static int sscan_cell(const char * arg, geompars * geom){
   double cell[9];
   int count = sscanf(arg, "cell:b%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf", cell, cell+1, cell+2, cell+3, cell+4, cell+5, cell+6, cell+7, cell+8);
   if(count > 0){
-    if(count==9 || count==3){
+    if(count==9 || count==3 || count==1){
       vecscal(count, cell, BA);
     }
     else{
-      PRINT_WARN("option `cell:b` takes exactly 3 or 9 comma-separated arguments\n")
+      PRINT_WARN("option `cell:b` takes exactly 1, 3 or 9 comma-separated arguments\n")
       return 1;
     }
   }
@@ -53,13 +53,27 @@ static int sscan_cell(const char * arg, geompars * geom){
     if(count <= 0){
       return 0;
     }
-    else if(count!=3 && count!=9){
-      PRINT_WARN("option `cell:` takes exactly 3 or 9 comma-separated arguments\n")
+    else if(count!=3 && count!=9 && count!=1){
+      PRINT_WARN("option `cell:` takes exactly 1, 3, or 9 comma-separated arguments\n")
       return 1;
     }
   }
 
-  if(count==3){
+  double s=0.0;
+  for(int i=0; i<count; i++){
+    s += fabs(cell[i]);
+  }
+  if(s<EPS){
+    geom->boundary = CELL_DISABLED;
+    return 1;
+  }
+
+  if(count==1){
+    geom->cell[0] = cell[0];
+    geom->cell[4] = cell[0];
+    geom->cell[8] = cell[0];
+  }
+  else if(count==3){
     geom->cell[0] = cell[0];
     geom->cell[4] = cell[1];
     geom->cell[8] = cell[2];

@@ -13,6 +13,7 @@ typedef enum {
   NO_BOUNDARY,
   CELL,
   SHELL,
+  CELL_DISABLED,
 } boundary_t;
 
 typedef struct {
