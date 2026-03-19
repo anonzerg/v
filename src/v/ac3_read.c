@@ -1,6 +1,30 @@
 #include "v.h"
 #include "vecn.h"
 #include "vec3.h"
+#include "matrix.h"
+
+#define EPS_INV 1e-15
+
+static void cell_fill(cellpars * cell, const double abc[9]){
+  const double * a = abc+0;
+  const double * b = abc+3;
+  const double * c = abc+6;
+  for(int i=0; i<2; i++){
+    for(int j=0; j<2; j++){
+      for(int k=0; k<2; k++){
+        r3sums3(cell->vertices + (i*4+j*2+k)*3, a, i-0.5, b, j-0.5, c, k-0.5);
+      }
+    }
+  }
+  double rot_to_lab_basis[9] = {a[0], b[0], c[0],
+                                a[1], b[1], c[1],
+                                a[2], b[2], c[2]};
+  veccp(9,     cell->rot_to_lab_basis, rot_to_lab_basis);
+  mx_id(3,     cell->rot_to_cell_basis);
+  mx_inv(3, 3, cell->rot_to_cell_basis, rot_to_lab_basis, EPS_INV);
+  cell->vert = CELL;
+  return;
+}
 
 atcoord * atcoord_fill(mol * m0, int b, const geompars geom){
   int n = m0->n;
@@ -47,6 +71,16 @@ atcoord * atcoord_fill(mol * m0, int b, const geompars geom){
     center_mol(n, m->r, geom.center==2 ? m->q : NULL);
   }
   veccp(n*3, m->r0, m->r);
+
+  if(geom.boundary == CELL){
+    cell_fill(&m->cell, geom.cell);
+  }
+  else if(geom.boundary == SHELL){
+    m->cell.vertices[0] =  geom.shell[0];
+    m->cell.vertices[1] =  geom.shell[1];
+    m->cell.vert = SHELL;
+  }
+
   return m;
 }
 

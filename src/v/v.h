@@ -39,6 +39,7 @@ typedef struct {
   int nf[2];             // number of molecule in file, file size
   styp   sym;            // point group
   bondstr bonds;
+  cellpars cell;
 } atcoord;
 
 typedef struct {
@@ -90,8 +91,8 @@ void redraw_vibro(object * ent, drawpars * dp);
 void ac3_draw      (atcoord * ac, rendpars rend);
 // ac3_print.c
 void ac3_print    (atcoord * ac, rendpars * rend);
-void ac3_print_xyz(atcoord * ac, rendpars * rend, cellpars * cell);
-void ac3_print2fig(atcoord * ac, rendpars * rend, cellpars * cell);
+void ac3_print_xyz(atcoord * ac, rendpars * rend);
+void ac3_print2fig(atcoord * ac, rendpars * rend);
 // bonds.c
 void bonds_fill(bondpars bond, atcoord * ac);
 

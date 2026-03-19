@@ -32,6 +32,10 @@ typedef struct {
   int center;   // 0: nothing; 1: center each molecule upon reading; 2: center wrt center of mass
   int inertia;  // 0: nothing; 1: rotate each molecule upon reading wrt axis of inertia
   int bohr;     // 0: Å        1: Bohr
+
+  boundary_t boundary;
+  double cell[9];
+  double shell[2];
 } geompars;
 
 typedef struct {
@@ -87,7 +91,6 @@ typedef struct {
   uipars    ui;
   rendpars  rend;
   bondpars  bond;
-  cellpars  cell;
   animpars  anim;
   analpars  anal;
 

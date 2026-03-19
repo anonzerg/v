@@ -45,14 +45,14 @@ void kp_print(object * ent, drawpars * dp){
 
 void kp_print_xyz(object * ent, drawpars * dp){
   if (dp->task == AT3COORDS){
-    ac3_print_xyz(ent->m[dp->n], &dp->rend, &dp->cell);
+    ac3_print_xyz(ent->m[dp->n], &dp->rend);
   }
   return;
 }
 
 void kp_print2fig(object * ent, drawpars * dp){
   if (dp->task == AT3COORDS){
-    ac3_print2fig(ent->m[dp->n], &dp->rend, &dp->cell);
+    ac3_print2fig(ent->m[dp->n], &dp->rend);
   }
   return;
 }
@@ -209,25 +209,17 @@ static void mol2cell(double r[3], cellpars * cell){
   return;
 }
 
-static void move_pbc(object * acs, drawpars * dp, int dir, double d){
-
-  double dr[3], v[3] = {};
-  v[dir] = d;  // translation in the view basis
-  r3mxt(dr, v, dp->rend.ac3rmx);  // translation in the mol basis.
-                                  // not true if the initial "rotation" from CLI is not unitary, but ignore this
-  for(int i=0; i<acs->n; i++){
-    atcoord * m = acs->m[i];
-    for(int j=0; j<m->n; j++){
-      double * r = m->r0+j*3;
-      r3add(r, dr);
-      mol2cell(r, &dp->cell);
-      r3cp(m->r+j*3, r);
-      m->rotated = 0;
-    }
-    if(dp->rend.bonds>0){
-      m->bonds.flag = 0;
-      m->bonds.rl *= RL_MOVE_PBC_SCALE;
-    }
+static void move_pbc(atcoord * m, drawpars * dp, double dr[3]){
+  for(int j=0; j<m->n; j++){
+    double * r = m->r0+j*3;
+    r3add(r, dr);
+    mol2cell(r, &m->cell);///TODO
+    r3cp(m->r+j*3, r);
+    m->rotated = 0;
+  }
+  if(dp->rend.bonds>0){
+    m->bonds.flag = 0;
+    m->bonds.rl *= RL_MOVE_PBC_SCALE;
   }
   return;
 }
@@ -236,11 +228,25 @@ static void move_ent(object * ent, drawpars * dp, int dir, double step){
   if(dp->ui.modkey){
     step *= STEP_MOD;
   }
-  if(dp->cell.vert == CELL){
-    move_pbc(ent, dp, dir, step);
-  }
-  else {
+
+  if(dp->task==VIBRO){
     dp->rend.xy0[dir] += step;
+    return;
+  }
+
+  double dr[3], v[3] = {};
+  v[dir] = step;  // translation in the view basis
+  r3mxt(dr, v, dp->rend.ac3rmx);  // translation in the mol basis.
+                                  // not true if the initial "rotation" from CLI is not unitary, but ignore this
+
+  for(int i=0; i<ent->n; i++){
+    atcoord * m = ent->m[i];
+    if(m->cell.vert == CELL){
+      move_pbc(m, dp, dr);
+    }
+    else {
+      dp->rend.xy0[dir] += step; // TODO probably set xy0 when show something with boundary==CELL in redraw
+    }
   }
   return;
 }

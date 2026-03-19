@@ -1,7 +1,6 @@
 #include "v.h"
 #include "vecn.h"
 #include "matrix.h"
-#include "vec3.h"
 
 #define EPS_INV 1e-15
 
@@ -37,7 +36,7 @@ static int sscan_rot(const char * arg, double ac3rmx[9]){
   return 1;
 }
 
-static int sscan_cell(const char * arg, cellpars * cp){
+static int sscan_cell(const char * arg, geompars * geom){
   double cell[9];
   int count = sscanf(arg, "cell:b%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf", cell, cell+1, cell+2, cell+3, cell+4, cell+5, cell+6, cell+7, cell+8);
   if(count > 0){
@@ -60,38 +59,19 @@ static int sscan_cell(const char * arg, cellpars * cp){
     }
   }
 
-  double a[3]={}, b[3]={}, c[3]={};
   if(count==3){
-    a[0] = cell[0];
-    b[1] = cell[1];
-    c[2] = cell[2];
+    geom->cell[0] = cell[0];
+    geom->cell[4] = cell[1];
+    geom->cell[8] = cell[2];
   }
   else{
-    r3cp(a, cell+0);
-    r3cp(b, cell+3);
-    r3cp(c, cell+6);
+    veccp(9, geom->cell, cell);
   }
-
-  for(int i=0; i<2; i++){
-    for(int j=0; j<2; j++){
-      for(int k=0; k<2; k++){
-        r3sums3(cp->vertices + (i*4+j*2+k)*3, a, i-0.5, b, j-0.5, c, k-0.5);
-      }
-    }
-  }
-
-  double rot_to_lab_basis[9] = {a[0], b[0], c[0],
-                                a[1], b[1], c[1],
-                                a[2], b[2], c[2]};
-  veccp(9,     cp->rot_to_lab_basis, rot_to_lab_basis);
-  mx_id(3,     cp->rot_to_cell_basis);
-  mx_inv(3, 3, cp->rot_to_cell_basis, rot_to_lab_basis, EPS_INV);
-
-  cp->vert = CELL;
+  geom->boundary = CELL;
   return 1;
 }
 
-static int sscan_shell(const char * arg, cellpars * cp){
+static int sscan_shell(const char * arg, geompars * geom){
   double shell[2];
   int count = sscanf(arg, "shell:b%lf,%lf", shell, shell+1);
   if(count > 0){
@@ -104,9 +84,9 @@ static int sscan_shell(const char * arg, cellpars * cp){
   if(count <= 0)
     return 0;
   if(count == 2){
-    cp->vertices[0] = shell[0];
-    cp->vertices[1] = shell[1];
-    cp->vert = SHELL;
+    geom->shell[0] = shell[0];
+    geom->shell[1] = shell[1];
+    geom->boundary = SHELL;
   }
   return 1;
 }
@@ -135,8 +115,8 @@ static int cli_parse_arg(char * arg, allpars * ap){
     || lazysscanf(arg, "exitcom:", &dp->ui.on_exit)
     || lazysscanf(arg, "colors:",  &ts)
     || sscan_rot  (arg, dp->rend.ac3rmx)
-    || sscan_cell (arg, &dp->cell)
-    || sscan_shell(arg, &dp->cell)
+    || sscan_cell (arg, &dp->geom)
+    || sscan_shell(arg, &dp->geom)
     ;
 
   if(vib==0){

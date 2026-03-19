@@ -25,11 +25,11 @@ void ac3_print(atcoord * ac, rendpars * rend){
   return;
 }
 
-void ac3_print_xyz(atcoord * ac, rendpars * rend, cellpars * cell){
+void ac3_print_xyz(atcoord * ac, rendpars * rend){
   PRINTOUT(stdout, "%d\n", ac->n);
-  if(cell->vert==CELL){
+  if(ac->cell.vert==CELL){
     double C[9];
-    mx_multmx(3,3,3, C, rend->ac3rmx, cell->rot_to_lab_basis);
+    mx_multmx(3,3,3, C, rend->ac3rmx, ac->cell.rot_to_lab_basis);
     PRINTOUT(stdout, "Lattice=\"%lf %lf %lf %lf %lf %lf %lf %lf %lf\"\n",
         C[0], C[3], C[6],
         C[1], C[4], C[7],
@@ -56,7 +56,7 @@ void ac3_print_xyz(atcoord * ac, rendpars * rend, cellpars * cell){
   return;
 }
 
-void ac3_print2fig(atcoord * ac, rendpars * rend, cellpars * cell){
+void ac3_print2fig(atcoord * ac, rendpars * rend){
   int n = ac->n;
   for(int i=0; i<n; i++){
     PRINTOUT(stdout, "atom %3d% 13.7lf% 13.7lf% 13.7lf\n", ac->q[i],
@@ -65,10 +65,10 @@ void ac3_print2fig(atcoord * ac, rendpars * rend, cellpars * cell){
                  ac->r[i*3+2]);
   }
 
-  if(cell->vert==CELL){
+  if(ac->cell.vert==CELL){
     for(int i=0; i<8; i++){
       double v[3];
-      r3mx(v, cell->vertices+3*i, rend->ac3rmx);
+      r3mx(v, ac->cell.vertices+3*i, rend->ac3rmx);
       PRINTOUT(stdout, "atom %3d% 13.7lf% 13.7lf% 13.7lf\n", 0,
           rend->xy0[0] + v[0], rend->xy0[1] + v[1], v[2]);
     }
@@ -88,7 +88,7 @@ void ac3_print2fig(atcoord * ac, rendpars * rend, cellpars * cell){
     }
   }
 
-  if(cell->vert==CELL){
+  if(ac->cell.vert==CELL){
 #define LINE(I,J)   PRINTOUT(stdout, "bond %3d %3d % 3d\n", (J)+n+1, (I)+n+1, -1)
     for(int i=0; i<8; i+=2){
       LINE(i,i+1); // || z-axis
