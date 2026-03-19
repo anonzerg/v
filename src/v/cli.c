@@ -87,7 +87,7 @@ static int sscan_cell(const char * arg, cellpars * cp){
   mx_id(3,     cp->rot_to_cell_basis);
   mx_inv(3, 3, cp->rot_to_cell_basis, rot_to_lab_basis, EPS_INV);
 
-  cp->vert = 1;
+  cp->vert = CELL;
   return 1;
 }
 
@@ -106,7 +106,7 @@ static int sscan_shell(const char * arg, cellpars * cp){
   if(count == 2){
     cp->vertices[0] = shell[0];
     cp->vertices[1] = shell[1];
-    cp->vert = 2;
+    cp->vert = SHELL;
   }
   return 1;
 }
@@ -194,7 +194,6 @@ static allpars allpars_init(void){
   ap.dp.anim.dt     = DEFAULT_TIMEOUT;
   ap.dp.anal.symtol = DEFAULT_SYMTOL;
   ap.dp.bond.rl     = 1.0;
-  ap.dp.cell.vert   = -1;
   ap.dp.geom.center = 1;
 
   ap.dp.rend.r     = 1.0;

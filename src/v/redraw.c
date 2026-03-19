@@ -83,12 +83,12 @@ void redraw_ac3(object * ent, drawpars * dp){
   clear_canv();
   ac3_draw(m, dp->rend);
   ac3_text(m, dp);
-  if(dp->cell.vert == 1){
+  if(dp->cell.vert == CELL){
     double v[8*3];
     rot3d(8, v, dp->cell.vertices, dp->rend.ac3rmx);
     drawvertices(v, dp->rend);
   }
-  else if(dp->cell.vert == 2){
+  else if(dp->cell.vert == SHELL){
     drawshell(dp->cell.vertices, dp->rend);
   }
   fill_canv();

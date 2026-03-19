@@ -236,7 +236,7 @@ static void move_ent(object * ent, drawpars * dp, int dir, double step){
   if(dp->ui.modkey){
     step *= STEP_MOD;
   }
-  if(dp->cell.vert == 1){
+  if(dp->cell.vert == CELL){
     move_pbc(ent, dp, dir, step);
   }
   else {
