@@ -89,9 +89,9 @@ void redraw_vibro(object * ent, drawpars * dp);
 // ac3_draw.c
 void ac3_draw      (atcoord * ac, rendpars rend);
 // ac3_print.c
-void ac3_print    (atcoord * ac, rendpars rend);
-void ac3_print_xyz(atcoord * ac, rendpars rend);
-void ac3_print2fig(atcoord * ac, rendpars rend, double * v);
+void ac3_print    (atcoord * ac, rendpars * rend);
+void ac3_print_xyz(atcoord * ac, rendpars * rend, cellpars * cell);
+void ac3_print2fig(atcoord * ac, rendpars * rend, cellpars * cell);
 // bonds.c
 void bonds_fill(bondpars bond, atcoord * ac);
 

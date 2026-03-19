@@ -38,14 +38,21 @@ void kp_readagain(object * ent, drawpars * dp){
 
 void kp_print(object * ent, drawpars * dp){
   if (dp->task == AT3COORDS){
-    ac3_print(ent->m[dp->n], dp->rend);
+    ac3_print(ent->m[dp->n], &dp->rend);
   }
   return;
 }
 
 void kp_print_xyz(object * ent, drawpars * dp){
   if (dp->task == AT3COORDS){
-    ac3_print_xyz(ent->m[dp->n], dp->rend);
+    ac3_print_xyz(ent->m[dp->n], &dp->rend, &dp->cell);
+  }
+  return;
+}
+
+void kp_print2fig(object * ent, drawpars * dp){
+  if (dp->task == AT3COORDS){
+    ac3_print2fig(ent->m[dp->n], &dp->rend, &dp->cell);
   }
   return;
 }
@@ -57,13 +64,6 @@ void kp_printrot(object * ent __attribute__ ((unused)), drawpars * dp){
   }
   PRINTOUT(stdout, "rot:%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n\n",
       U[0], U[1], U[2], U[3], U[4], U[5], U[6], U[7], U[8]);
-  return;
-}
-
-void kp_print2fig(object * ent, drawpars * dp){
-  if (dp->task == AT3COORDS){
-    ac3_print2fig(ent->m[dp->n], dp->rend, dp->cell.vert==1?dp->cell.vertices:NULL);
-  }
   return;
 }
 
