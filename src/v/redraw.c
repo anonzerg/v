@@ -79,6 +79,10 @@ void redraw_ac3(object * ent, drawpars * dp){
   atcoord * m = ent->m[dp->n];
   fill_bonds(m, dp);
   rotate_mol(m, dp);
+  if(m->cell.vert == CELL){
+    dp->rend.xy0[0] = 0.0;
+    dp->rend.xy0[1] = 0.0;
+  }
 
   clear_canv();
   ac3_draw(m, dp->rend);

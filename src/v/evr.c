@@ -225,11 +225,13 @@ static void move_pbc(atcoord * m, drawpars * dp, double dr[3]){
 }
 
 static void move_ent(object * ent, drawpars * dp, int dir, double step){
+  atcoord * m = ent->m[dp->n];
+
   if(dp->ui.modkey){
     step *= STEP_MOD;
   }
 
-  if(dp->task==VIBRO){
+  if((dp->task==VIBRO) || (m->cell.vert != CELL)){
     dp->rend.xy0[dir] += step;
     return;
   }
@@ -239,14 +241,14 @@ static void move_ent(object * ent, drawpars * dp, int dir, double step){
   r3mxt(dr, v, dp->rend.ac3rmx);  // translation in the mol basis.
                                   // not true if the initial "rotation" from CLI is not unitary, but ignore this
 
-  for(int i=0; i<ent->n; i++){
-    atcoord * m = ent->m[i];
-    if(m->cell.vert == CELL){
-      move_pbc(m, dp, dr);
+  if(dp->geom.boundary==CELL){
+    // all have the same cell -> move together, otherwise move separately
+    for(int i=0; i<ent->n; i++){
+      move_pbc(ent->m[i], dp, dr);
     }
-    else {
-      dp->rend.xy0[dir] += step; // TODO probably set xy0 when show something with boundary==CELL in redraw
-    }
+  }
+  else{
+    move_pbc(m, dp, dr);
   }
   return;
 }
