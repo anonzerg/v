@@ -5,6 +5,25 @@
 
 #define EPS_INV 1e-15
 
+void mol2cell(atcoord * m){
+  double rcell[3];
+  for(int j=0; j<m->n; j++){
+    double * r = m->r0+j*3;
+    r3mx(rcell, r, m->cell.rot_to_cell_basis);
+    for(int i=0; i<3; i++){
+      if(rcell[i]<-0.5){
+        rcell[i] += 1.0;
+      }
+      else if(rcell[i]>0.5){
+        rcell[i] -= 1.0;
+      }
+    }
+    r3mx(r, rcell, m->cell.rot_to_lab_basis);
+    r3cp(m->r+j*3, r);
+  }
+  return;
+}
+
 static void cell_fill(cellpars * cell, const double abc[9]){
   const double * a = abc+0;
   const double * b = abc+3;
@@ -82,6 +101,10 @@ atcoord * atcoord_fill(mol * m0, const render_bonds_t b, const geompars geom, co
   }
   else if(cell && geom.boundary!=CELL_DISABLED){
     cell_fill(&m->cell, cell);
+  }
+
+  if(m->cell.boundary==CELL){
+    mol2cell(m);
   }
 
   return m;

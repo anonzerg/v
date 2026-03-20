@@ -67,6 +67,7 @@ double acs_scale(object * acs);
 vibr_t * make_vibr_t(int n_modes, int n_atoms);
 vibr_t * mode_read(FILE * f, int na);
 // ac3_read*.c
+void mol2cell(atcoord * m);
 int read_cart_atom(FILE * f, int n, mol * m);
 atcoord * atcoord_fill(mol * m0, const render_bonds_t b, const geompars geom, const double cell[9]);
 atcoord * ac3_read(readpars read, const render_bonds_t b, const geompars geom, format_t * format);
