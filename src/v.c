@@ -88,7 +88,7 @@ int main (int argc, char * argv[]) {
     dp->n = dp->N-((-dp->n+1)%dp->N)-1;
   }
 
-  if(!ap.ip.gui){
+  if(!dp->ui.gui){
     return headless(dp, ent);
   }
 
@@ -97,6 +97,8 @@ int main (int argc, char * argv[]) {
   init_x(dp->read.fname, ap.ip.colors);
   init_keys(kp);
   init_font(ap.ip.fontname);
+
+  run_commands(NULL, ap.ip.on_startup, dp, ent);
 
   /*= Main loop ==============================================================*/
   main_loop(ent, dp, kp);

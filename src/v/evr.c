@@ -265,7 +265,7 @@ void kp_exit(object * ent, drawpars * dp){
   obj_free(ent);
   close_x();
   CLOSE0(dp->read.f);
-  dp->ui.closed = 1;
+  dp->ui.closed = READY_TO_EXIT;
 }
 
 void kp_fw_toggle(object * ent __attribute__ ((unused)), drawpars * dp){

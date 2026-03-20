@@ -113,21 +113,22 @@ static int cli_parse_arg(char * arg, allpars * ap){
   char * ts = NULL;
 
   int cli =
-       sscanf (arg, "vib:%d",     &vib)
-    || sscanf (arg, "bonds:%d",   &bonds)
-    || sscanf (arg, "dt:%lf",     &tf)
-    || sscanf (arg, "bmax:%lf",   &bmax)
-    || sscanf (arg, "frame:%d",   &frame)
-    || sscanf (arg, "symtol:%lf", &dp->anal.symtol)
-    || sscanf (arg, "gui:%d",     &ip->gui)
-    || sscanf (arg, "bohr:%d",    &dp->geom.bohr)
-    || sscanf (arg, "center:%d",  &dp->geom.center)
-    || sscanf (arg, "inertia:%d", &dp->geom.inertia)
+       sscanf (arg, "vib:%d",       &vib)
+    || sscanf (arg, "bonds:%d",     &bonds)
+    || sscanf (arg, "dt:%lf",       &tf)
+    || sscanf (arg, "bmax:%lf",     &bmax)
+    || sscanf (arg, "frame:%d",     &frame)
+    || sscanf (arg, "symtol:%lf",   &dp->anal.symtol)
+    || sscanf (arg, "gui:%d",       &dp->ui.gui)
+    || sscanf (arg, "bohr:%d",      &dp->geom.bohr)
+    || sscanf (arg, "center:%d",    &dp->geom.center)
+    || sscanf (arg, "inertia:%d",   &dp->geom.inertia)
     || sscanf (arg, "z:%d,%d,%d,%d,%d", dp->anal.intcoord, dp->anal.intcoord+1, dp->anal.intcoord+2, dp->anal.intcoord+3, dp->anal.intcoord+4)
-    || lazysscanf(arg, "font:",    &ip->fontname)
-    || lazysscanf(arg, "com:",     &dp->ui.com)
-    || lazysscanf(arg, "exitcom:", &dp->ui.on_exit)
-    || lazysscanf(arg, "colors:",  &ts)
+    || lazysscanf(arg, "font:",     &ip->fontname)
+    || lazysscanf(arg, "com:",      &dp->ui.com)
+    || lazysscanf(arg, "exitcom:",  &dp->ui.on_exit)
+    || lazysscanf(arg, "startcom:", &ip->on_startup)
+    || lazysscanf(arg, "colors:",   &ts)
     || sscan_rot  (arg, dp->rend.ac3rmx)
     || sscan_cell (arg, &dp->geom)
     || sscan_shell(arg, &dp->geom)
@@ -181,7 +182,6 @@ static int cli_parse_arg(char * arg, allpars * ap){
 static allpars allpars_init(void){
   allpars ap = {};  // everything not set below is 0 / 0.0 / NULL / '\0'
 
-  ap.ip.gui    = 1;
   ap.ip.colors = V_COLORS;
 
   ap.dp.task        = UNKNOWN;
@@ -189,6 +189,7 @@ static allpars allpars_init(void){
   ap.dp.anal.symtol = DEFAULT_SYMTOL;
   ap.dp.bond.rl     = 1.0;
   ap.dp.geom.center = CENTER_GEOM;
+  ap.dp.ui.gui      = 1;
 
   ap.dp.rend.r     = 1.0;
   ap.dp.rend.scale = 1.0;
@@ -205,7 +206,7 @@ allpars cli_parse(int argc, char ** argv){
     cli_parse_arg(argv[i], &ap);
   }
 
-  if(!ap.ip.gui){
+  if(!ap.dp.ui.gui){
     if(ap.dp.task == VIBRO){
       PRINT_WARN("normal modes are not supported in the headless regime\n");
     }

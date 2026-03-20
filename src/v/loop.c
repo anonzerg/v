@@ -74,6 +74,7 @@ void main_loop(object * ent, drawpars * dp, ptf kp[NKP]){
 
   mouse_state_t mouse = {.click=0, .x0=0, .y0=0};
   int tr = 0;
+  int first_configure = 1;
   while(1) {
     XEvent event_rec;
     XEvent * event = NULL;
@@ -104,7 +105,10 @@ void main_loop(object * ent, drawpars * dp, ptf kp[NKP]){
       world.W = event->xconfigure.width;
       world.H = event->xconfigure.height;
       world.size = MIN(world.H, world.W);
-      dp->rend.xy0[0] = dp->rend.xy0[1] = 0.0;
+      if(!first_configure){
+        dp->rend.xy0[0] = dp->rend.xy0[1] = 0.0;
+        first_configure = 0;
+      }
       exp_redraw(ent, dp);
     }
 
@@ -149,7 +153,11 @@ void main_loop(object * ent, drawpars * dp, ptf kp[NKP]){
       process_mouse(&(event->xmotion), ent, dp, &mouse);
     }
 
-    if(dp->ui.closed){
+    if(dp->ui.closed==MUST_CLEANUP){
+      kp_exit(ent, dp);
+    }
+
+    if(dp->ui.closed==READY_TO_EXIT){
       return;
     }
 
