@@ -1,6 +1,18 @@
 #include "v.h"
 #include "evr.h"
 
+static void draw_boundary(atcoord * m , rendpars * rend){
+  if(m->cell.boundary==CELL){
+    double v[8*3];
+    rot3d(8, v, m->cell.vertices, rend->ac3rmx);
+    drawvertices(v, *rend);
+  }
+  else if(m->cell.boundary==SHELL){
+    drawshell(m->cell.vertices, *rend);
+  }
+  return;
+}
+
 static void ac3_text(atcoord * ac, drawpars * dp){
   char text[32];
   char text_fname[STRLEN];
@@ -79,7 +91,7 @@ void redraw_ac3(object * ent, drawpars * dp){
   atcoord * m = ent->m[dp->n];
   fill_bonds(m, dp);
   rotate_mol(m, dp);
-  if(m->cell.boundary== CELL){
+  if(m->cell.boundary==CELL){
     dp->rend.xy0[0] = 0.0;
     dp->rend.xy0[1] = 0.0;
   }
@@ -87,30 +99,22 @@ void redraw_ac3(object * ent, drawpars * dp){
   clear_canv();
   ac3_draw(m, dp->rend);
   ac3_text(m, dp);
-  if(m->cell.boundary== CELL){
-    double v[8*3];
-    rot3d(8, v, m->cell.vertices, dp->rend.ac3rmx);
-    drawvertices(v, dp->rend);
-  }
-  else if(m->cell.boundary== SHELL){
-    drawshell(m->cell.vertices, dp->rend);
-  }
+  draw_boundary(m, &dp->rend);
   fill_canv();
   return;
 }
 
 void redraw_vibro(object * ent, drawpars * dp){
-
   atcoord * m  = ent->m[0];
-  double  * dr = ent->vib->disp + dp->n * m->n*3;
-
   fill_bonds(m, dp);
+  double  * dr = ent->vib->disp + dp->n * m->n*3;
   vecsums(m->n*3, m->r, m->r0, dr, VIBR_AMP*sqrt(m->n)*sin(dp->anim.t * 2.0*M_PI/TMAX));
   rot3d_inplace(m->n, m->r, dp->rend.ac3rmx);
 
   clear_canv();
   ac3_draw(m, dp->rend);
   vibro_text(ent->vib, dp);
+  draw_boundary(m, &dp->rend);
   fill_canv();
   return;
 }
