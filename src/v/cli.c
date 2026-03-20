@@ -89,20 +89,20 @@ static int sscan_shell(const char * arg, geompars * geom){
   double shell[2];
   int count = sscanf(arg, "shell:b%lf,%lf", shell, shell+1);
   if(count > 0){
-    if(count==2)
-      vecscal(count, shell, BA);
+    vecscal(count, shell, BA);
   }
   else{
     count = sscanf(arg, "shell:%lf,%lf", shell, shell+1);
   }
-  if(count <= 0)
-    return 0;
-  if(count == 2){
+  if(count>0){
     geom->shell[0] = shell[0];
-    geom->shell[1] = shell[1];
+    geom->shell[1] = shell[count>1];
     geom->boundary = SHELL;
+    return 1;
   }
-  return 1;
+  else{
+    return 0;
+  }
 }
 
 static int cli_parse_arg(char * arg, allpars * ap){
