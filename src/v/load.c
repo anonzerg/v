@@ -163,6 +163,9 @@ object * read_files(allpars * ap){
   }
   else{
     dp->anal.intcoord[0] = 0;
+    for(i++; i<fn; i++){
+      PRINT_WARN("ignoring file '%s'\n", flist[i]);
+    }
   }
 
   return ent;
