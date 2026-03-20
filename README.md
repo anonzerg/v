@@ -45,13 +45,14 @@ To build:
 ```
 ./v file [file2 ... fileN] [options]
 ```
-A filename `-` stands for the standard input.
+A filename `-` stands for the standard input (xyz files only).
 
 Show the reference:
 ```
 ./v
 ```
 
+### Options
 <details open><summary><strong>Command-line options</strong></summary>
 
 |                          |                                                               |
@@ -81,6 +82,7 @@ Show the reference:
 
 </details>
 
+### Keyboard
 <details open><summary><strong>Keyboard reference</strong></summary>
 
 |                                |                                                           |
@@ -120,15 +122,17 @@ Show the reference:
 
 </details>
 
-<details open><summary><strong>Mouse (in development)</strong></summary>
+### Mouse
+
 One can also use the mouse to rotate the molecule and zoom in/out.
-</details>
 
-<details open><summary><strong>Headless mode (in development)</strong></summary>
+### Additional commands
 
-If run in the headless mode with `gui:0`, the symbols from the standard input are processed 
+#### Headless mode
+
+If run in the headless mode with `gui:0`, the symbols from the standard input are processed
 as if the corresponding keys were pressed in the normal mode.
-Right now, only `p`, `x`, `z`, and `.` are available.
+Right now, `p`, `x`, `z`, `u`, and `.` are available.
 Command-line option `com:%s` overrides the standard input.
 These examples are equivalent:
 ```
@@ -142,7 +146,59 @@ D*h
 D*h
 ```
 
+#### Normal mode
+In the normal mode, the symbols from the CLI option `exitcom:` are executed immediately before closing.
+For example,
+```
+./v mol/mol0001.xyz exitcom:z
+```
+automatically prints the last xyz coordinates when the user closes the window.
+
+
+
+
+### Boundary conditions
+Two types of boundary conditions are recognized:
+* PBC (3D)
+* spherical confinement
+
+#### PBC
+PBC can be read from the xyz [file header](https://ase-lib.org/ase/io/formatoptions.html#extxyz)
+by specifying `Lattice="ax ay az bx by bz cx cy cz"`:
+```
+./v mol/MOL_3525.ext.xyz
+```
+Currently, only the PBC in all three dimensions are supported.
+
+The same can be passed via the command-line, in which case it overrides the one from the file:
+```
+./v mol/MOL_3525.xyz cell:8.929542,0,0,4.197206,8.892922,0,0.480945,2.324788,10.016044
+```
+For orthogonal/cubic cell:
+```
+./v mol/1372_D02.340_1.out bonds:0 cell:20.23,20.23,20.23
+./v mol/1372_D02.340_1.out bonds:0 cell:20.23
+```
+In Bohr instead of Å:
+```
+./v mol/1372_D02.340_1.out bonds:0 cell:b10.7
+```
+Finally, to disable the cell from the file:
+```
+./v mol/MOL_3525.ext.xyz cell:0
+```
+
+#### Spherical confinement
+Spherical confinement can be specified from the command-line by the following:
+```
+./v mol/mol0001.xyz shell:2     #  sphere with r = 2 Å is put around the molecule
+./v mol/mol0001.xyz shell:b4    #  sphere with r = 2 Bohr
+./v mol/mol0001.xyz shell:2,3   #  spheres with r = 2 and 3 Å (e.g., soft and hard boundaries)
+./v mol/mol0001.xyz shell:b4,5  #  spheres with r = 4 and 5 Bohr
+```
+
 </details>
+
 
 ## Examples [↑](#contents)
 * `mol/C3H6~mCPBA_01x11.qm.out` — geometries + vibrations
@@ -166,7 +222,7 @@ D*h
 ![Adamantane mode animation](figures/C10H16.qm.out.gif)
 * `mol/1372_D02.340_1.out` — PBC simulation
 ```
-./v mol/1372_D02.340_1.out bonds:0 cell:b10.7,10.7,1.07 font:-*-*-medium-*-*--15-*-*-*-*-*-*-1
+./v mol/1372_D02.340_1.out bonds:0 cell:b10.7 font:-*-*-medium-*-*--15-*-*-*-*-*-*-1
 ```
 ![Atoms in cell with PBC](figures/1372_D02.340_1.out_1087.gif)
 * `mol/mol0001.xyz`, `mol/mol0002.xyz` — `.xyz` files with atomic numbers and atomic symbols
@@ -176,6 +232,9 @@ D*h
 ![Dimethyl ether structure](figures/mol0002.xyz_3.gif)
 
 * `mol/MOL_3525.xyz` — organic crystal with non-orthogonal cell
+```
+./v mol/MOL_3525.ext.xyz
+```
 ```
 ./v mol/MOL_3525.xyz cell:8.929542,0.0,0.0,4.197206,8.892922,0.0,0.480945,2.324788,10.016044 font:-*-*-medium-*-*--15-*-*-*-*-*-*-1
 ```
