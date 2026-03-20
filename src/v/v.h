@@ -87,7 +87,7 @@ void redraw_ac3(object * ent, drawpars * dp);
 void redraw_vibro(object * ent, drawpars * dp);
 
 // ac3_draw.c
-void ac3_draw      (atcoord * ac, rendpars rend);
+void ac3_draw     (atcoord * ac, rendpars * rend);
 // ac3_print.c
 void ac3_print    (atcoord * ac, rendpars * rend);
 void ac3_print_xyz(atcoord * ac, rendpars * rend);
@@ -107,8 +107,8 @@ void init_x       (const char * const capt, const colorscheme_t colorscheme);
 void init_font    (char * fontname);
 void textincorner (const char * const lines[MAX_LINES], const int red[MAX_LINES]);
 void setcaption   (const char * const capt);
-void drawvertices (double * v, rendpars rend);
-void drawshell    (double r[2], rendpars rend);
+void draw_vertices(double * v, rendpars * rend);
+void draw_shell   (double r[2], rendpars * rend);
 int  savepic      (char * s);
 void clear_canv();
 void fill_canv();

@@ -153,14 +153,14 @@ void setcaption(const char * const capt){
   return;
 }
 
-void draw_edge(double vi[3], double vj[3], rendpars rend){
+void draw_edge(double vi[3], double vj[3], rendpars * rend){
   int iw = (vi[2]>0.0 || vj[2]>0.0) ? 0 : 1;
   XDrawLine(world.dis, world.canv, world.gc_dot[iw],
       SCREEN_X(vi[0]), SCREEN_Y(vi[1]), SCREEN_X(vj[0]), SCREEN_Y(vj[1]));
   return;
 }
 
-void drawvertices(double * v, rendpars rend){
+void draw_vertices(double * v, rendpars * rend){
 #define LINE(i,j) draw_edge(v+(i)*3, v+(j)*3, rend)
   for(int i=0; i<8; i+=2){
     LINE(i,i+1); // || z-axis
@@ -175,8 +175,8 @@ void drawvertices(double * v, rendpars rend){
   return;
 }
 
-void drawshell(double r[2], rendpars rend){
-  double d = world.size * rend.scale;
+void draw_shell(double r[2], rendpars * rend){
+  double d = world.size * rend->scale;
   for(int i=0; i<2; i++){
     XDrawArc(world.dis, world.canv, world.gc_dot[1-i],
         SCREEN_X(-r[i]), SCREEN_Y(r[i]),

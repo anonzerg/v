@@ -5,10 +5,10 @@ static void draw_boundary(atcoord * m , rendpars * rend){
   if(m->cell.boundary==CELL){
     double v[8*3];
     rot3d(8, v, m->cell.vertices, rend->ac3rmx);
-    drawvertices(v, *rend);
+    draw_vertices(v, rend);
   }
   else if(m->cell.boundary==SHELL){
-    drawshell(m->cell.vertices, *rend);
+    draw_shell(m->cell.vertices, rend);
   }
   return;
 }
@@ -97,7 +97,7 @@ void redraw_ac3(object * ent, drawpars * dp){
   }
 
   clear_canv();
-  ac3_draw(m, dp->rend);
+  ac3_draw(m, &dp->rend);
   ac3_text(m, dp);
   draw_boundary(m, &dp->rend);
   fill_canv();
@@ -112,7 +112,7 @@ void redraw_vibro(object * ent, drawpars * dp){
   rot3d_inplace(m->n, m->r, dp->rend.ac3rmx);
 
   clear_canv();
-  ac3_draw(m, dp->rend);
+  ac3_draw(m, &dp->rend);
   vibro_text(ent->vib, dp);
   draw_boundary(m, &dp->rend);
   fill_canv();
