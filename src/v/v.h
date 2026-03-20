@@ -6,7 +6,6 @@
 #define BONDS_MAX 32
 #define POINTER_SPEED 2.0
 #define STRLEN 256
-#define BIGSTRLEN 4096
 #define MAX_LINES 5
 
 #include "pars.h"
@@ -39,6 +38,7 @@ typedef struct {
   int nf[2];             // number of molecule in file, file size
   styp   sym;            // point group
   bondstr bonds;
+  cellpars cell;
 } atcoord;
 
 typedef struct {
@@ -68,11 +68,11 @@ vibr_t * make_vibr_t(int n_modes, int n_atoms);
 vibr_t * mode_read(FILE * f, int na);
 // ac3_read*.c
 int read_cart_atom(FILE * f, int n, mol * m);
-atcoord * atcoord_fill(mol * m, int b, geompars geom);
+atcoord * atcoord_fill(mol * m0, const int b, const geompars geom, const double cell[9]);
 atcoord * ac3_read(readpars read, int b, geompars geom, format_t * format);
 mol * ac3_read_in (FILE * f);
 mol * ac3_read_out(FILE * f);
-mol * ac3_read_xyz(FILE * f);
+mol * ac3_read_xyz(FILE * f, int * lattice_found, double * lattice);
 
 // man.c
 void printman(FILE * f, char * exename);
@@ -87,11 +87,11 @@ void redraw_ac3(object * ent, drawpars * dp);
 void redraw_vibro(object * ent, drawpars * dp);
 
 // ac3_draw.c
-void ac3_draw      (atcoord * ac, rendpars rend);
+void ac3_draw     (atcoord * ac, rendpars * rend);
 // ac3_print.c
-void ac3_print    (atcoord * ac, rendpars rend);
-void ac3_print_xyz(atcoord * ac, rendpars rend);
-void ac3_print2fig(atcoord * ac, rendpars rend, double * v);
+void ac3_print    (atcoord * ac, rendpars * rend);
+void ac3_print_xyz(atcoord * ac, rendpars * rend);
+void ac3_print2fig(atcoord * ac, rendpars * rend);
 // bonds.c
 void bonds_fill(bondpars bond, atcoord * ac);
 
@@ -107,8 +107,8 @@ void init_x       (const char * const capt, const colorscheme_t colorscheme);
 void init_font    (char * fontname);
 void textincorner (const char * const lines[MAX_LINES], const int red[MAX_LINES]);
 void setcaption   (const char * const capt);
-void drawvertices (double * v, rendpars rend);
-void drawshell    (double r[2], rendpars rend);
+void draw_vertices(double * v, rendpars * rend);
+void draw_shell   (double r[2], rendpars * rend);
 int  savepic      (char * s);
 void clear_canv();
 void fill_canv();

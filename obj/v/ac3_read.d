@@ -1,3 +1,3 @@
 obj/v/ac3_read.o obj-pic/v/ac3_read.o: src/v/ac3_read.c src/v/v.h \
  src/mol/mol.h src/mol/common.h src/v/pars.h src/math/vecn.h \
- src/math/vec3.h
+ src/math/vec3.h src/math/matrix.h src/math/vecn.h

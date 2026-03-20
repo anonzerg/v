@@ -38,14 +38,21 @@ void kp_readagain(object * ent, drawpars * dp){
 
 void kp_print(object * ent, drawpars * dp){
   if (dp->task == AT3COORDS){
-    ac3_print(ent->m[dp->n], dp->rend);
+    ac3_print(ent->m[dp->n], &dp->rend);
   }
   return;
 }
 
 void kp_print_xyz(object * ent, drawpars * dp){
   if (dp->task == AT3COORDS){
-    ac3_print_xyz(ent->m[dp->n], dp->rend);
+    ac3_print_xyz(ent->m[dp->n], &dp->rend);
+  }
+  return;
+}
+
+void kp_print2fig(object * ent, drawpars * dp){
+  if (dp->task == AT3COORDS){
+    ac3_print2fig(ent->m[dp->n], &dp->rend);
   }
   return;
 }
@@ -57,13 +64,6 @@ void kp_printrot(object * ent __attribute__ ((unused)), drawpars * dp){
   }
   PRINTOUT(stdout, "rot:%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n\n",
       U[0], U[1], U[2], U[3], U[4], U[5], U[6], U[7], U[8]);
-  return;
-}
-
-void kp_print2fig(object * ent, drawpars * dp){
-  if (dp->task == AT3COORDS){
-    ac3_print2fig(ent->m[dp->n], dp->rend, dp->cell.vert==1?dp->cell.vertices:NULL);
-  }
   return;
 }
 
@@ -209,38 +209,46 @@ static void mol2cell(double r[3], cellpars * cell){
   return;
 }
 
-static void move_pbc(object * acs, drawpars * dp, int dir, double d){
-
-  double dr[3], v[3] = {};
-  v[dir] = d;  // translation in the view basis
-  r3mxt(dr, v, dp->rend.ac3rmx);  // translation in the mol basis.
-                                  // not true if the initial "rotation" from CLI is not unitary, but ignore this
-  for(int i=0; i<acs->n; i++){
-    atcoord * m = acs->m[i];
-    for(int j=0; j<m->n; j++){
-      double * r = m->r0+j*3;
-      r3add(r, dr);
-      mol2cell(r, &dp->cell);
-      r3cp(m->r+j*3, r);
-      m->rotated = 0;
-    }
-    if(dp->rend.bonds>0){
-      m->bonds.flag = 0;
-      m->bonds.rl *= RL_MOVE_PBC_SCALE;
-    }
+static void move_pbc(atcoord * m, drawpars * dp, double dr[3]){
+  for(int j=0; j<m->n; j++){
+    double * r = m->r0+j*3;
+    r3add(r, dr);
+    mol2cell(r, &m->cell);///TODO
+    r3cp(m->r+j*3, r);
+    m->rotated = 0;
+  }
+  if(dp->rend.bonds>0){
+    m->bonds.flag = 0;
+    m->bonds.rl *= RL_MOVE_PBC_SCALE;
   }
   return;
 }
 
 static void move_ent(object * ent, drawpars * dp, int dir, double step){
+  atcoord * m = ent->m[dp->n];
+
   if(dp->ui.modkey){
     step *= STEP_MOD;
   }
-  if(dp->cell.vert == 1){
-    move_pbc(ent, dp, dir, step);
-  }
-  else {
+
+  if((dp->task==VIBRO) || (m->cell.boundary != CELL)){
     dp->rend.xy0[dir] += step;
+    return;
+  }
+
+  double dr[3], v[3] = {};
+  v[dir] = step;  // translation in the view basis
+  r3mxt(dr, v, dp->rend.ac3rmx);  // translation in the mol basis.
+                                  // not true if the initial "rotation" from CLI is not unitary, but ignore this
+
+  if(dp->geom.boundary==CELL){
+    // all have the same cell -> move together, otherwise move separately
+    for(int i=0; i<ent->n; i++){
+      move_pbc(ent->m[i], dp, dr);
+    }
+  }
+  else{
+    move_pbc(m, dp, dr);
   }
   return;
 }

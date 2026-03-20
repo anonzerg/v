@@ -3,6 +3,7 @@
 ### New features
 
 * Add partial extended xyz support (https://github.com/briling/v/pull/18)
+* Read and print lattice parameters to/from extxyz header (#39)
 * Add `j` hotkey to jump to a frame inside and CLI option `frame:%d` to start with a specific frame (https://github.com/briling/v/pull/5)
 * Add `bmax` CLI argument for max. bond length (920202b)
 * Add `com` and `exitcom` CLI argument for `gui:0` and on-exit command sequences, respectively
@@ -17,6 +18,7 @@
 * Read molecules from the standard input (#28)
 * Show infrared intensities and mode masses (#35)
 * Improve the text-in-corner look (de242c7, #36)
+* Add `u` to the headless mode (#37)
 * Improve data structures and code readability
 
 ### Fixes
@@ -28,7 +30,6 @@
 * Fix text blinking when playing animation (80cae88, #36)
 
 ### Coming in the next version:
-* extended xyz (#16, #17)
 * high-symmetry determination bugs (#21)
 * how to build on mac (#34)
 

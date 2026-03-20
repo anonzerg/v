@@ -9,6 +9,13 @@ typedef enum {
   CPK_COLORS,
 } colorscheme_t;
 
+typedef enum {
+  NO_BOUNDARY,
+  CELL,
+  SHELL,
+  CELL_DISABLED,
+} boundary_t;
+
 typedef struct {
   colorscheme_t  colors;   // colorscheme (v or cpk)
   int               gui;   // if gui is enabled
@@ -26,6 +33,10 @@ typedef struct {
   int center;   // 0: nothing; 1: center each molecule upon reading; 2: center wrt center of mass
   int inertia;  // 0: nothing; 1: rotate each molecule upon reading wrt axis of inertia
   int bohr;     // 0: Å        1: Bohr
+
+  boundary_t boundary;
+  double cell[9];
+  double shell[2];
 } geompars;
 
 typedef struct {
@@ -55,7 +66,7 @@ typedef struct {
   double vertices[3*8];           // parameters of cell/shell
   double rot_to_lab_basis[3*3];   // "rotation" matrix for PBC
   double rot_to_cell_basis[3*3];  // "rotation" matrix for PBC
-  int    vert;          // 0: nothing;     1: show cell;      2: show shell
+  boundary_t boundary;
 } cellpars;
 
 typedef struct {
@@ -81,7 +92,6 @@ typedef struct {
   uipars    ui;
   rendpars  rend;
   bondpars  bond;
-  cellpars  cell;
   animpars  anim;
   analpars  anal;
 
