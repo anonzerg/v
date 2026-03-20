@@ -131,14 +131,16 @@ void init_font(char * fontname){
   else{
     PRINT_WARN("cannot load font '%s'\n", fontname);
   }
+
+  XCharStruct _o;
+  int _d, font_ascent, font_descent;
+  XQueryTextExtents(world.dis, XGContextFromGC(world.gc_black), ".", 1, &_d, &font_ascent, &font_descent, &_o);
+  world.font_height = font_ascent + font_descent;
   return;
 }
 
 void textincorner(const char * const lines[MAX_LINES], const int red[MAX_LINES]){
-  XCharStruct _o;
-  int _d, font_ascent, font_descent;
-  XQueryTextExtents(world.dis, XGContextFromGC(world.gc_black), ".", 1, &_d, &font_ascent, &font_descent, &_o);
-  int voffset = font_ascent + font_descent + 5;
+  int voffset = world.font_height + 5;
   int hoffset = 10;
   for(int i=0; i<MAX_LINES; i++){
     if(lines[i]){
