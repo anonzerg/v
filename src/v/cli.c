@@ -141,7 +141,7 @@ static int cli_parse_arg(char * arg, allpars * ap){
   }
 
   if(bonds==0){
-    dp->rend.bonds = -1;
+    dp->rend.bonds = DISABLE_BONDS;
   }
 
   if(tf>0.0){
@@ -188,11 +188,11 @@ static allpars allpars_init(void){
   ap.dp.anim.dt     = DEFAULT_TIMEOUT;
   ap.dp.anal.symtol = DEFAULT_SYMTOL;
   ap.dp.bond.rl     = 1.0;
-  ap.dp.geom.center = 1;
+  ap.dp.geom.center = CENTER_GEOM;
 
   ap.dp.rend.r     = 1.0;
   ap.dp.rend.scale = 1.0;
-  ap.dp.rend.bonds = 1;
+  ap.dp.rend.bonds = SHOW_BONDS;
   mx_id(3, ap.dp.rend.ac3rmx);
 
   return ap;

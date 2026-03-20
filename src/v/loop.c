@@ -29,7 +29,7 @@ static void process_input(XKeyEvent * event, drawpars * dp){
   if(stop_input){
     if(stop_input==1){
       switch(dp->ui.input){
-        case(1):
+        case(INPUT_JUMP):
           {
             int frame = atoi(dp->ui.input_text);
             frame = MAX(1, MIN(frame, dp->N));
@@ -38,7 +38,7 @@ static void process_input(XKeyEvent * event, drawpars * dp){
       }
     }
     memset(dp->ui.input_text, 0, STRLEN);
-    dp->ui.input=0;
+    dp->ui.input = NO_INPUT;
   }
   return;
 }
@@ -109,7 +109,7 @@ void main_loop(object * ent, drawpars * dp, ptf kp[NKP]){
     }
 
     else if(event->type == KeyPress) {
-      if(dp->ui.input){
+      if(dp->ui.input!=NO_INPUT){
         process_input(&(event->xkey), dp);
         exp_redraw(ent, dp);
       }

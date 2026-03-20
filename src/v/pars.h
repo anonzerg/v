@@ -16,6 +16,31 @@ typedef enum {
   CELL_DISABLED,
 } boundary_t;
 
+typedef enum {
+  NO_INPUT,
+  INPUT_JUMP,
+} input_t;
+
+typedef enum {
+  NO_ATOM_NUMBERS,
+  SHOW_NUMBERS,
+  SHOW_TYPES,
+} render_atom_numbers_t;
+
+typedef enum {
+  DISABLE_BONDS=-1,
+  NO_BONDS=0,
+  SHOW_BONDS,
+  SHOW_LENGTHS,
+} render_bonds_t;
+
+typedef enum {
+  NO_CENTER,
+  CENTER_GEOM,
+  CENTER_MASS,
+} center_t;
+
+
 typedef struct {
   colorscheme_t  colors;   // colorscheme (v or cpk)
   int               gui;   // if gui is enabled
@@ -30,10 +55,9 @@ typedef struct {
 } readpars;
 
 typedef struct {
-  int center;   // 0: nothing; 1: center each molecule upon reading; 2: center wrt center of mass
-  int inertia;  // 0: nothing; 1: rotate each molecule upon reading wrt axis of inertia
-  int bohr;     // 0: Å        1: Bohr
-
+  center_t center; // whether / how to center each molecule upon reading
+  int inertia;     // whether to rotate each molecule upon reading wrt axis of inertia
+  int bohr;        // whether to use Bohr instead of Å
   boundary_t boundary;
   double cell[9];
   double shell[2];
@@ -41,11 +65,11 @@ typedef struct {
 
 typedef struct {
   char   input_text[STRLEN];
-  char * com;           // command string for gui:0
-  char * on_exit;       // command string to run on exit
-  int    closed;        // 1: time to go
-  int    input;         // 0=no input regime, 1=jump, ...
-  int    modkey;        // whether ctrl or shift are pressed
+  char  * com;           // command string for gui:0
+  char  * on_exit;       // command string to run on exit
+  int     closed;        // whether it's time to go
+  input_t input;         // input regime
+  int     modkey;        // whether ctrl or shift are pressed
 } uipars;
 
 typedef struct {
@@ -53,8 +77,8 @@ typedef struct {
   double ac3rmx[9];     // rotational matrix
   double scale;         // zoom
   double r;             // atom size scale factor
-  int    num;           // 0: do not show; 1: show numbers;  -1: show atom types
-  int    bonds;         // 0: do not show; 1: show bonds;     2: show bond+lengths; -1: never show
+  render_atom_numbers_t num;
+  render_bonds_t bonds;
 } rendpars;
 
 typedef struct {

@@ -299,28 +299,28 @@ void kp_bw_toggle(object * ent __attribute__ ((unused)), drawpars * dp){
 
 void kp_l_toggle(object * ent, drawpars * dp){
   if(dp->rend.bonds>0){
-    dp->rend.bonds = 1+!(dp->rend.bonds-1);
+    dp->rend.bonds = dp->rend.bonds==SHOW_BONDS ? SHOW_LENGTHS : SHOW_BONDS;
     exp_redraw(ent, dp);
   }
   return;
 }
 
 void kp_b_toggle(object * ent, drawpars * dp){
-  if(dp->rend.bonds>-1){
-    dp->rend.bonds = !dp->rend.bonds;
+  if(dp->rend.bonds!=DISABLE_BONDS){
+    dp->rend.bonds = dp->rend.bonds==NO_BONDS ? SHOW_BONDS : NO_BONDS;
+    exp_redraw(ent, dp);
   }
-  exp_redraw(ent, dp);
   return;
 }
 
 void kp_n_toggle(object * ent, drawpars * dp){
-  dp->rend.num = (dp->rend.num ==  1) ? 0 :  1;
+  dp->rend.num = (dp->rend.num == SHOW_NUMBERS) ? NO_ATOM_NUMBERS : SHOW_NUMBERS;
   exp_redraw(ent, dp);
   return;
 }
 
 void kp_t_toggle(object * ent, drawpars * dp){
-  dp->rend.num = (dp->rend.num == -1) ? 0 : -1;
+  dp->rend.num = (dp->rend.num == SHOW_TYPES)   ? NO_ATOM_NUMBERS : SHOW_TYPES;
   exp_redraw(ent, dp);
   return;
 }
@@ -424,8 +424,8 @@ void kp_pg(object * ent, drawpars * dp){
 }
 
 void kp_jump(object * ent, drawpars * dp){
-  if(!dp->ui.input){
-    dp->ui.input = 1;
+  if(dp->ui.input==NO_INPUT){
+    dp->ui.input = INPUT_JUMP;
     exp_redraw(ent, dp);
   }
   return;

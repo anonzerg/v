@@ -26,21 +26,21 @@ static void cell_fill(cellpars * cell, const double abc[9]){
   return;
 }
 
-atcoord * atcoord_fill(mol * m0, const int b, const geompars geom, const double cell[9]){
+atcoord * atcoord_fill(mol * m0, const render_bonds_t b, const geompars geom, const double cell[9]){
   int n = m0->n;
 
   size_t q_size = sizeof(int   ) * n;
   size_t r_size = sizeof(double) * n*3;
   size_t r0_size = sizeof(double) * n*3;
   struct {size_t r_size; size_t a_size;} bonds = {0, 0};
-  if(b!=-1){
+  if(b!=DISABLE_BONDS){
     bonds.a_size = sizeof(int   ) * n*BONDS_MAX;
     bonds.r_size = sizeof(double) * n*BONDS_MAX;
   }
   size_t size = sizeof(atcoord) + q_size + r_size + r0_size + bonds.a_size + bonds.r_size;
   atcoord * m = calloc(size, 1);
 
-  if(b==-1){
+  if(b==DISABLE_BONDS){
     m->r       = (double *) (m + 1);
     m->r0      = (double *) MEM_END(m,r);
     m->q       = (int    *) MEM_END(m,r0);
@@ -67,8 +67,8 @@ atcoord * atcoord_fill(mol * m0, const int b, const geompars geom, const double 
     // we should not change m0
     position(&((mol){.n=n, .q=m->q, .r=m->r}), NULL, 1);
   }
-  if(geom.center){
-    center_mol(n, m->r, geom.center==2 ? m->q : NULL);
+  if(geom.center!=NO_CENTER){
+    center_mol(n, m->r, geom.center==CENTER_MASS ? m->q : NULL);
   }
   veccp(n*3, m->r0, m->r);
 
@@ -87,7 +87,7 @@ atcoord * atcoord_fill(mol * m0, const int b, const geompars geom, const double 
   return m;
 }
 
-atcoord * ac3_read(readpars read, int b, const geompars geom, format_t * format){
+atcoord * ac3_read(readpars read, const render_bonds_t b, const geompars geom, format_t * format){
 
   mol * m = NULL;
   FILE * f = read.f;
