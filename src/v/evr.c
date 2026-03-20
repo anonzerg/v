@@ -194,29 +194,12 @@ void kp_rotz_r(object * ent, drawpars * dp){
   return;
 }
 
-static void mol2cell(double r[3], cellpars * cell){
-  double rcell[3];
-  r3mx(rcell, r, cell->rot_to_cell_basis);
-  for(int i=0; i<3; i++){
-    if(rcell[i]<-0.5){
-      rcell[i] += 1.0;
-    }
-    else if(rcell[i]>0.5){
-      rcell[i] -= 1.0;
-    }
-  }
-  r3mx(r, rcell, cell->rot_to_lab_basis);
-  return;
-}
-
 static void move_pbc(atcoord * m, drawpars * dp, double dr[3]){
   for(int j=0; j<m->n; j++){
-    double * r = m->r0+j*3;
-    r3add(r, dr);
-    mol2cell(r, &m->cell);///TODO
-    r3cp(m->r+j*3, r);
-    m->rotated = 0;
+    r3add(m->r0+j*3, dr);
   }
+  mol2cell(m);
+  m->rotated = 0;
   if(dp->rend.bonds>0){
     m->bonds.flag = 0;
     m->bonds.rl *= RL_MOVE_PBC_SCALE;
@@ -299,28 +282,28 @@ void kp_bw_toggle(object * ent __attribute__ ((unused)), drawpars * dp){
 
 void kp_l_toggle(object * ent, drawpars * dp){
   if(dp->rend.bonds>0){
-    dp->rend.bonds = 1+!(dp->rend.bonds-1);
+    dp->rend.bonds = dp->rend.bonds==SHOW_BONDS ? SHOW_LENGTHS : SHOW_BONDS;
     exp_redraw(ent, dp);
   }
   return;
 }
 
 void kp_b_toggle(object * ent, drawpars * dp){
-  if(dp->rend.bonds>-1){
-    dp->rend.bonds = !dp->rend.bonds;
+  if(dp->rend.bonds!=DISABLE_BONDS){
+    dp->rend.bonds = dp->rend.bonds==NO_BONDS ? SHOW_BONDS : NO_BONDS;
+    exp_redraw(ent, dp);
   }
-  exp_redraw(ent, dp);
   return;
 }
 
 void kp_n_toggle(object * ent, drawpars * dp){
-  dp->rend.num = (dp->rend.num ==  1) ? 0 :  1;
+  dp->rend.num = (dp->rend.num == SHOW_NUMBERS) ? NO_ATOM_NUMBERS : SHOW_NUMBERS;
   exp_redraw(ent, dp);
   return;
 }
 
 void kp_t_toggle(object * ent, drawpars * dp){
-  dp->rend.num = (dp->rend.num == -1) ? 0 : -1;
+  dp->rend.num = (dp->rend.num == SHOW_TYPES)   ? NO_ATOM_NUMBERS : SHOW_TYPES;
   exp_redraw(ent, dp);
   return;
 }
@@ -424,8 +407,8 @@ void kp_pg(object * ent, drawpars * dp){
 }
 
 void kp_jump(object * ent, drawpars * dp){
-  if(!dp->ui.input){
-    dp->ui.input = 1;
+  if(dp->ui.input==NO_INPUT){
+    dp->ui.input = INPUT_JUMP;
     exp_redraw(ent, dp);
   }
   return;

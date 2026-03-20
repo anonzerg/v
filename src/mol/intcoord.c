@@ -41,6 +41,9 @@ double intcoord_calc(int r_units_a, int check_n, int z[5], double * r){
 }
 
 int intcoord_check(int n, int z[5]){
+  if(!(z[0]||z[1]||z[2]||z[3]||z[4])){
+    return 0;
+  }
   switch(z[0]){
     case 3 :
       if (z[4] < 1 || z[4] > n)    z[0] = 0;
@@ -60,9 +63,11 @@ int intcoord_check(int n, int z[5]){
     case 5: // TODO
     default:
       z[0] = 0;
-      return -1;
   }
   switch(z[0]){
+    case 0 :
+      PRINT_WARN("check the internal coordintate option ('z:')\n");
+      return -1;
     case 1 :
       z[3] = 0;
     case 2 :

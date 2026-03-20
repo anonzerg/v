@@ -58,7 +58,7 @@ static void ac3_text(atcoord * ac, drawpars * dp){
     lines[il++] = text_point;
   }
 
-  if(dp->ui.input==1){
+  if(dp->ui.input==INPUT_JUMP){
     snprintf(text_input, sizeof(text_input), "JUMP TO >>> %s", dp->ui.input_text);
     lines_red[il] = 1;
     lines[il++] = text_input;
@@ -79,7 +79,7 @@ void vibro_text(vibr_t * ms, drawpars * dp){
   snprintf(text, sizeof(text),
            "%*d / %d   freq = %.1lf%c cm-1   int = %.1lf km/mole   mass = %.1lf amu",
            1+(int)(log10(ms->n)), dp->n+1, ms->n, fabs(fq), i, ms->ints[dp->n], ms->mass[dp->n]);
-  if(dp->ui.input==1){
+  if(dp->ui.input==INPUT_JUMP){
     snprintf(text_inp, sizeof(text_inp), "JUMP TO >>> %s", dp->ui.input_text);
     lines[2] = text_inp;
   }

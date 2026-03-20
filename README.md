@@ -74,6 +74,11 @@ Show the reference:
 | `cell:%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf`  | cell parameters in Å                                     |
 | `shell:b%lf,%lf`                            | spheres radii in a.u.                                    |
 | `shell:%lf,%lf`                             | spheres radii in Å                                       |
+| `cell:0`                                    | disable PBC from the extended xyz file header            |
+| `cell:b%%lf[,%%lf,%%lf[,%%lf,%%lf,%%lf,%%lf,%%lf,%%lf]]` | cubic / orthogonal / non-orhogonal cell parameters in a.u. |
+| `cell:%%lf[,%%lf,%%lf[,%%lf,%%lf,%%lf,%%lf,%%lf,%%lf]]`  | cubic / orthogonal / non-orhogonal cell parameters in Å |
+| `shell:b%%lf[,%%lf]                         | sphere(s) radii in a.u.                                  |
+| `shell:%%lf[,%%lf]                          | sphere(s) radii in Å                                     |
 | `center:%d`                                 | origin is geometric center (`1`, default) / center of mass (`2`) / as is (`0`) |
 | `inertia:%d`                                | if rotate molecules wrt axis of inertia (`1`) or not (`0`, default) |
 | `gui:%d`                                    | normal (default `1`) / headless (`0`) mode               |
@@ -112,9 +117,9 @@ Show the reference:
 | `x`                            |  print molecule (Priroda input + bonds)
 | `z`                            |  print molecule (`.xyz`)
 | `p`                            |  print molecule (input for an `.svg` generator)
-| `u`                            |  print current rotation matrix
+| `u`                            |  print the current rotation matrix
 | `m`                            |  save the current frame ([`.xpm`](https://en.wikipedia.org/wiki/X_PixMap) format)
-| `f`                            |  save all frames (vibration mode: save all frames to animate the selected normal mode)
+| `f`                            |  save all frames starting from the current one (vibration mode: save all frames to animate the selected normal mode)
 |                                |
 | `j`                            |  jump to a frame (will be prompted): `enter` to confirm, `esc` to cancel
 |                                |

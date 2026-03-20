@@ -61,12 +61,12 @@ void ac3_draw(atcoord * ac, rendpars * rend){
       XDrawArc(world.dis, world.canv, q>0?world.gc_black:world.gc_dot[1], x-r, y-r, 2*r, 2*r, 0, 360*64);
     }
 
-    if(rend->num == 1){
+    if(rend->num == SHOW_NUMBERS){
       char text[16];
       snprintf(text, sizeof(text), "%d", k+1);
       XDRAWSTRING(world.dis, world.canv, world.gc_black, x, y, text, strlen(text));
     }
-    else if(rend->num == -1){
+    else if(rend->num == SHOW_TYPES){
       char text[16];
       const char * s = getname(q);
       s ? snprintf(text, sizeof(text), "%s", s) :  snprintf(text, sizeof(text), "%d", q );
@@ -92,7 +92,7 @@ void ac3_draw(atcoord * ac, rendpars * rend){
         }
         double dd = BOND_OFFSET * r / sqrt(r2d);
         XDrawLine(world.dis, world.canv, world.gc_black, x+dd*dx, y+dd*dy, x1, y1);
-        if(rend->bonds==2){
+        if(rend->bonds==SHOW_LENGTHS){
           char text[16];
           snprintf(text, sizeof(text), "%.3lf", ac->bonds.r[j]);
           XDRAWSTRING(world.dis, world.canv, world.gc_black, x+dx/2, y+dy/2, text, strlen(text));
