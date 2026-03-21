@@ -85,7 +85,7 @@ int main (int argc, char * argv[]) {
     dp->n = dp->n%dp->N;
   }
   else if(dp->n<0){
-    dp->n = dp->N-((-dp->n+1)%dp->N)-1;
+    dp->n = dp->N-((-dp->n-1)%dp->N);
   }
 
   if(!dp->ui.gui){
