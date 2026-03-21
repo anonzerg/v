@@ -1,49 +1,63 @@
 #include "v.h"
 #include "evr.h"
 
-#define GUI(C) if(!dp->ui.gui){ \
-    PRINT_WARN("Ignoring command `%c` in the headless mode\n", C); \
-    break;\
+static void run_with_gui(char c, drawpars * dp, object * ent){
+  if(dp->ui.gui!=GUI_DISABLED){
+    int gui = dp->ui.gui;
+    dp->ui.gui = GUI_ENABLED;
+    switch(c){
+      case('f'):
+        kp_film(ent, dp); break;
+      case('m'):
+        kp_savepic(ent, dp); break;
+    }
+    dp->ui.gui = gui;
   }
+  else{
+    PRINT_WARN("Ignoring command `%c` in the headless mode\n", c); \
+  }
+  return;
+}
 
 static void run_command(char c, drawpars * dp, object * ent){
   switch(c){
     case('>'):
-      GUI(c); kp_fw_toggle(ent, dp); break;
-    case('f'):
-      GUI(c); kp_film(ent, dp); break;
+      kp_fw_toggle(ent, dp); break;
     case('d'):
-      GUI(c); kp_move_r(ent, dp); break;
+      kp_move_r(ent, dp); break;
     case('a'):
-      GUI(c); kp_move_l(ent, dp); break;
+      kp_move_l(ent, dp); break;
     case('w'):
-      GUI(c); kp_move_u(ent, dp); break;
+      kp_move_u(ent, dp); break;
     case('s'):
-      GUI(c); kp_move_d(ent, dp); break;
-    case('m'):
-      GUI(c); kp_savepic(ent, dp); break;
+      kp_move_d(ent, dp); break;
     case('1'):
-      GUI(c); kp_rl_dec(ent, dp); break;
+      kp_rl_dec(ent, dp); break;
     case('2'):
-      GUI(c); kp_rl_inc(ent, dp); break;
+      kp_rl_inc(ent, dp); break;
     case('3'):
-      GUI(c); kp_r_dec(ent, dp); break;
+      kp_r_dec(ent, dp); break;
     case('4'):
-      GUI(c); kp_r_inc(ent, dp); break;
+      kp_r_inc(ent, dp); break;
     case('l'):
-      GUI(c); kp_l_toggle(ent, dp); break;
+      kp_l_toggle(ent, dp); break;
     case('b'):
-      GUI(c); kp_b_toggle(ent, dp); break;
+      kp_b_toggle(ent, dp); break;
     case('t'):
-      GUI(c); kp_t_toggle(ent, dp); break;
+      kp_t_toggle(ent, dp); break;
     case('n'):
-      GUI(c); kp_n_toggle(ent, dp); break;
+      kp_n_toggle(ent, dp); break;
     case('+'):
-      GUI(c); kp_zoom_in(ent, dp); break;
+      kp_zoom_in(ent, dp); break;
     case('-'):
-      GUI(c); kp_zoom_out(ent, dp); break;
+      kp_zoom_out(ent, dp); break;
+
+    case('f'):
+    case('m'):
+      run_with_gui(c, dp, ent); break;
+
     case('q'):
-      GUI(c); dp->ui.closed = MUST_CLEANUP; break;
+      dp->ui.closed = MUST_CLEANUP; break;
 
     case('p'):
       kp_print2fig(ent, dp); break;

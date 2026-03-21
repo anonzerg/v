@@ -189,7 +189,7 @@ static allpars allpars_init(void){
   ap.dp.anal.symtol = DEFAULT_SYMTOL;
   ap.dp.bond.rl     = 1.0;
   ap.dp.geom.center = CENTER_GEOM;
-  ap.dp.ui.gui      = 1;
+  ap.dp.ui.gui      = GUI_ENABLED;
 
   ap.dp.rend.r     = 1.0;
   ap.dp.rend.scale = 1.0;
@@ -206,7 +206,7 @@ allpars cli_parse(int argc, char ** argv){
     cli_parse_arg(argv[i], &ap);
   }
 
-  if(!ap.dp.ui.gui){
+  if(ap.dp.ui.gui==GUI_DISABLED){
     if(ap.dp.task == VIBRO){
       PRINT_WARN("normal modes are not supported in the headless regime\n");
     }

@@ -325,6 +325,9 @@ void kp_goto_1st(object * ent, drawpars * dp){
 }
 
 void exp_redraw(object * ent, drawpars * dp){
+  if(dp->ui.gui!=1){
+    return;
+  }
   switch (dp->task){
     case AT3COORDS:
       redraw_ac3(ent, dp);
@@ -362,6 +365,7 @@ static void savevib(drawpars * dp, int c){
 }
 
 void kp_savepic(object * ent __attribute__ ((unused)), drawpars * dp){
+  exp_redraw(ent, dp);
   char s[STRLEN];
   int  l = (int)(log10(dp->N+0.5))+1;
   atcoord * ac = ent->m[dp->n];

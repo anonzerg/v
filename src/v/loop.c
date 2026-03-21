@@ -66,6 +66,28 @@ static void run_animation(object * ent, drawpars * dp, int * tr){
   return;
 }
 
+static void configure_window(XConfigureEvent * xconfigure, object * ent, drawpars * dp){
+  world.W = xconfigure->width;
+  world.H = xconfigure->height;
+  world.size = MIN(world.H, world.W);
+  dp->rend.xy0[0] = dp->rend.xy0[1] = 0.0;
+  exp_redraw(ent, dp);
+  return;
+}
+
+void consume_events(object * ent, drawpars * dp){
+  XEvent event_rec;
+  XEvent * event = &event_rec;
+  do{
+    XNextEvent(world.dis, event);
+    if(event->type == ConfigureNotify){
+      configure_window(&event->xconfigure, ent, dp);
+      break;
+    }
+  } while(XEventsQueued(world.dis, QueuedAlready));
+  return;
+}
+
 void main_loop(object * ent, drawpars * dp, ptf kp[NKP]){
 
   // To handle window closing. Thanks to https://stackoverflow.com/a/1186544
@@ -74,7 +96,6 @@ void main_loop(object * ent, drawpars * dp, ptf kp[NKP]){
 
   mouse_state_t mouse = {.click=0, .x0=0, .y0=0};
   int tr = 0;
-  int first_configure = 1;
   while(1) {
     XEvent event_rec;
     XEvent * event = NULL;
@@ -102,26 +123,19 @@ void main_loop(object * ent, drawpars * dp, ptf kp[NKP]){
     }
 
     else if(event->type == ConfigureNotify){
-      world.W = event->xconfigure.width;
-      world.H = event->xconfigure.height;
-      world.size = MIN(world.H, world.W);
-      if(!first_configure){
-        dp->rend.xy0[0] = dp->rend.xy0[1] = 0.0;
-        first_configure = 0;
-      }
-      exp_redraw(ent, dp);
+      configure_window(&event->xconfigure, ent, dp);
     }
 
     else if(event->type == KeyPress) {
-      if(dp->ui.input!=NO_INPUT){
-        process_input(&(event->xkey), dp);
-        exp_redraw(ent, dp);
-      }
-      else{
+      if(dp->ui.input==NO_INPUT){
         if(kp[event->xkey.keycode]){
           dp->ui.modkey = event->xkey.state & (ShiftMask | ControlMask);
           kp[event->xkey.keycode](ent, dp);
         }
+      }
+      else{
+        process_input(&(event->xkey), dp);
+        exp_redraw(ent, dp);
       }
     }
 

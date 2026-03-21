@@ -46,6 +46,12 @@ typedef enum {
   READY_TO_EXIT,
 } exit_t;
 
+typedef enum {
+  GUI_TEMP_DISABLED=-1,
+  GUI_DISABLED=0,
+  GUI_ENABLED=1,
+} gui_t;
+
 typedef struct {
   colorscheme_t  colors;   // colorscheme (v or cpk)
   int     input_files_n;   // number of input files
@@ -73,7 +79,7 @@ typedef struct {
   char  * com;           // command string for gui:0
   char  * on_exit;       // command string to run on exit
   exit_t  closed;        // closing state
-  int     gui;           // if gui is enabled
+  gui_t   gui;           // gui state
   input_t input;         // input regime
   int     modkey;        // whether ctrl or shift are pressed
 } uipars;

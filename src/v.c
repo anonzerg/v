@@ -88,7 +88,7 @@ int main (int argc, char * argv[]) {
     dp->n = dp->N-((-dp->n-1)%dp->N);
   }
 
-  if(!dp->ui.gui){
+  if(dp->ui.gui==GUI_DISABLED){
     return headless(dp, ent);
   }
 
@@ -98,7 +98,10 @@ int main (int argc, char * argv[]) {
   init_keys(kp);
   init_font(ap.ip.fontname);
 
+  dp->ui.gui = GUI_TEMP_DISABLED;
+  consume_events(ent, dp);
   run_commands(NULL, ap.ip.on_startup, dp, ent);
+  dp->ui.gui = GUI_ENABLED;
 
   /*= Main loop ==============================================================*/
   main_loop(ent, dp, kp);
