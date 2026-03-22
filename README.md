@@ -168,11 +168,6 @@ moves the molecule to the left, and
 opens the file, computes the point group, save a picture to `mol/mol0001.xyz_1.xpm` and closes the window.
 For other examples, see [fig/regenerate.bash](fig/regenerate.bash) for the commands used to generate the figures on this page.
 
-> [!NOTE]
-> The size depends on my screen and window layout, you might need to adjust the number of move/zoom in commands or the window size.
-
-> [!WARNING]
-> Currently this option is unstable. Please let me know if you encounter any problems.
 
 <details><summary><strong>Click to see currently available commands</strong></summary>
 
@@ -195,6 +190,12 @@ For other examples, see [fig/regenerate.bash](fig/regenerate.bash) for the comma
 </details>
 
 
+> [!NOTE]
+> The size depends on my screen and window layout, you might need to adjust the number of move/zoom in commands or the window size.
+
+> [!WARNING]
+> Currently this option is unstable. Please let me know if you encounter any problems.
+
 ### Boundary conditions
 Two types of boundary conditions are recognized:
 * PBC (3D)
@@ -207,8 +208,13 @@ by specifying `Lattice="ax ay az bx by bz cx cy cz"`:
 ./v mol/MOL_3525.ext.xyz
 ```
 Currently, only the PBC in all three dimensions are supported.
+Every molecule can have its own lattice:
+```
+./v mol/MOL_3525.ext.xyz mol/Si8.extended.xyz
+```
 
-The same can be passed via the command-line, in which case it overrides the one from the file:
+The lattice can be passed via the command-line, in which case it overrides the one from the file
+and applies to all the molecules:
 ```
 ./v mol/MOL_3525.xyz cell:8.929542,0,0,4.197206,8.892922,0,0.480945,2.324788,10.016044
 ```
