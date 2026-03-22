@@ -16,7 +16,7 @@ static inline mol * alloc_mol(int n){
   mol * m = calloc(sizeof(mol)+r_size+q_size, 1);
   if(!m) GOTOHELL;
   m->r = (double *) (m + 1);
-  m->q = (int    *) MEM_END(m, r);
+  m->q = (int    *) MEM_END(m, r);  // cppcheck-suppress invalidPointerCast
   m->name = NULL;
   m->n = n;
   return m;

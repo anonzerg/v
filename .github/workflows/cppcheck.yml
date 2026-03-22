@@ -1,0 +1,23 @@
+name: Run cppcheck
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  cppcheck:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      - name: Install cppcheck
+        run: |
+          sudo apt-get update
+          sudo apt install -y cppcheck
+      - name: Run
+        run: .github/cppcheck.bash

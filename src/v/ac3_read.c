@@ -63,13 +63,13 @@ atcoord * atcoord_fill(mol * m0, const render_bonds_t b, const geompars geom, co
   if(b==DISABLE_BONDS){
     m->r       = (double *) (m + 1);
     m->r0      = (double *) MEM_END(m,r);
-    m->q       = (int    *) MEM_END(m,r0);
+    m->q       = (int    *) MEM_END(m,r0);  // cppcheck-suppress invalidPointerCast
   }
   else{
     m->r       = (double *) (m + 1);
     m->r0      = (double *) MEM_END(m,r);
     m->bonds.r = (double *) MEM_END(m,r0);
-    m->q       = (int    *) MEM_END(m,bonds.r);
+    m->q       = (int    *) MEM_END(m,bonds.r);  // cppcheck-suppress invalidPointerCast
     m->bonds.a = (int    *) MEM_END(m,q);
   }
 

@@ -7,7 +7,7 @@ static inline molsym * alloc_molsym(int a, int mssize){
   molsym * ms = calloc(sizeof(molsym)+ e_size + o_size + r_size, 1);
   if(!ms) GOTOHELL;
   ms->r = (double *) (ms+1);
-  ms->o = (int    *) MEM_END(ms,r);
+  ms->o = (int    *) MEM_END(ms,r);  // cppcheck-suppress invalidPointerCast
   ms->e = (elsym  *) MEM_END(ms,o);
   ms->a = a;
   return ms;
