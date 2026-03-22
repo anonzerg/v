@@ -82,6 +82,8 @@ def main():
     to_pop = []
     mols = []
     vib = None
+    vib_disabled = 'vib:0' in sys.argv[1:]
+
     for i, arg in enumerate(sys.argv[1:], start=1):
         if ':' in arg:
             continue
@@ -91,7 +93,7 @@ def main():
         except (FileNotFoundError, RuntimeError) as e:
             m, v = [], None
             warnings.warn(str(e), RuntimeWarning, stacklevel=2)
-        if len(mols)==0 and v is not None:
+        if len(mols)==0 and v is not None and not vib_disabled:
             mols, vib = m, v
             break
         mols.extend(m)
