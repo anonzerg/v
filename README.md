@@ -22,8 +22,11 @@ Provides wrapper scripts with a simple installation and
 allows to open unsupported file formats with `cclib`.
 
 ## Download [↑](#download)
-```
-wget https://github.com/briling/v/releases/latest/download/v
+```bash
+# uncomment your OS:
+#OS=Linux
+#OS=macOS
+wget https://github.com/briling/v/releases/latest/download/v.${OS}.exe --output-document=./v
 chmod +x ./v
 ```
 
