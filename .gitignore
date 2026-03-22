@@ -5,6 +5,10 @@
 /v
 *.so
 
+cppcheck_html/
+errors.xml
+
+
 *.pyc
 vmol.egg-info/
 python/build

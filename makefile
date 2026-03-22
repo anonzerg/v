@@ -81,3 +81,18 @@ cleantags:
 cleanall: clean cleand cleantags
 
 include $(allmmd)
+
+cppcheck:
+	cppcheck --xml \
+	  --enable=all \
+	  --inconclusive \
+	  --suppress=missingIncludeSystem \
+	  --suppress=unusedFunction \
+	  -I src/v -I src/mol -I src/math -I src/sym \
+	  --inline-suppr \
+	  src/ 2> errors.xml
+
+	cppcheck-htmlreport \
+	  --file=errors.xml \
+	  --report-dir=cppcheck_html \
+	  --source-dir=.
