@@ -57,6 +57,7 @@ static void bonds_add(bondpars bond, atcoord * ac){
 
   int nboxes = box_n[0]*box_n[1]*box_n[2];
   int * bsize = calloc(sizeof(int)*nboxes, 1);
+  if(!bsize) GOTOHELL;
 
   makelist(0, bsize, NULL, dmax, box_n, rmin, ac);
 
@@ -66,6 +67,7 @@ static void bonds_add(bondpars bond, atcoord * ac){
     bsize[i] = 0;
   }
   int * list = malloc(sizeof(int)*nboxes*bsize_max);
+  if(!list) GOTOHELL;
 
   makelist(bsize_max, bsize, list, dmax, box_n, rmin, ac);
 

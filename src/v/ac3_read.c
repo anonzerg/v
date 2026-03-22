@@ -58,6 +58,7 @@ atcoord * atcoord_fill(mol * m0, const render_bonds_t b, const geompars geom, co
   }
   size_t size = sizeof(atcoord) + q_size + r_size + r0_size + bonds.a_size + bonds.r_size;
   atcoord * m = calloc(size, 1);
+  if(!m) GOTOHELL;
 
   if(b==DISABLE_BONDS){
     m->r       = (double *) (m + 1);

@@ -32,6 +32,7 @@ void ac3_draw(atcoord * ac, rendpars * rend){
   int n = ac->n;
   kzstr * kz = malloc(sizeof(kzstr)*n);
   int   * ks = (rend->bonds>0) ? malloc(sizeof(int)*n) : NULL;
+  if(!kz) GOTOHELL;
 
   double resol = world.size * RESOL_SCALE;
   double r1  = rend->r * resol * rend->scale;
@@ -42,6 +43,7 @@ void ac3_draw(atcoord * ac, rendpars * rend){
   }
   qsort(kz, n, sizeof(kzstr), cmpz);
   if(rend->bonds>0){
+    if(!ks) GOTOHELL;
     for(int i=0; i<n; i++){
       ks[ kz[i].k ] = i;
     }

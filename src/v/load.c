@@ -92,6 +92,7 @@ static FILE * acs_read_newfile(const char * fname, object * acs, const drawpars 
 static object * ent_read(char * fname, drawpars * dp){
 
   object * acs = malloc(sizeof(object));
+  if(!acs) GOTOHELL;
   acs->Nmem = 0;
   acs->n = 0;
   acs->m = NULL;
