@@ -1,28 +1,6 @@
 name: Build wheels
 
 on:
-  workflow_dispatch:
-    inputs:
-      package-dir:
-        type: string
-        required: false
-        default: ./python
-      output-dir:
-        type: string
-        required: false
-        default: wheelhouse
-      cibw-build:
-        type: string
-        required: false
-        default: ""
-      cibw-skip:
-        type: string
-        required: false
-        default: "*-musllinux_*"
-      upload-artifact:
-        type: boolean
-        required: false
-        default: true
   workflow_call:
     inputs:
       package-dir:
