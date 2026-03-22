@@ -37,8 +37,16 @@ export VERSION_FLAGS=-DGIT_HASH="\"$(shell git rev-parse HEAD 2> /dev/null || ec
                      -DBUILD_USER="\"$(USER)@$(HOSTNAME)\""\
                      -DBUILD_DIRECTORY="\"$(PWD)\""
 
+OS := $(shell uname)
+ifeq ($(OS),Darwin)
+	SONAME := install_name,@rpath/
+else
+	SONAME := soname,
+endif
+
+X11DIR= $(shell pkg-config --libs-only-L x11 xpm)  # for macOS
 CFLAGS= -c -std=gnu11 $(OPT) $(GPROF) $(W) $(GDB)
-OFLAGS= -lm $(GPROF) -lX11 -lXpm
+OFLAGS= -lm $(GPROF) -lX11 -lXpm $(X11DIR)
 
 SRCDIR=src
 OBJDIR=obj
@@ -46,6 +54,7 @@ PICDIR=obj-pic
 
 SRCDIRS=$(shell find $(SRCDIR) -type d)
 INCL=$(SRCDIRS:%=-I./%)
+INCL+=$(shell pkg-config --cflags-only-I x11 xpm)  # for macOS
 
 allsrc=$(shell find $(SRCDIR) -type f -name '*.c')
 allobj=$(allsrc:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
@@ -64,7 +73,7 @@ v  : $(allobj)
 	$(CC) $^ -o $@ $(OFLAGS)
 
 v.so: $(allpic)
-	$(CC) $^ -shared -Wl,-soname,$@ $(OFLAGS) -o $@
+	$(CC) $^ -shared -Wl,-$(SONAME)$@ $(OFLAGS) -o $@
 
 $(OBJDIR)/%.o : $(SRCDIR)/%.c
 	$(CC) $(CFLAGS)       $< -o $@ $(INCL) $(VERSION_FLAGS) -MMD -MT "$@ $(patsubst $(OBJDIR)%,$(PICDIR)%,$@)"

@@ -6,3 +6,5 @@ on:
 jobs:
   wheels:
     uses: ./.github/workflows/wheels.yml
+  exe:
+    uses: ./.github/workflows/exe.yml

@@ -19,38 +19,8 @@ jobs:
 ################################################################################################################################
 
   build_exe:
-    name: Build the executable file and shared library for ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
+    uses: ./.github/workflows/exe.yml
 
-    steps:
-
-      - name: Install X11 dependencies (macOS)
-        if: runner.os == 'macOS'
-        run: brew install libx11 libxpm pkg-config
-
-      - name: install X11 dependencies
-        if: ${{ runner.os == 'Linux' }}
-        run: |
-          sudo apt-get update
-          sudo apt install -y libx11-dev libxpm-dev x11proto-dev
-
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-
-      - run: make v v.so
-
-      - uses: actions/upload-artifact@v6
-        with:
-          path: |
-            ./v
-            ./v.so
-          name: v.${{ matrix.os }}.exe
-          if-no-files-found: error
 
 ################################################################################################################################
 
