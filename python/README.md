@@ -14,7 +14,7 @@ Inspired by @aligfellow's [xyzrender](https://github.com/aligfellow/xyzrender).
 
 ## Installation
 PyPI has the wheels for CPython 10 through 14 @ manylinux.
-See [install-other.md](install-other.md) for other ways to build and install.
+See [install-other.md](https://github.com/briling/v/tree/master/python/install-other.md) for other ways to build and install.
 ```bash
 pip install vmol[all]       #  install cclib to parse unsupported file formats and open them with vmol2
 
@@ -38,7 +38,7 @@ The package provides two scripts to run from the command line
            that are not supported natively
            (needs `cclib` (i.e., `vmol[all]` or `vmol[cclib]`))
 
-Both have the same CLI interface as the original `v` (see the [reference](../README.md)).
+Both have the same CLI interface as the original `v` (see the [reference](https://github.com/briling/v/tree/master/README.md)).
 
 Native formats (xyz / Priroda):
 ```bash
@@ -97,7 +97,7 @@ The arguments are the same as the CLI ones and should be an array of strings.
 
 
 ### 2. Capture the output
-See [example 1](examples/ex1.py).
+See [example 1](https://github.com/briling/v/tree/master/python/examples/ex1.py).
 
 ```python
 from vmol import vmol
@@ -129,7 +129,7 @@ Tell the viewer to automatically print the coordinates before exit:
 ### 3. Pass a structure
 
 One can pass a structure (or several structures) as an argument.
-See [example 2](examples/ex2.py).
+See [example 2](https://github.com/briling/v/tree/master/python/examples/ex2.py).
 
 ```python
 from vmol import vmol
@@ -145,7 +145,8 @@ Without capturing the output:
 vmol.run(args=['shell:0.6,0.7'], mols={'q': [1, 'F'], 'r': [[0,0,0],[0.9,0,0]], 'name': 'hydrogen fluoride'})
 ```
 
-ASE Atoms (or anything with `.numbers` and `.positions`) are also [supported](examples/ex_ase.py):
+ASE Atoms (or anything with `.numbers` and `.positions`) are also
+[supported](https://github.com/briling/v/tree/master/python/examples/ex_ase.py):
 ```python
 import ase.io
 mols = ase.io.read('../mol/mol0002.xyz', index=':')
@@ -153,7 +154,8 @@ out = vmol.capture(mols=mols)
 ```
 
 File formats which are not supported natively can be read with `cclib` and passed
-(see [example](examples/ex_cclib.py) and [vmol2 source](vmol/vmol2.py)).
+(see [example](https://github.com/briling/v/tree/master/python/examples/ex_cclib.py)
+and [vmol2 source](https://github.com/briling/v/tree/master/python/vmol/vmol2.py)).
 
 One can also pass normal modes data with
 ```python
@@ -163,5 +165,6 @@ sym_stretch  = {'freq': [1480], 'ints': [0], 'mass': [16], 'disp': [[(dx,0,0) fo
 vmol.run(mols=CO2, vib=sym_stretch)
 ```
 Press insert to play the animation.
-(See [example](examples/ex3.py) and [vmol2 source](vmol/vmol2.py) for more details).
+(See [example](https://github.com/briling/v/tree/master/python/examples/ex3.py)
+and [vmol2 source](https://github.com/briling/v/tree/master/python/vmol/vmol2.py) for more details.)
 
