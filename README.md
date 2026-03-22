@@ -174,7 +174,7 @@ For other examples, see [fig/regenerate.bash](fig/regenerate.bash) for the comma
 
 | CLI regime symbol  | GUI keyboard command  |                   | GUI (`exitcom:`/`startcom:`) | headless (`com`) |
 | ------------------ | --------------------- | ----------------- | ---------------------------- | ---------------- |
-| `w`/`a`/`s`/`d`    | `w`/`a`/`s`/`d`       | move              | +                            |                  |
+| `w`/`a`/`s`/`d`    | `w`/`a`/`s`/`d`       | move              | +                            | + (PBC)          |
 | `+` / `-`          | `home`/`end`          | zoom              | +                            |                  |
 | `>`                | `ins`                 | animate           | +                            |                  |
 | `3`/`4`            | `3`/`4`               | scale atom sizes  | +                            |                  |
