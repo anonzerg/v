@@ -5,7 +5,7 @@
 * `setuptools` for Python
 
 ```
-VV="3.0rc6"   # v version
+VV="3.0rc7"   # v version
 PY="313"      # python version for wheels, also available "311" and "312"
 ```
 

@@ -38,5 +38,5 @@
 * high-symmetry determination bugs (#21)
 * headless fallback build by @JamesOBrien2 (#44)
 
-**Full Changelog**: https://github.com/briling/v/compare/v2.0...v3.0rc6
+**Full Changelog**: https://github.com/briling/v/compare/v2.0...v3.0rc7
 
