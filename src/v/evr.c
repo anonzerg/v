@@ -12,7 +12,7 @@ void kp_readmore(object * ent, drawpars * dp){
     fseek(dp->read.f, 0, SEEK_CUR);
     acs_readmore(dp->read, dp->rend.bonds, dp->geom, ent);
     dp->N = ent->n;
-    redraw_ac3 (ent, dp);
+    exp_redraw (ent, dp);
   }
   return;
 }
@@ -31,7 +31,7 @@ void kp_readagain(object * ent, drawpars * dp){
     ent->n = dp->N = dp->n = 0;
     acs_readmore(dp->read, dp->rend.bonds, dp->geom, ent);
     dp->N = ent->n;
-    redraw_ac3 (ent, dp);
+    exp_redraw (ent, dp);
   }
   return;
 }
@@ -324,29 +324,12 @@ void kp_goto_1st(object * ent, drawpars * dp){
   return;
 }
 
-void exp_redraw(object * ent, drawpars * dp){
-  if(dp->ui.gui!=1){
-    return;
-  }
-  switch (dp->task){
-    case AT3COORDS:
-      redraw_ac3(ent, dp);
-      break;
-    case VIBRO:
-      redraw_vibro(ent, dp);
-      break;
-    default:
-      break;
-  }
-  return;
-}
-
 void time_gone(object * ent, drawpars * dp){
   if(dp->task == VIBRO){
     if(dp->anim.t >= TMAX){
       dp->anim.t = dp->anim.t-TMAX;
     }
-    redraw_vibro(ent, dp);
+    exp_redraw(ent, dp);
   }
   return;
 }
@@ -407,9 +390,9 @@ void kp_film(object * ent, drawpars * dp){
 }
 
 void kp_pg(object * ent, drawpars * dp){
-  atcoord * ac = ent->m[dp->task == AT3COORDS ? dp->n : 0];
-  if(!ac->sym[0]){
-    pg(ac, dp->anal.symtol);
+  atcoord * m = ent->m[MOL_IDX(dp)];
+  if(!m->sym[0]){
+    pg(m, dp->anal.symtol);
     exp_redraw(ent, dp);
   }
   return;
