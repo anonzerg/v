@@ -28,18 +28,13 @@ chmod +x ./v
 ```
 
 ## Build [↑](#contents)
-```
-make v
-```
+
+See build [instructions](BUILD.md).
 
 ### Requirements:
-To use:
-* `GNU/Linux` or `Cygwin`
-* `X11`
-To build:
-* `gcc >= 4.7`
-* `libX11-devel libXpm-devel xproto-devel` (`libx11-dev libxpm-dev x11proto-dev` on Ubuntu)
-* `make`
+
+* `GNU/Linux` / `Cygwin` / `macOS`
+* `X11` / `XQuartz`
 
 ## Usage [↑](#contents)
 ```
