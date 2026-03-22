@@ -24,9 +24,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-latest]
 
     steps:
+
+      - name: Install X11 dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install libx11 libxpm pkg-config
 
       - name: install X11 dependencies
         if: ${{ runner.os == 'Linux' }}
@@ -90,7 +94,8 @@ jobs:
       - name: Download build artifacts from this run
         uses: actions/download-artifact@v4
         with:
-          name: vmol-wheels-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_number }}
+          pattern: vmol-wheels-*-${{ github.ref_name }}-${{ github.run_number }}
+          merge-multiple: true
           path: dist
 
       - name: Publish to TestPyPI

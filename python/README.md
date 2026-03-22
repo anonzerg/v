@@ -23,6 +23,10 @@ pip install vmol            #  base version
 pip install --no-deps vmol  #  vmol script and "capture the output" will work, 
                             #  but "pass a structure" feature won't work without numpy
 ```
+For macOS, an X11 server like XQuartz is required:
+```
+brew install --cask xquartz
+```
 
 ## Usage
 
