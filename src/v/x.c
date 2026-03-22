@@ -118,8 +118,8 @@ static void autosize_font(char * fontname){
 }
 
 void init_font(char * fontname){
+  styp s;
   if(!fontname){
-    styp s;
     fontname = s;
     autosize_font(fontname);
   }

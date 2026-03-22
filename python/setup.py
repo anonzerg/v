@@ -67,12 +67,14 @@ if not c_files:
 GIT_HASH   = os.getenv("VMOL_GIT_HASH")   or run_git(["rev-parse", "HEAD"])                 or "unknown"
 GIT_BRANCH = os.getenv("VMOL_GIT_BRANCH") or run_git(["rev-parse", "--abbrev-ref", "HEAD"]) or "unknown"
 
-VERSION_FLAGS = [f'-DGIT_HASH="{GIT_HASH}"',
+version_flags = [f'-DGIT_HASH="{GIT_HASH}"',
                  f'-DGIT_BRANCH="{GIT_BRANCH}"',
                  f'-DBUILD_USER="{os.getenv("USER")}@{os.getenv("HOSTNAME")}"',
                  f'-DBUILD_DIRECTORY="{os.getcwd()}"']
 
 x11_inc, x11_lib = get_x11_config()
+
+ignore_warnings = ['-Wno-sign-compare', '-Wno-format-truncation', '-Wno-format']
 
 setup(
     version=get_git_version_hash(),
@@ -81,9 +83,8 @@ setup(
                            sources=c_files,
                            include_dirs=include_dirs + x11_inc,
                            library_dirs=x11_lib,
-
                            libraries = ['X11', 'Xpm'],
-                           extra_compile_args=['-std=gnu11', '-O2', ] + VERSION_FLAGS,
+                           extra_compile_args=['-std=gnu11', '-O2'] + ignore_warnings + version_flags,
                            extra_link_args=[]),
                 ],
 )

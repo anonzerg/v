@@ -49,7 +49,7 @@ const char * getname(int q){
   return abs(q)<=NATOMS ? aname[abs(q)]: NULL;
 }
 
-int get_element(styp s){
+int get_element(char * s){
 
   char * s_end;
   long q = strtol(s, &s_end, 10);
@@ -59,7 +59,7 @@ int get_element(styp s){
 
   styp ts = "";
   ts[0] = toupper(s[0]);
-  for(int i=1; s[i]; i++){
+  for(int i=1; s[i] && i<sizeof(ts); i++){
     ts[i] = tolower(s[i]);
   }
 

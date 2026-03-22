@@ -21,11 +21,12 @@ W= \
    -Wunused\
    -Wunused-but-set-variable\
    -Wunused-parameter\
-   #-Winline\
-   #-Wunsafe-loop-optimizations\
-   #-W -Wall\
-   -Wswitch\
+   -Winline\
+   -Wunsafe-loop-optimizations\
    -Wno-format\
+   -Wswitch\
+   -Wdangling-pointer\
+   #-W -Wall\
    -Wconversion\
    -Wsign-compare\
    -Wjump-misses-init\

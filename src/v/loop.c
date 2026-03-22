@@ -35,6 +35,9 @@ static void process_input(XKeyEvent * event, drawpars * dp){
             frame = MAX(1, MIN(frame, dp->N));
             dp->n = frame-1;
           }; break;
+        case NO_INPUT:
+        default:
+          break;
       }
     }
     memset(dp->ui.input_text, 0, STRLEN);
