@@ -84,6 +84,8 @@ Show the reference:
 | `gui:%d`                                    | gui (default `1`) / headless (`0`) mode               |
 | `com:%s`                                    | command sequence for `gui:0`                             |
 | `exitcom:%s`                                | command sequence to run on exit (same as for `gui:0`)    |
+| `startcom:%s`                               | command sequence to run on startup                       |
+
 
 </details>
 
@@ -158,6 +160,44 @@ For example,
 ./v mol/mol0001.xyz exitcom:z
 ```
 automatically prints the last xyz coordinates when the user closes the window.
+
+The symbols from the CLI option `startcom:` are executed before the main loop.
+For example,
+```
+./v mol/mol0001.xyz startcom:aaaaaaa
+```
+moves the molecule to the left, and
+```
+./v mol/mol0001.xyz startcom:.mq
+```
+opens the file, computes the point group, save a picture to `mol/mol0001.xyz_1.xpm` and closes the window.
+For other examples, see [fig/regenerate.bash](fig/regenerate.bash) for the commands used to generate the figures on this page.
+
+> [!NOTE]
+> The size depends on my screen and window layout, you might need to adjust the number of move/zoom in commands or the window size.
+
+> [!WARNING]
+> Currently this option is unstable. Please let me know if you encounter any problems.
+
+<details><summary><strong>Click to see currently available commands</strong></summary>
+
+
+| CLI regime symbol  | GUI keyboard command  |                   | GUI (`exitcom:`/`startcom:`) | headless (`com`) |
+| ------------------ | --------------------- | ----------------- | ---------------------------- | ---------------- |
+| `w`/`a`/`s`/`d`    | `w`/`a`/`s`/`d`       | move              | +                            |                  |
+| `+` / `-`          | `home`/`end`          | zoom              | +                            |                  |
+| `>`                | `ins`                 | animate           | +                            |                  |
+| `3`/`4`            | `3`/`4`               | scale atom sizes  | +                            |                  |
+| `n`/`t`/`l`        | `n`/`t`/`l`           | toggle atom view  | +                            |                  |
+| `m`/`f`            | `m`/`f`               | saving frame(s)   | +                            |                  |
+| `q`                | `q`                   | quit              | +                            |                  |
+| `1`/`2`            | `1`/`2`               | scale bonds       | +                            | +                |
+| `b`/`l`            | `b`/`l`               | toggle bond view  | +                            | +                |
+| `.`                | `.`                   | point group       | +                            | +                |
+| `x`,`z`,`p`,`u`    | `x`,`z`,`p`,`u`       | printing          | +                            | +                |
+
+
+</details>
 
 
 ### Boundary conditions
