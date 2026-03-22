@@ -81,8 +81,8 @@ static void run_command(char c, drawpars * dp, object * ent){
 }
 
 void run_commands(FILE * f, char * command, drawpars * dp, object * ent){
-  char * com = command;
-  char c;
+  const char * com = command;
+  int c;
 
   while(1){
     if(command && command[0]){

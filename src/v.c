@@ -54,6 +54,7 @@ static void init_keys(ptf kp[NKP]){
 }
 
 static void version(FILE * f){
+  // cppcheck-suppress unknownMacro
   PRINTOUT(f, "built on "__TIMESTAMP__"\n"
               "user:      "BUILD_USER"\n"
               "directory: "BUILD_DIRECTORY"\n"

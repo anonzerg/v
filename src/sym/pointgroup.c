@@ -12,7 +12,7 @@ static inline molsym * alloc_molsym(int a, int mssize){
   return ms;
 }
 
-static inline int isnew(int N, double * R, double r[3], double eps2){
+static inline int isnew(int N, const double * R, const double r[3], double eps2){
   for(int i=0; i<N; i++){
     double t = fabs(r3d2(R+i*3, r));
     if(t<eps2){
@@ -22,7 +22,7 @@ static inline int isnew(int N, double * R, double r[3], double eps2){
   return 1;
 }
 
-static inline int isnewaxis(int N, double * R, double r[3], double eps2){
+static inline int isnewaxis(int N, const double * R, const double r[3], double eps2){
   for(int i=0; i<N; i++){
     double x[3];
     r3x(x, R+i*3, r);
@@ -33,7 +33,7 @@ static inline int isnewaxis(int N, double * R, double r[3], double eps2){
   return 1;
 }
 
-static int iscn(mol * m, double R[9], double eps2){
+static int iscn(const mol * m, const double R[9], double eps2){
   int j;
   double r[3];
   for(j=0; j<m->n; j++){
@@ -50,19 +50,19 @@ static int iscn(mol * m, double R[9], double eps2){
   }
 }
 
-static inline int isc5(mol * m, double u[3], double eps2){
+static inline int isc5(const mol * m, const double u[3], double eps2){
   double R[9];
   rotmx(R, u, 0.4*M_PI);
   return iscn(m, R, eps2);
 }
 
-static inline int isc4(mol * m, double u[3], double eps2){
+static inline int isc4(const mol * m, const double u[3], double eps2){
   double R[9];
   rotmx(R, u, M_PI_2);
   return iscn(m, R, eps2);
 }
 
-static inline int isc3(mol * m, double u[3], double eps2){
+static inline int isc3(const mol * m, const double u[3], double eps2){
   const double s = sqrt(3.0)*0.5;
   double R[9] = {-0.5    + u[0]*u[0]*1.5,   -u[2]*s + u[0]*u[1]*1.5,    u[1]*s + u[0]*u[2]*1.5,
                   u[2]*s + u[0]*u[1]*1.5,   -0.5    + u[1]*u[1]*1.5,   -u[0]*s + u[1]*u[2]*1.5,
@@ -70,14 +70,14 @@ static inline int isc3(mol * m, double u[3], double eps2){
   return iscn(m, R, eps2);
 }
 
-static inline int isc2(mol * m, double u[3], double eps2){
+static inline int isc2(const mol * m, const double u[3], double eps2){
   double R[9] = {2.0*u[0]*u[0]-1.0, 2.0*u[0]*u[1],     2.0*u[0]*u[2],
                  2.0*u[0]*u[1],     2.0*u[1]*u[1]-1.0, 2.0*u[1]*u[2],
                  2.0*u[0]*u[2],     2.0*u[1]*u[2],     2.0*u[2]*u[2]-1.0};
   return iscn(m, R, eps2);
 }
 
-static void issigma(mol * m, molsym * ms, double a[3], int S, double eps2){
+static void issigma(const mol * m, const molsym * ms, const double a[3], int S, double eps2){
   double r[3];
   int j;
   for(j=0; j<m->n; j++){
@@ -98,7 +98,7 @@ static void issigma(mol * m, molsym * ms, double a[3], int S, double eps2){
   return;
 }
 
-static inline void r3perp(double u[3], double v[3], double eps){
+static inline void r3perp(double u[3], const double v[3], double eps){
   if((fabs(v[0])<eps) && (fabs(v[1])<eps)){
     uv100(u);
   }
@@ -119,8 +119,8 @@ static inline void sort3(double d[3], double b[2]){
   return;
 }
 
-static int findc3(mol * m, double axis[30], double eps2){
-  int p=0, n = 0;
+static int findc3(const mol * m, double axis[30], double eps2){
+  int p=0, n=0;
   for(int i=0; i<m->n; i++){
     for(int j=i+1; j<m->n; j++){
       for(int k=j+1; k<m->n; k++){
@@ -160,10 +160,9 @@ static int findc3(mol * m, double axis[30], double eps2){
   return n;
 }
 
-static int findc2inI(mol * m, double c3[30], double c2[3], double eps2){
-  int i,j,p;
-  for(i=0; i<10; i++){
-    for(j=0; j<10; j++){
+static int findc2inI(const mol * m, const double c3[30], double c2[3], double eps2){
+  for(int i=0; i<10; i++){
+    for(int j=0; j<10; j++){
       int mi, mj;
       for(mi=-1; mi<2; mi+=2){
         for(mj=-1; mj<2; mj+=2){
@@ -172,7 +171,7 @@ static int findc2inI(mol * m, double c3[30], double c2[3], double eps2){
           r3cpsc(cj, c3+3*j, mj);
           r3sum(c2, ci, cj);
           r3scal(c2, 1.0/sqrt(r3dot(c2,c2)));
-          p = isc2(m, c2, eps2);
+          int p = isc2(m, c2, eps2);
           if(p){
             return p;
           }
@@ -183,7 +182,7 @@ static int findc2inI(mol * m, double c3[30], double c2[3], double eps2){
   return 0;
 }
 
-static void findc2(mol * m, molsym * ms, int Cn, int C2, double eps2){
+static void findc2(const mol * m, molsym * ms, int Cn, int C2, double eps2){
 
   double * mainaxis = ms->r+Cn*3;
   double   testaxis[3];
@@ -208,7 +207,7 @@ static void findc2(mol * m, molsym * ms, int Cn, int C2, double eps2){
   return;
 }
 
-static void findsigmav(mol * m, molsym * ms, int Cn, int C2, double eps2){
+static void findsigmav(const mol * m, molsym * ms, int Cn, int C2, double eps2){
 
   double * mainaxis = ms->r+Cn*3;
   double   testaxis[3];
@@ -218,8 +217,7 @@ static void findsigmav(mol * m, molsym * ms, int Cn, int C2, double eps2){
   double sector = M_PI    / ms->o[Cn];
   double dphi   = sector/(stesp+1);
 
-  int i;
-  for(i=0; i<stesp; i++){
+  for(int i=0; i<stesp; i++){
     double rot[9];
     double newtestaxis[3];
     rotmx(rot, mainaxis,  dphi*i);
@@ -232,7 +230,7 @@ static void findsigmav(mol * m, molsym * ms, int Cn, int C2, double eps2){
   return;
 }
 
-static void issn(mol * m, molsym * ms, int n, double eps2){
+static void issn(const mol * m, molsym * ms, int n, double eps2){
   double * u  = ms->r+n*3;
   double R[9];
   double r[3];
@@ -253,9 +251,8 @@ static void issn(mol * m, molsym * ms, int n, double eps2){
   return;
 }
 
-static void hascn(mol * m, molsym * cn, int k, double eps2){
-  int i;
-  for(i=MAXCN; i>1; i--){
+static void hascn(const mol * m, molsym * cn, int k, double eps2){
+  for(int i=MAXCN; i>1; i--){
     double f = 2.0*M_PI/i;
     double c = cos(f);
     double s = sin(f);
@@ -288,7 +285,7 @@ static void hascn(mol * m, molsym * cn, int k, double eps2){
   return;
 }
 
-static void hassigma(mol * m, molsym * cn, int k, double eps2){
+static void hassigma(const mol * m, molsym * cn, int k, double eps2){
   int i,j;
   double r[3];
   for(i=0; i<3; i++){
@@ -311,24 +308,21 @@ static void hassigma(mol * m, molsym * cn, int k, double eps2){
   return;
 }
 
-static int hasinv(mol * m, double eps2){
-  int i;
-  for(i=0; i<m->n; i++){
+static int hasinv(const mol * m, double eps2){
+  for(int i=0; i<m->n; i++){
     double r[3];
-    r3cp(r, m->r+i*3);
-    r3scal(r, -1.0);
-    if( isnew(m->n, m->r, r, eps2)){
+    r3cpsc(r, m->r+i*3, -1.0);
+    if(isnew(m->n, m->r, r, eps2)){
       return 0;
     }
   }
   return 1;
 }
 
-static int findc5(mol * m, double c3[30], double c5[3], double eps2){
-  int i,j,k,p;
-  for(i=0; i<10; i++){
-    for(j=i+1; j<10; j++){
-      for(k=j+1; k<10; k++){
+static int findc5(const mol * m, const double c3[30], double c5[3], double eps2){
+  for(int i=0; i<10; i++){
+    for(int j=i+1; j<10; j++){
+      for(int k=j+1; k<10; k++){
         double ci[3], cj[3], ck[3];
         int mi, mj, mk;
         for(mi=-1; mi<2; mi+=2){
@@ -346,7 +340,7 @@ static int findc5(mol * m, double c3[30], double c5[3], double eps2){
                 continue;
               }
               r3scal(h, 1.0/sqrt(t));
-              p = isc5(m, h, eps2);
+              int p = isc5(m, h, eps2);
               if(p){
                 r3cp(c5, h);
                 return p;
@@ -371,16 +365,12 @@ molsym * pointgroup(mol * m, double eps){
   double d[3];
   position(m, d, 0);
   /* Kh, D*h, C*v */
-  int i = 0.0;
-  if(d[0]<eps) i++;
-  if(d[1]<eps) i++;
-  if(d[2]<eps) i++;
-
-  if(i==3){
+  int dim0 = (d[0]<eps) + (d[1]<eps) + (d[2]<eps);
+  if(dim0==3){
     snprintf(ms->s, sizeof(styp), "Kh");
     return ms;
   }
-  if(i==1){
+  if(dim0==1){
     if(hasinv(m, eps2)){
       snprintf(ms->s, sizeof(styp), "D*h");
       return ms;

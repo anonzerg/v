@@ -2,15 +2,15 @@
 #include "vec3.h"
 #define SIGN(X) ((X>=0.0 ? 1.0 : -1.0))
 
-double intcoord_calc(int r_units_a, int check_n, int z[5], double * r){
+double intcoord_calc(int r_units_a, int check_n, const int z[5], const double * r){
   if(z[1]>check_n || z[2]>check_n || z[3]>check_n || z[4]>check_n){
     return -1.0;
   }
   double t;
-  double * a1 = r+(z[1]-1)*3;
-  double * a2 = r+(z[2]-1)*3;
-  double * a3 = r+(z[3]-1)*3;
-  double * a4 = r+(z[4]-1)*3;
+  const double * a1 = r+(z[1]-1)*3;
+  const double * a2 = r+(z[2]-1)*3;
+  const double * a3 = r+(z[3]-1)*3;
+  const double * a4 = r+(z[4]-1)*3;
   double v1[3], v2[3], v3[3], v4[3], v5[3], v1x3[3];
   switch(z[0]){
     case 3 :

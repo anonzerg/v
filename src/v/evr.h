@@ -11,14 +11,14 @@
 
 #define MOL_IDX(DP) (DP->task == AT3COORDS ? DP->n : 0)
 
-static inline void fill_bonds(atcoord * m, drawpars * dp){
+static inline void fill_bonds(atcoord * m, const drawpars * dp){
   if(dp->rend.bonds>0){
     bonds_fill(dp->bond, m);
   }
   return;
 }
 
-static inline void rotate_mol(atcoord * m, drawpars * dp){
+static inline void rotate_mol(atcoord * m, const drawpars * dp){
   if(!m->rotated){
     rot3d(m->n, m->r, m->r0, dp->rend.ac3rmx);
     m->rotated = 1;

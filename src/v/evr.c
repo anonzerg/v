@@ -194,7 +194,7 @@ void kp_rotz_r(object * ent, drawpars * dp){
   return;
 }
 
-static void move_pbc(atcoord * m, drawpars * dp, double dr[3]){
+static void move_pbc(atcoord * m, const drawpars * dp, const double dr[3]){
   for(int j=0; j<m->n; j++){
     r3add(m->r0+j*3, dr);
   }
@@ -334,7 +334,7 @@ void time_gone(object * ent, drawpars * dp){
   return;
 }
 
-static void savevib(drawpars * dp, int c){
+static void savevib(const drawpars * dp, int c){
   char s[STRLEN];
   int  l = (int)(log10( dp->N + 0.5 )) + 1;
   snprintf(s, sizeof(s), "%s_%0*d_%02d.xpm", dp->read.fname, l, dp->n+1, c);
@@ -350,7 +350,7 @@ static void savevib(drawpars * dp, int c){
 void kp_savepic(object * ent, drawpars * dp){
   char s[STRLEN];
   int  l = (int)(log10(dp->N+0.5))+1;
-  atcoord * m = ent->m[dp->n];
+  const atcoord * m = ent->m[dp->n];
   if(m->cell.boundary==CELL){
     static int i = 0;
     snprintf(s, sizeof(s), "%s_%0*d.%02d.xpm", m->fname, l, dp->n+1, i++);

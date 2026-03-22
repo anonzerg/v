@@ -73,7 +73,7 @@ atcoord * atcoord_fill(mol * m0, const render_bonds_t b, const geompars geom, co
 atcoord * ac3_read(readpars read, const render_bonds_t b, const geompars geom, format_t * format);
 mol * ac3_read_in (FILE * f);
 mol * ac3_read_out(FILE * f);
-mol * ac3_read_xyz(FILE * f, int * lattice_found, double * lattice);
+mol * ac3_read_xyz(FILE * f, int * cell_found, double * cell);
 
 // man.c
 void printman(FILE * f, char * exename);
@@ -98,9 +98,9 @@ void bonds_fill(bondpars bond, atcoord * ac);
 
 // get_atpar.c
 double getradius(int q);
-double getmaxradius(int n, int * q);
+double getmaxradius(int n, const int * q);
 const char * getname(int q);
-int get_element(char * s);
+int get_element(const char * s);
 
 // x.c
 void close_x      (void);
@@ -108,8 +108,8 @@ void init_x       (const char * const capt, const colorscheme_t colorscheme);
 void init_font    (char * fontname);
 void textincorner (const char * const lines[MAX_LINES], const int red[MAX_LINES]);
 void setcaption   (const char * const capt);
-void draw_vertices(double * v, rendpars * rend);
-void draw_shell   (double r[2], rendpars * rend);
+void draw_vertices(const double v[8*3], rendpars * rend);
+void draw_shell   (const double r[2], rendpars * rend);
 int  savepic      (char * s);
 void clear_canv();
 void fill_canv();

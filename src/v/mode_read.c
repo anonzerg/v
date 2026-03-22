@@ -7,8 +7,8 @@
 
 vibr_t * make_vibr_t(int n_modes, int n_atoms){
   size_t freq_size = sizeof(double) * n_modes;
-  size_t ints_size = sizeof(double) * n_modes;
-  size_t mass_size = sizeof(double) * n_modes;
+  size_t ints_size = freq_size;
+  size_t mass_size = freq_size;
   size_t disp_size = sizeof(double) * n_modes*n_atoms*3;
   size_t size = sizeof(vibr_t) + freq_size + disp_size + ints_size + mass_size;
   vibr_t * v = malloc(size);
@@ -53,7 +53,7 @@ static int readb(FILE * f, int i, int Nmax, int N, int na, vibr_t * vib){
   return 0;
 }
 
-int summary_read(FILE * f, vibr_t * vib){
+static int summary_read(FILE * f, vibr_t * vib){
   char s[STRLEN];
   for(int i=0; i<vib->n; i++){
     fgets(s, sizeof(s), f);

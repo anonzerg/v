@@ -31,7 +31,7 @@ static double get_mass(int q){
   }
 }
 
-void center_mol(int n, double * r, int * q){
+void center_mol(int n, double * r, const int * q){
   double c[3] = {0,0,0};
   double s = 0.0;
   for(int i=0; i<n; i++){
@@ -51,9 +51,9 @@ void center_mol(int n, double * r, int * q){
 }
 
 void position(mol * m, double d[3], int preserve_chirality){
+  double _d[3];
   if(!d){
-    double d1[3];
-    d = d1;
+    d = _d;
   }
   center_mol(m->n, m->r, m->q);
   double I_t[6]={};

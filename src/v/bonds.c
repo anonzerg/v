@@ -15,7 +15,7 @@ static int cmpint(const void * p1, const void * p2){
 }
 
 static void makelist(int bsize_max, int * bsize, int * list,
-    double d, int box_n[3], double rmin[3], atcoord * ac){
+    double d, const int box_n[3], const double rmin[3], const atcoord * ac){
 
   for(int i=0; i<ac->n; i++){
     double r[3];

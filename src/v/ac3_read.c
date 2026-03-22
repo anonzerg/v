@@ -50,7 +50,7 @@ atcoord * atcoord_fill(mol * m0, const render_bonds_t b, const geompars geom, co
 
   size_t q_size = sizeof(int   ) * n;
   size_t r_size = sizeof(double) * n*3;
-  size_t r0_size = sizeof(double) * n*3;
+  size_t r0_size = r_size;
   struct {size_t r_size; size_t a_size;} bonds = {0, 0};
   if(b!=DISABLE_BONDS){
     bonds.a_size = sizeof(int   ) * n*BONDS_MAX;

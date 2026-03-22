@@ -37,7 +37,7 @@ double getradius(int q){
   return ra[ q<=NRADII ? q : ( q<=NATOMS? NRADII : 0) ];
 }
 
-double getmaxradius(int n, int * q){
+double getmaxradius(int n, const int * q){
   double r = 0.0;
   for(int i=0; i<n; i++){
     r = MAX(r, getradius(q[i]));
@@ -49,7 +49,7 @@ const char * getname(int q){
   return abs(q)<=NATOMS ? aname[abs(q)]: NULL;
 }
 
-int get_element(char * s){
+int get_element(const char * s){
 
   char * s_end;
   long q = strtol(s, &s_end, 10);
@@ -59,11 +59,11 @@ int get_element(char * s){
 
   styp ts = "";
   ts[0] = toupper(s[0]);
-  for(int i=1; s[i] && i<sizeof(ts); i++){
+  for(int i=1; i<sizeof(ts) && s[i]; i++){
     ts[i] = tolower(s[i]);
   }
 
-  for(int q=1; q<=NATOMS; q++){
+  for(q=1; q<=NATOMS; q++){
     if(!strncmp(ts, aname[q], NAMELEN)){
       return q;
     }

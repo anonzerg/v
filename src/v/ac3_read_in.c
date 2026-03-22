@@ -93,7 +93,7 @@ mol * ac3_read_in(FILE * f){
     if(!fgets(s, sizeof(s), f)){
       goto hell;
     }
-    char * s0 = s;
+    const char * s0 = s;
     while(s0[0] && (s0[0]==' ' || s[0]=='\t')){
       s0++;
     }
