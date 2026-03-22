@@ -407,12 +407,10 @@ void kp_film(object * ent, drawpars * dp){
 }
 
 void kp_pg(object * ent, drawpars * dp){
-  if(dp->task == AT3COORDS){
-    atcoord * ac = ent->m[dp->n];
-    if(!ac->sym[0]){
-      pg(ac, dp->anal.symtol);
-      redraw_ac3(ent, dp);
-    }
+  atcoord * ac = ent->m[dp->task == AT3COORDS ? dp->n : 0];
+  if(!ac->sym[0]){
+    pg(ac, dp->anal.symtol);
+    exp_redraw(ent, dp);
   }
   return;
 }

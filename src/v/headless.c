@@ -68,11 +68,9 @@ static void run_command(char c, drawpars * dp, object * ent){
     case('u'):
       kp_printrot(ent, dp); break;
     case('.'):
-      {
-        atcoord * ac = ent->m[dp->n];
-        pg(ac, dp->anal.symtol);
-        PRINTOUT(stdout, "%s\n", ac->sym);
-      }; break;
+      kp_pg(ent, dp);
+      PRINTOUT(stdout, "%s\n", ent->m[dp->n]->sym);
+      break;
     case(' '):
     case('\n'):
       break;
