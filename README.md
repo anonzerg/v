@@ -21,7 +21,7 @@ See python package page
 Provides wrapper scripts with a simple installation and
 allows to open unsupported file formats with `cclib`.
 
-## Download [↑](#download)
+## Download
 ```bash
 # uncomment your OS:
 #OS=Linux
@@ -30,7 +30,7 @@ wget https://github.com/briling/v/releases/latest/download/v.${OS}.exe --output-
 chmod +x ./v
 ```
 
-## Build [↑](#contents)
+## Build
 
 See build [instructions](BUILD.md).
 
@@ -39,7 +39,7 @@ See build [instructions](BUILD.md).
 * `GNU/Linux` / `Cygwin` / `macOS`
 * `X11` / `XQuartz`
 
-## Usage [↑](#contents)
+## Usage
 ```
 ./v file [file2 ... fileN] [options]
 ```
@@ -247,10 +247,10 @@ Spherical confinement can be specified from the command-line by the following:
 </details>
 
 
-## Examples [↑](#contents)
+## Examples
 * `mol/C3H6~mCPBA_01x11.qm.out` — geometries + vibrations
 ```
-./v mol/C3H6~mCPBA_01x11.qm.out 
+./v mol/C3H6~mCPBA_01x11.qm.out
 ```
 ![Transition state mode animation](fig/C3H6~mCPBA_01x11.qm.out_01.gif)
 ```
@@ -259,22 +259,22 @@ Spherical confinement can be specified from the command-line by the following:
 ![Transition state optimization](fig/C3H6~mCPBA_01x11.qm.out_03.png)
 * `mol/S8.qm.out`     — geometries
 ```
-./v mol/S8.qm.out z:1,1,2,0,0 
+./v mol/S8.qm.out z:1,1,2,0,0
 ```
 ![S8 equilibrium structure](fig/S8.qm.out_69.png)
 * `mol/C10H16.qm.out` — vibrations
 ```
-./v mol/C10H16.qm.out 
+./v mol/C10H16.qm.out
 ```
 ![Adamantane mode animation](fig/C10H16.qm.out_72.gif)
 * `mol/1372_D02.340_1.out` — PBC simulation
 ```
-./v mol/1372_D02.340_1.out bonds:0 cell:b10.7 
+./v mol/1372_D02.340_1.out bonds:0 cell:b10.7
 ```
 ![Atoms in cell with PBC](fig/1372_D02.340_1.out_1024.gif)
 * `mol/mol0001.xyz`, `mol/mol0002.xyz` — `.xyz` files with atomic numbers and atomic symbols
 ```
-./v mol/mol0001.xyz mol/mol0002.xyz symtol:1e-2 
+./v mol/mol0001.xyz mol/mol0002.xyz symtol:1e-2
 ```
 ![Dimethyl ether structure](fig/mol0002.xyz_3.png)
 
@@ -283,11 +283,11 @@ Spherical confinement can be specified from the command-line by the following:
 ./v mol/MOL_3525.ext.xyz
 ```
 ```
-./v mol/MOL_3525.xyz cell:8.929542,0.0,0.0,4.197206,8.892922,0.0,0.480945,2.324788,10.016044 
+./v mol/MOL_3525.xyz cell:8.929542,0.0,0.0,4.197206,8.892922,0.0,0.480945,2.324788,10.016044
 ```
 ![Organic crystal cell](fig/MOL_3525.xyz_1.gif)
 
-* Currently two colorschemes are supported 
+* Currently two colorschemes are supported
   (thanks to [@iribirii](https://github.com/iribirii))
 ```
 v mol/periodic.in bonds:0 colors:v    # default
