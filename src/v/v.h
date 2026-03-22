@@ -81,11 +81,11 @@ void printman(FILE * f, char * exename);
 allpars cli_parse(int argc, char ** argv);
 
 // loop.c
+void wait_for_configure(object * ent, drawpars * dp);
 void main_loop(object * ent, drawpars * dp, ptf kp[NKP]);
 
 // redraw.c
-void redraw_ac3(object * ent, drawpars * dp);
-void redraw_vibro(object * ent, drawpars * dp);
+void exp_redraw(object * ent, drawpars * dp);
 
 // ac3_draw.c
 void ac3_draw     (atcoord * ac, rendpars * rend);

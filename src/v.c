@@ -85,10 +85,10 @@ int main (int argc, char * argv[]) {
     dp->n = dp->n%dp->N;
   }
   else if(dp->n<0){
-    dp->n = dp->N-((-dp->n+1)%dp->N)-1;
+    dp->n = dp->N-((-dp->n-1)%dp->N);
   }
 
-  if(!ap.ip.gui){
+  if(dp->ui.gui==GUI_DISABLED){
     return headless(dp, ent);
   }
 
@@ -97,6 +97,11 @@ int main (int argc, char * argv[]) {
   init_x(dp->read.fname, ap.ip.colors);
   init_keys(kp);
   init_font(ap.ip.fontname);
+
+  dp->ui.gui = GUI_TEMP_DISABLED;
+  wait_for_configure(ent, dp);
+  run_commands(NULL, ap.ip.on_startup, dp, ent);
+  dp->ui.gui = GUI_ENABLED;
 
   /*= Main loop ==============================================================*/
   main_loop(ent, dp, kp);

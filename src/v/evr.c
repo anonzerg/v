@@ -12,7 +12,7 @@ void kp_readmore(object * ent, drawpars * dp){
     fseek(dp->read.f, 0, SEEK_CUR);
     acs_readmore(dp->read, dp->rend.bonds, dp->geom, ent);
     dp->N = ent->n;
-    redraw_ac3 (ent, dp);
+    exp_redraw (ent, dp);
   }
   return;
 }
@@ -31,7 +31,7 @@ void kp_readagain(object * ent, drawpars * dp){
     ent->n = dp->N = dp->n = 0;
     acs_readmore(dp->read, dp->rend.bonds, dp->geom, ent);
     dp->N = ent->n;
-    redraw_ac3 (ent, dp);
+    exp_redraw (ent, dp);
   }
   return;
 }
@@ -137,7 +137,7 @@ void kp_frame_dec(object * ent, drawpars * dp){
   return;
 }
 
-void rot_ent_pointer(object * ent __attribute__ ((unused)), drawpars * dp, int dx, int dy, double speed){
+void rot_ent_pointer(object * ent, drawpars * dp, int dx, int dy, double speed){
   double mx[9];
   rot_around_perp(mx, (double)dx, (double)dy, speed);
   mx3_lmultmx(mx, dp->rend.ac3rmx);
@@ -147,7 +147,7 @@ void rot_ent_pointer(object * ent __attribute__ ((unused)), drawpars * dp, int d
   return;
 }
 
-static void rot_ent(object * ent __attribute__ ((unused)), drawpars * dp, int axis, double angle){
+static void rot_ent(object * ent, drawpars * dp, int axis, double angle){
   if(dp->ui.modkey){
     angle *= STEP_MOD;
   }
@@ -265,7 +265,7 @@ void kp_exit(object * ent, drawpars * dp){
   obj_free(ent);
   close_x();
   CLOSE0(dp->read.f);
-  dp->ui.closed = 1;
+  dp->ui.closed = READY_TO_EXIT;
 }
 
 void kp_fw_toggle(object * ent __attribute__ ((unused)), drawpars * dp){
@@ -324,26 +324,12 @@ void kp_goto_1st(object * ent, drawpars * dp){
   return;
 }
 
-void exp_redraw(object * ent, drawpars * dp){
-  switch (dp->task){
-    case AT3COORDS:
-      redraw_ac3(ent, dp);
-      break;
-    case VIBRO:
-      redraw_vibro(ent, dp);
-      break;
-    default:
-      break;
-  }
-  return;
-}
-
 void time_gone(object * ent, drawpars * dp){
   if(dp->task == VIBRO){
     if(dp->anim.t >= TMAX){
       dp->anim.t = dp->anim.t-TMAX;
     }
-    redraw_vibro(ent, dp);
+    exp_redraw(ent, dp);
   }
   return;
 }
@@ -361,11 +347,18 @@ static void savevib(drawpars * dp, int c){
   return;
 }
 
-void kp_savepic(object * ent __attribute__ ((unused)), drawpars * dp){
+void kp_savepic(object * ent, drawpars * dp){
   char s[STRLEN];
   int  l = (int)(log10(dp->N+0.5))+1;
-  atcoord * ac = ent->m[dp->n];
-  snprintf(s, sizeof(s), "%s_%0*d.xpm", ac->fname, l, dp->n+1);
+  atcoord * m = ent->m[dp->n];
+  if(m->cell.boundary==CELL){
+    static int i = 0;
+    snprintf(s, sizeof(s), "%s_%0*d.%02d.xpm", m->fname, l, dp->n+1, i++);
+  }
+  else{
+    snprintf(s, sizeof(s), "%s_%0*d.xpm", m->fname, l, dp->n+1);
+  }
+  exp_redraw(ent, dp);
   if(savepic(s)){
     fprintf(stderr, "%s\n", s);
   }
@@ -387,6 +380,7 @@ void kp_film(object * ent, drawpars * dp){
     int c = 0;
     dp->anim.t = 0;
     do{
+      exp_redraw(ent, dp);
       savevib(dp, c);
       dp->anim.t++;
       time_gone(ent, dp);
@@ -396,12 +390,10 @@ void kp_film(object * ent, drawpars * dp){
 }
 
 void kp_pg(object * ent, drawpars * dp){
-  if(dp->task == AT3COORDS){
-    atcoord * ac = ent->m[dp->n];
-    if(!ac->sym[0]){
-      pg(ac, dp->anal.symtol);
-      redraw_ac3(ent, dp);
-    }
+  atcoord * m = ent->m[MOL_IDX(dp)];
+  if(!m->sym[0]){
+    pg(m, dp->anal.symtol);
+    exp_redraw(ent, dp);
   }
   return;
 }

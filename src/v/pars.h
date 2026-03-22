@@ -40,13 +40,24 @@ typedef enum {
   CENTER_MASS,
 } center_t;
 
+typedef enum {
+  MUST_CLEANUP=-1,
+  CONTINUE_WORKING=0,
+  READY_TO_EXIT,
+} exit_t;
+
+typedef enum {
+  GUI_TEMP_DISABLED=-1,
+  GUI_DISABLED=0,
+  GUI_ENABLED=1,
+} gui_t;
 
 typedef struct {
   colorscheme_t  colors;   // colorscheme (v or cpk)
-  int               gui;   // if gui is enabled
   int     input_files_n;   // number of input files
   char       * fontname;   // font
   char   ** input_files;   // input files
+  char     * on_startup;   // command string to run on startup
 } initpars;
 
 typedef struct {
@@ -64,10 +75,11 @@ typedef struct {
 } geompars;
 
 typedef struct {
-  char   input_text[STRLEN];
+  char    input_text[STRLEN];
   char  * com;           // command string for gui:0
   char  * on_exit;       // command string to run on exit
-  int     closed;        // whether it's time to go
+  exit_t  closed;        // closing state
+  gui_t   gui;           // gui state
   input_t input;         // input regime
   int     modkey;        // whether ctrl or shift are pressed
 } uipars;

@@ -30,9 +30,10 @@ void printman(FILE * f, char * exename){
   shell:%%lf[,%%lf]                                sphere(s) radii in Å \n\
   center:%%d                                      origin is geometric center (1, default) / center of mass (2) / as is (0) \n\
   inertia:%%d                                     if rotate molecules wrt axis of inertia (1) or not (0, default) \n\n\
-  gui:%%d                                         normal (1, default) / headless (0) mode \n\
+  gui:%%d                                         gui (1, default) / headless (0) mode \n\
   com:%%s                                         command sequence for gui:0 \n\
   exitcom:%%s                                     command sequence to run on exit (same as for gui:0) \n\
+  startcom:%%s                                    command sequence to run on startup \n\
   \n\
  KEYBOARD REFERENCE:\n\
   \n\

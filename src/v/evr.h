@@ -9,6 +9,8 @@
 #define STEP_MOD   0.03125
 #define RL_MOVE_PBC_SCALE 0.9
 
+#define MOL_IDX(DP) (DP->task == AT3COORDS ? DP->n : 0)
+
 static inline void fill_bonds(atcoord * m, drawpars * dp){
   if(dp->rend.bonds>0){
     bonds_fill(dp->bond, m);
@@ -59,7 +61,6 @@ void kp_fw_toggle(object * ent, drawpars * dp);
 void kp_bw_toggle(object * ent, drawpars * dp);
 void kp_goto_last(object * ent, drawpars * dp);
 void kp_goto_1st (object * ent, drawpars * dp);
-void exp_redraw  (object * ent, drawpars * dp);
 void time_gone   (object * ent, drawpars * dp);
 void kp_savepic  (object * ent, drawpars * dp);
 void kp_film     (object * ent, drawpars * dp);

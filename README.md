@@ -2,7 +2,7 @@
 
 A simple X11 molecular viewer.
 
-![Animation of 128 molecules](figures/intro.gif)
+![Animation of 128 molecules](fig/intro.gif)
 
 ---
 
@@ -81,9 +81,11 @@ Show the reference:
 | `shell:%%lf[,%%lf]                          | sphere(s) radii in Å                                     |
 | `center:%d`                                 | origin is geometric center (`1`, default) / center of mass (`2`) / as is (`0`) |
 | `inertia:%d`                                | if rotate molecules wrt axis of inertia (`1`) or not (`0`, default) |
-| `gui:%d`                                    | normal (default `1`) / headless (`0`) mode               |
+| `gui:%d`                                    | gui (default `1`) / headless (`0`) mode               |
 | `com:%s`                                    | command sequence for `gui:0`                             |
 | `exitcom:%s`                                | command sequence to run on exit (same as for `gui:0`)    |
+| `startcom:%s`                               | command sequence to run on startup                       |
+
 
 </details>
 
@@ -136,7 +138,7 @@ One can also use the mouse to rotate the molecule and zoom in/out.
 #### Headless mode
 
 If run in the headless mode with `gui:0`, the symbols from the standard input are processed
-as if the corresponding keys were pressed in the normal mode.
+as if the corresponding keys were pressed in the gui mode.
 Right now, `p`, `x`, `z`, `u`, and `.` are available.
 Command-line option `com:%s` overrides the standard input.
 These examples are equivalent:
@@ -151,15 +153,51 @@ D*h
 D*h
 ```
 
-#### Normal mode
-In the normal mode, the symbols from the CLI option `exitcom:` are executed immediately before closing.
+#### GUI mode
+In the GUI mode, the symbols from the CLI option `exitcom:` are executed immediately before closing.
 For example,
 ```
 ./v mol/mol0001.xyz exitcom:z
 ```
 automatically prints the last xyz coordinates when the user closes the window.
 
+The symbols from the CLI option `startcom:` are executed before the main loop.
+For example,
+```
+./v mol/mol0001.xyz startcom:aaaaaaa
+```
+moves the molecule to the left, and
+```
+./v mol/mol0001.xyz startcom:.mq
+```
+opens the file, computes the point group, save a picture to `mol/mol0001.xyz_1.xpm` and closes the window.
+For other examples, see [fig/regenerate.bash](fig/regenerate.bash) for the commands used to generate the figures on this page.
 
+> [!NOTE]
+> The size depends on my screen and window layout, you might need to adjust the number of move/zoom in commands or the window size.
+
+> [!WARNING]
+> Currently this option is unstable. Please let me know if you encounter any problems.
+
+<details><summary><strong>Click to see currently available commands</strong></summary>
+
+
+| CLI regime symbol  | GUI keyboard command  |                   | GUI (`exitcom:`/`startcom:`) | headless (`com`) |
+| ------------------ | --------------------- | ----------------- | ---------------------------- | ---------------- |
+| `w`/`a`/`s`/`d`    | `w`/`a`/`s`/`d`       | move              | +                            |                  |
+| `+` / `-`          | `home`/`end`          | zoom              | +                            |                  |
+| `>`                | `ins`                 | animate           | +                            |                  |
+| `3`/`4`            | `3`/`4`               | scale atom sizes  | +                            |                  |
+| `n`/`t`/`l`        | `n`/`t`/`l`           | toggle atom view  | +                            |                  |
+| `m`/`f`            | `m`/`f`               | saving frame(s)   | +                            |                  |
+| `q`                | `q`                   | quit              | +                            |                  |
+| `1`/`2`            | `1`/`2`               | scale bonds       | +                            | +                |
+| `b`/`l`            | `b`/`l`               | toggle bond view  | +                            | +                |
+| `.`                | `.`                   | point group       | +                            | +                |
+| `x`,`z`,`p`,`u`    | `x`,`z`,`p`,`u`       | printing          | +                            | +                |
+
+
+</details>
 
 
 ### Boundary conditions
@@ -208,47 +246,54 @@ Spherical confinement can be specified from the command-line by the following:
 ## Examples [↑](#contents)
 * `mol/C3H6~mCPBA_01x11.qm.out` — geometries + vibrations
 ```
-./v mol/C3H6~mCPBA_01x11.qm.out font:-*-*-medium-*-*--15-*-*-*-*-*-*-1
+./v mol/C3H6~mCPBA_01x11.qm.out 
 ```
-![Transition state mode animation](figures/C3H6~mCPBA_01x11.qm.out.gif)
+![Transition state mode animation](fig/C3H6~mCPBA_01x11.qm.out_01.gif)
 ```
 ./v mol/C3H6~mCPBA_01x11.qm.out vib:0 z:1,23,24,0,0
 ```
-![Transition state optimization](figures/C3H6~mCPBA_01x11.qm.out_03.gif)
+![Transition state optimization](fig/C3H6~mCPBA_01x11.qm.out_03.png)
 * `mol/S8.qm.out`     — geometries
 ```
-./v mol/S8.qm.out z:1,1,2,0,0 font:-*-*-medium-*-*--15-*-*-*-*-*-*-1
+./v mol/S8.qm.out z:1,1,2,0,0 
 ```
-![S8 equilibrium structure](figures/S8.qm.out_69.gif)
+![S8 equilibrium structure](fig/S8.qm.out_69.png)
 * `mol/C10H16.qm.out` — vibrations
 ```
-./v mol/C10H16.qm.out font:-*-*-medium-*-*--15-*-*-*-*-*-*-1
+./v mol/C10H16.qm.out 
 ```
-![Adamantane mode animation](figures/C10H16.qm.out.gif)
+![Adamantane mode animation](fig/C10H16.qm.out_72.gif)
 * `mol/1372_D02.340_1.out` — PBC simulation
 ```
-./v mol/1372_D02.340_1.out bonds:0 cell:b10.7 font:-*-*-medium-*-*--15-*-*-*-*-*-*-1
+./v mol/1372_D02.340_1.out bonds:0 cell:b10.7 
 ```
-![Atoms in cell with PBC](figures/1372_D02.340_1.out_1087.gif)
+![Atoms in cell with PBC](fig/1372_D02.340_1.out_1024.gif)
 * `mol/mol0001.xyz`, `mol/mol0002.xyz` — `.xyz` files with atomic numbers and atomic symbols
 ```
-./v mol/mol0001.xyz mol/mol0002.xyz symtol:1e-2 font:-*-*-medium-*-*--15-*-*-*-*-*-*-1
+./v mol/mol0001.xyz mol/mol0002.xyz symtol:1e-2 
 ```
-![Dimethyl ether structure](figures/mol0002.xyz_3.gif)
+![Dimethyl ether structure](fig/mol0002.xyz_3.png)
 
 * `mol/MOL_3525.xyz` — organic crystal with non-orthogonal cell
 ```
 ./v mol/MOL_3525.ext.xyz
 ```
 ```
-./v mol/MOL_3525.xyz cell:8.929542,0.0,0.0,4.197206,8.892922,0.0,0.480945,2.324788,10.016044 font:-*-*-medium-*-*--15-*-*-*-*-*-*-1
+./v mol/MOL_3525.xyz cell:8.929542,0.0,0.0,4.197206,8.892922,0.0,0.480945,2.324788,10.016044 
 ```
-![Organic crystal cell](figures/MOL_3525.xyz_1.gif)
+![Organic crystal cell](fig/MOL_3525.xyz_1.gif)
 
----
-* Currently two colorschemes are supported (thanks to [@iribirii](https://))
+* Currently two colorschemes are supported 
+  (thanks to [@iribirii](https://github.com/iribirii))
 ```
 v mol/periodic.in bonds:0 colors:v    # default
 v mol/periodic.in bonds:0 colors:cpk
 ```
-![Periodic table of elements with animated change of colorschemes](figures/periodic.gif)
+![Periodic table of elements with animated change of colorschemes](fig/periodic.gif)
+
+---
+
+The figures are generated with
+```
+fig/regenerate.bash
+```

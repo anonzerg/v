@@ -66,8 +66,34 @@ static void run_animation(object * ent, drawpars * dp, int * tr){
   return;
 }
 
+static void configure_window(XConfigureEvent * xconfigure, object * ent, drawpars * dp){
+  world.W = xconfigure->width;
+  world.H = xconfigure->height;
+  world.size = MIN(world.H, world.W);
+  dp->rend.xy0[0] = dp->rend.xy0[1] = 0.0;
+  exp_redraw(ent, dp);
+  return;
+}
+
+void wait_for_configure(object * ent, drawpars * dp){
+  XEvent event_rec;
+  XEvent * event = &event_rec;
+  do{
+    XNextEvent(world.dis, event);
+#if 0
+      printf("%d\n", event_rec.type);
+#endif
+    if(event->type == ConfigureNotify){
+      configure_window(&event->xconfigure, ent, dp);
+      break;
+    }
+  } while(1);
+  return;
+}
+
 void main_loop(object * ent, drawpars * dp, ptf kp[NKP]){
 
+  exp_redraw(ent, dp);
   // To handle window closing. Thanks to https://stackoverflow.com/a/1186544
   Atom wm_delete_window = XInternAtom(world.dis, "WM_DELETE_WINDOW", False);
   XSetWMProtocols(world.dis, world.win, &wm_delete_window, 1);
@@ -101,23 +127,19 @@ void main_loop(object * ent, drawpars * dp, ptf kp[NKP]){
     }
 
     else if(event->type == ConfigureNotify){
-      world.W = event->xconfigure.width;
-      world.H = event->xconfigure.height;
-      world.size = MIN(world.H, world.W);
-      dp->rend.xy0[0] = dp->rend.xy0[1] = 0.0;
-      exp_redraw(ent, dp);
+      configure_window(&event->xconfigure, ent, dp);
     }
 
     else if(event->type == KeyPress) {
-      if(dp->ui.input!=NO_INPUT){
-        process_input(&(event->xkey), dp);
-        exp_redraw(ent, dp);
-      }
-      else{
+      if(dp->ui.input==NO_INPUT){
         if(kp[event->xkey.keycode]){
           dp->ui.modkey = event->xkey.state & (ShiftMask | ControlMask);
           kp[event->xkey.keycode](ent, dp);
         }
+      }
+      else{
+        process_input(&(event->xkey), dp);
+        exp_redraw(ent, dp);
       }
     }
 
@@ -149,7 +171,11 @@ void main_loop(object * ent, drawpars * dp, ptf kp[NKP]){
       process_mouse(&(event->xmotion), ent, dp, &mouse);
     }
 
-    if(dp->ui.closed){
+    if(dp->ui.closed==MUST_CLEANUP){
+      kp_exit(ent, dp);
+    }
+
+    if(dp->ui.closed==READY_TO_EXIT){
       return;
     }
 
