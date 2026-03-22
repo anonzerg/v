@@ -38,7 +38,7 @@ static void screen_text(object * ent, drawpars * dp){
   lines[il++] = text;
 
   if(m->nf[1]==ent->n){
-    lines[il++] = dp->read.fname;
+    lines[il++] = m->fname;
   }
   else{
     snprintf(text_fname, sizeof(text_fname), "%s (%*d / %d)", m->fname, 1+(int)(log10(m->nf[1])), m->nf[0]+1, m->nf[1]);

@@ -198,7 +198,6 @@ object * acs_from_var(int n, mol * m, vibr_t vib, allpars * ap){
       ent->m[i] = atcoord_fill(m+i, dp->rend.bonds, dp->geom, NULL);
     }
 
-    fill_nf(ent, 0);
     dp->rend.scale = acs_scale(ent);
     dp->N = ent->n;
 
@@ -221,8 +220,9 @@ object * acs_from_var(int n, mol * m, vibr_t vib, allpars * ap){
     dp->rend.scale = ac3_scale(ent->m[0]);
     dp->N = ent->vib->n;
     dp->anal.intcoord[0] = 0;
-    dp->read.fname = ent->m[0]->fname;
   }
+  fill_nf(ent, 0);
+  dp->read.fname = ent->m[0]->fname;
 
   return ent;
 }
