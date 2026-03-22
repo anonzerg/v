@@ -47,8 +47,8 @@ jobs:
         with:
           files: |
             ./wheelhouse/**/*.whl
-            ./wheelhouse/**/v
-            ./wheelhouse/**/v.so
+            ./wheelhouse/**/v.*.exe
+            ./wheelhouse/**/v.*.so
 
           body_path: .github/CHANGELOG.md
         env:
