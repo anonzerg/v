@@ -99,7 +99,7 @@ int main (int argc, char * argv[]) {
   init_font(ap.ip.fontname);
 
   dp->ui.gui = GUI_TEMP_DISABLED;
-  consume_events(ent, dp);
+  wait_for_configure(ent, dp);
   run_commands(NULL, ap.ip.on_startup, dp, ent);
   dp->ui.gui = GUI_ENABLED;
 

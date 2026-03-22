@@ -81,7 +81,7 @@ void printman(FILE * f, char * exename);
 allpars cli_parse(int argc, char ** argv);
 
 // loop.c
-void consume_events(object * ent, drawpars * dp);
+void wait_for_configure(object * ent, drawpars * dp);
 void main_loop(object * ent, drawpars * dp, ptf kp[NKP]);
 
 // redraw.c

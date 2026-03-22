@@ -137,7 +137,7 @@ void kp_frame_dec(object * ent, drawpars * dp){
   return;
 }
 
-void rot_ent_pointer(object * ent __attribute__ ((unused)), drawpars * dp, int dx, int dy, double speed){
+void rot_ent_pointer(object * ent, drawpars * dp, int dx, int dy, double speed){
   double mx[9];
   rot_around_perp(mx, (double)dx, (double)dy, speed);
   mx3_lmultmx(mx, dp->rend.ac3rmx);
@@ -147,7 +147,7 @@ void rot_ent_pointer(object * ent __attribute__ ((unused)), drawpars * dp, int d
   return;
 }
 
-static void rot_ent(object * ent __attribute__ ((unused)), drawpars * dp, int axis, double angle){
+static void rot_ent(object * ent, drawpars * dp, int axis, double angle){
   if(dp->ui.modkey){
     angle *= STEP_MOD;
   }
@@ -364,12 +364,18 @@ static void savevib(drawpars * dp, int c){
   return;
 }
 
-void kp_savepic(object * ent __attribute__ ((unused)), drawpars * dp){
-  exp_redraw(ent, dp);
+void kp_savepic(object * ent, drawpars * dp){
   char s[STRLEN];
   int  l = (int)(log10(dp->N+0.5))+1;
-  atcoord * ac = ent->m[dp->n];
-  snprintf(s, sizeof(s), "%s_%0*d.xpm", ac->fname, l, dp->n+1);
+  atcoord * m = ent->m[dp->n];
+  if(m->cell.boundary==CELL){
+    static int i = 0;
+    snprintf(s, sizeof(s), "%s_%0*d.%02d.xpm", m->fname, l, dp->n+1, i++);
+  }
+  else{
+    snprintf(s, sizeof(s), "%s_%0*d.xpm", m->fname, l, dp->n+1);
+  }
+  exp_redraw(ent, dp);
   if(savepic(s)){
     fprintf(stderr, "%s\n", s);
   }
@@ -391,6 +397,7 @@ void kp_film(object * ent, drawpars * dp){
     int c = 0;
     dp->anim.t = 0;
     do{
+      exp_redraw(ent, dp);
       savevib(dp, c);
       dp->anim.t++;
       time_gone(ent, dp);

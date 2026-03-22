@@ -75,21 +75,25 @@ static void configure_window(XConfigureEvent * xconfigure, object * ent, drawpar
   return;
 }
 
-void consume_events(object * ent, drawpars * dp){
+void wait_for_configure(object * ent, drawpars * dp){
   XEvent event_rec;
   XEvent * event = &event_rec;
   do{
     XNextEvent(world.dis, event);
+#if 0
+      printf("%d\n", event_rec.type);
+#endif
     if(event->type == ConfigureNotify){
       configure_window(&event->xconfigure, ent, dp);
       break;
     }
-  } while(XEventsQueued(world.dis, QueuedAlready));
+  } while(1);
   return;
 }
 
 void main_loop(object * ent, drawpars * dp, ptf kp[NKP]){
 
+  exp_redraw(ent, dp);
   // To handle window closing. Thanks to https://stackoverflow.com/a/1186544
   Atom wm_delete_window = XInternAtom(world.dis, "WM_DELETE_WINDOW", False);
   XSetWMProtocols(world.dis, world.win, &wm_delete_window, 1);
