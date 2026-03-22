@@ -97,20 +97,20 @@ void ac3_print2fig(atcoord * ac, rendpars * rend);
 void bonds_fill(bondpars bond, atcoord * ac);
 
 // get_atpar.c
-double getradius(int q);
-double getmaxradius(int n, const int * q);
-const char * getname(int q);
+double get_radius(int q);
+double get_maxradius(int n, const int * q);
+const char * get_name(int q);
 int get_element(const char * s);
 
 // x.c
-void close_x      (void);
-void init_x       (const char * const capt, const colorscheme_t colorscheme);
-void init_font    (char * fontname);
-void textincorner (const char * const lines[MAX_LINES], const int red[MAX_LINES]);
-void setcaption   (const char * const capt);
-void draw_vertices(const double v[8*3], rendpars * rend);
-void draw_shell   (const double r[2], rendpars * rend);
-int  savepic      (char * s);
+void close_x       (void);
+void init_x        (const char * const capt, const colorscheme_t colorscheme);
+void init_font     (char * fontname);
+void put_text      (const char * const lines[MAX_LINES], const int red[MAX_LINES]);
+void set_caption   (const char * const capt);
+void draw_vertices (const double v[8*3], rendpars * rend);
+void draw_shell    (const double r[2], rendpars * rend);
+int  save_pic      (char * s);
 void clear_canv();
 void fill_canv();
 // xinput.c

@@ -25,7 +25,7 @@ static void screen_text(object * ent, drawpars * dp){
   int il = 0;
 
   if(dp->task==AT3COORDS){
-    setcaption(m->fname);
+    set_caption(m->fname);
     snprintf(text, sizeof(text), "%*d / %d", 1+(int)(log10(dp->N)), dp->n+1, dp->N);
   }
   else{
@@ -74,7 +74,7 @@ static void screen_text(object * ent, drawpars * dp){
     lines[il++] = text_input;
   }
 
-  textincorner(lines, lines_red);
+  put_text(lines, lines_red);
   return;
 }
 

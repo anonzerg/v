@@ -55,7 +55,7 @@ void ac3_draw(atcoord * ac, rendpars * rend){
     int q = ac->q[k];
     int x = SCREEN_X(ac->r[k*3  ]);
     int y = SCREEN_Y(ac->r[k*3+1]);
-    double rt = r1 * getradius(ac->q[k]);
+    double rt = r1 * get_radius(ac->q[k]);
     int r = MAX(1, rt);
 
     XFillArc (world.dis, world.canv, world.gcc[getgci(q)], x-r, y-r, 2*r, 2*r, 0, 360*64);
@@ -70,7 +70,7 @@ void ac3_draw(atcoord * ac, rendpars * rend){
     }
     else if(rend->num == SHOW_TYPES){
       char text[16];
-      const char * s = getname(q);
+      const char * s = get_name(q);
       s ? snprintf(text, sizeof(text), "%s", s) :  snprintf(text, sizeof(text), "%d", q );
       XDRAWSTRING(world.dis, world.canv, world.gc_black, x, y, text, strlen(text));
     }

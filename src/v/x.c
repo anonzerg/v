@@ -139,7 +139,7 @@ void init_font(char * fontname){
   return;
 }
 
-void textincorner(const char * const lines[MAX_LINES], const int red[MAX_LINES]){
+void put_text(const char * const lines[MAX_LINES], const int red[MAX_LINES]){
   int voffset = world.font_height + 5;
   int hoffset = 10;
   for(int i=0; i<MAX_LINES; i++){
@@ -150,7 +150,7 @@ void textincorner(const char * const lines[MAX_LINES], const int red[MAX_LINES])
   return;
 }
 
-void setcaption(const char * const capt){
+void set_caption(const char * const capt){
   XStoreName(world.dis, world.win, capt);
   return;
 }
@@ -187,7 +187,7 @@ void draw_shell(const double r[2], rendpars * rend){
   return;
 }
 
-int savepic(char * s){
+int save_pic(char * s){
   XpmAttributes a = {
     .valuemask = XpmSize,
     .width     = world.W,

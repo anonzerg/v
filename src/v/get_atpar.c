@@ -32,20 +32,20 @@ static const char aname[NATOMS+1][NAMELEN]={
   #include "elements.h"
 };
 
-double getradius(int q){
+double get_radius(int q){
   q = abs(q);
   return ra[ q<=NRADII ? q : ( q<=NATOMS? NRADII : 0) ];
 }
 
-double getmaxradius(int n, const int * q){
+double get_maxradius(int n, const int * q){
   double r = 0.0;
   for(int i=0; i<n; i++){
-    r = MAX(r, getradius(q[i]));
+    r = MAX(r, get_radius(q[i]));
   }
   return r;
 }
 
-const char * getname(int q){
+const char * get_name(int q){
   return abs(q)<=NATOMS ? aname[abs(q)]: NULL;
 }
 

@@ -62,7 +62,7 @@ void kp_bw_toggle(object * ent, drawpars * dp);
 void kp_goto_last(object * ent, drawpars * dp);
 void kp_goto_1st (object * ent, drawpars * dp);
 void time_gone   (object * ent, drawpars * dp);
-void kp_savepic  (object * ent, drawpars * dp);
+void kp_save_pic (object * ent, drawpars * dp);
 void kp_film     (object * ent, drawpars * dp);
 void kp_pg       (object * ent, drawpars * dp);
 void kp_jump     (object * ent, drawpars * dp);

@@ -9,7 +9,7 @@ static void run_with_gui(char c, drawpars * dp, object * ent){
       case('f'):
         kp_film(ent, dp); break;
       case('m'):
-        kp_savepic(ent, dp); break;
+        kp_save_pic(ent, dp); break;
     }
     dp->ui.gui = gui;
   }

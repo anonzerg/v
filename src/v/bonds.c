@@ -36,7 +36,7 @@ static void makelist(int bsize_max, int * bsize, int * list,
 static void bonds_add(bondpars bond, atcoord * ac){
   double bmax = bond.bmax;
   double rl   = bond.rl;
-  double dmax = (bmax > 0.0) ? bmax : (DMAX_SCALE * rl * getmaxradius(ac->n, ac->q));
+  double dmax = (bmax > 0.0) ? bmax : (DMAX_SCALE * rl * get_maxradius(ac->n, ac->q));
 
   double rmin[3], rmax[3];
   r3cp(rmin, ac->r);
@@ -104,7 +104,7 @@ static void bonds_add(bondpars bond, atcoord * ac){
           }
 
           int nb = 0;
-          double r1 = getradius(ac->q[k1]);
+          double r1 = get_radius(ac->q[k1]);
 
           int b2[3];
           for(b2[0]=b1[0]+bra[0]; b2[0]<b1[0]+ket[0]; b2[0]++){
@@ -116,7 +116,7 @@ static void bonds_add(bondpars bond, atcoord * ac){
                   int k2 = list[bsize_max*j+jj];
                   if(k2==k1) continue;
 
-                  double r2 = getradius(ac->q[k2]);
+                  double r2 = get_radius(ac->q[k2]);
                   double s0  = rl * (r1 + r2);
                   if(bmax > 0.0){
                     s0 = MIN(s0, bmax);
@@ -159,13 +159,13 @@ toomany:
 
 static void bonds_reduce(bondpars bond, atcoord * ac){
   for(int k1=0; k1<ac->n; k1++){
-    double r1 = getradius(ac->q[k1]);
+    double r1 = get_radius(ac->q[k1]);
     int nb = 0;
     for(int j=0; j<BONDS_MAX; j++){
       int    k2 = ac->bonds.a[k1*BONDS_MAX+j];
       if(k2==-1) break;
       double r  = ac->bonds.r[k1*BONDS_MAX+j];
-      double r2 = getradius(ac->q[k2]);
+      double r2 = get_radius(ac->q[k2]);
       if( r < bond.rl*(r1+r2) ){
         ac->bonds.a[k1*BONDS_MAX+nb] = k2;
         ac->bonds.r[k1*BONDS_MAX+nb] = r;
