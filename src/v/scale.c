@@ -11,7 +11,7 @@ double ac3_scale(atcoord * ac){
   r3scal(center, 1.0/ac->n);
   double d2max = 0.0;
   for(int k=0; k<ac->n; k++){
-    double rad = getradius(ac->q[k]);
+    double rad = get_radius(ac->q[k]);
     double d2  = r3d2(center, ac->r+3*k);
     d2max = MAX(d2max, d2+rad*rad);
   }

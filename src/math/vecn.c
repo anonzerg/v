@@ -7,21 +7,21 @@ void vecset(size_t n, double * u, double s){
   return;
 }
 
-void vecsums(size_t n, double * w, double * u, double * v, double s){
+void vecsums(size_t n, double * w, const double * u, const double * v, double s){
   for(size_t i=0; i<n; i++){
     w[i] = u[i]+v[i]*s;
   }
   return;
 }
 
-void vecadds(size_t n, double * u, double * v, double s){
+void vecadds(size_t n, double * u, const double * v, double s){
   for(size_t i=0; i<n; i++){
     u[i] += v[i]*s;
   }
   return;
 }
 
-void veccp(size_t n, double * u, double * v){
+void veccp(size_t n, double * u, const double * v){
   for(size_t i=0; i<n; i++){
     u[i] = v[i];
   }

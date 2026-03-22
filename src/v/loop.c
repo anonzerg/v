@@ -12,7 +12,7 @@ typedef struct {
   int y0;
 } mouse_state_t;
 
-static void process_mouse(XMotionEvent * event, object * ent, drawpars * dp, mouse_state_t * mouse){
+static void process_mouse(const XMotionEvent * event, object * ent, drawpars * dp, mouse_state_t * mouse){
   if(mouse->click){
     int x = event->x;
     int y = event->y;
@@ -24,7 +24,7 @@ static void process_mouse(XMotionEvent * event, object * ent, drawpars * dp, mou
   return;
 }
 
-static void process_input(XKeyEvent * event, drawpars * dp){
+static void process_input(const XKeyEvent * event, drawpars * dp){
   int stop_input = process_x_input(dp->ui.input_text, event->keycode);
   if(stop_input){
     if(stop_input==1){
@@ -69,7 +69,7 @@ static void run_animation(object * ent, drawpars * dp, int * tr){
   return;
 }
 
-static void configure_window(XConfigureEvent * xconfigure, object * ent, drawpars * dp){
+static void configure_window(const XConfigureEvent * xconfigure, object * ent, drawpars * dp){
   world.W = xconfigure->width;
   world.H = xconfigure->height;
   world.size = MIN(world.H, world.W);

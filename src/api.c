@@ -20,6 +20,7 @@ char * main_wrap_out(int argc, char * argv[], int * ret) {
   return globals.out_str;
 }
 
+// cppcheck-suppress staticFunction
 int main_wrap_in(int argc, char * argv[], int n_inp_mols, mol * inp_mols, vibr_t inp_vib) {
   globals.inp_mols = inp_mols;
   globals.n_inp_mols = n_inp_mols;

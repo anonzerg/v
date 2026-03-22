@@ -32,6 +32,7 @@ void ac3_draw(atcoord * ac, rendpars * rend){
   int n = ac->n;
   kzstr * kz = malloc(sizeof(kzstr)*n);
   int   * ks = (rend->bonds>0) ? malloc(sizeof(int)*n) : NULL;
+  if(!kz) GOTOHELL;
 
   double resol = world.size * RESOL_SCALE;
   double r1  = rend->r * resol * rend->scale;
@@ -42,6 +43,7 @@ void ac3_draw(atcoord * ac, rendpars * rend){
   }
   qsort(kz, n, sizeof(kzstr), cmpz);
   if(rend->bonds>0){
+    if(!ks) GOTOHELL;
     for(int i=0; i<n; i++){
       ks[ kz[i].k ] = i;
     }
@@ -53,7 +55,7 @@ void ac3_draw(atcoord * ac, rendpars * rend){
     int q = ac->q[k];
     int x = SCREEN_X(ac->r[k*3  ]);
     int y = SCREEN_Y(ac->r[k*3+1]);
-    double rt = r1 * getradius(ac->q[k]);
+    double rt = r1 * get_radius(ac->q[k]);
     int r = MAX(1, rt);
 
     XFillArc (world.dis, world.canv, world.gcc[getgci(q)], x-r, y-r, 2*r, 2*r, 0, 360*64);
@@ -68,7 +70,7 @@ void ac3_draw(atcoord * ac, rendpars * rend){
     }
     else if(rend->num == SHOW_TYPES){
       char text[16];
-      const char * s = getname(q);
+      const char * s = get_name(q);
       s ? snprintf(text, sizeof(text), "%s", s) :  snprintf(text, sizeof(text), "%d", q );
       XDRAWSTRING(world.dis, world.canv, world.gc_black, x, y, text, strlen(text));
     }

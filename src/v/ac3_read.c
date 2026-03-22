@@ -50,7 +50,7 @@ atcoord * atcoord_fill(mol * m0, const render_bonds_t b, const geompars geom, co
 
   size_t q_size = sizeof(int   ) * n;
   size_t r_size = sizeof(double) * n*3;
-  size_t r0_size = sizeof(double) * n*3;
+  size_t r0_size = r_size;
   struct {size_t r_size; size_t a_size;} bonds = {0, 0};
   if(b!=DISABLE_BONDS){
     bonds.a_size = sizeof(int   ) * n*BONDS_MAX;
@@ -58,17 +58,18 @@ atcoord * atcoord_fill(mol * m0, const render_bonds_t b, const geompars geom, co
   }
   size_t size = sizeof(atcoord) + q_size + r_size + r0_size + bonds.a_size + bonds.r_size;
   atcoord * m = calloc(size, 1);
+  if(!m) GOTOHELL;
 
   if(b==DISABLE_BONDS){
     m->r       = (double *) (m + 1);
     m->r0      = (double *) MEM_END(m,r);
-    m->q       = (int    *) MEM_END(m,r0);
+    m->q       = (int    *) MEM_END(m,r0);  // cppcheck-suppress invalidPointerCast
   }
   else{
     m->r       = (double *) (m + 1);
     m->r0      = (double *) MEM_END(m,r);
     m->bonds.r = (double *) MEM_END(m,r0);
-    m->q       = (int    *) MEM_END(m,bonds.r);
+    m->q       = (int    *) MEM_END(m,bonds.r);  // cppcheck-suppress invalidPointerCast
     m->bonds.a = (int    *) MEM_END(m,q);
   }
 

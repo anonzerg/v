@@ -78,6 +78,12 @@ cleand:
 	rm -f $(allmmd)
 cleantags:
 	rm -f ./.tags ./.types.vim
-cleanall: clean cleand cleantags
+cleancheck:
+	rm -rf ./errors.xml ./cppcheck_html/
+cleanall: clean cleand cleantags cleancheck
 
 include $(allmmd)
+
+cppcheck: cleancheck
+	-.github/cppcheck.bash 2> errors.xml
+	cppcheck-htmlreport --file=errors.xml --report-dir=cppcheck_html

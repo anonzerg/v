@@ -40,7 +40,7 @@ void ac3_print_xyz(atcoord * ac, rendpars * rend){
   }
 
   for(int k=0; k<ac->n; k++){
-    const char * s = getname(ac->q[k]);
+    const char * s = get_name(ac->q[k]);
     int ok = s && s[0];
     if(ok){
       PRINTOUT(stdout, " %-3s", s);

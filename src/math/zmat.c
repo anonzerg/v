@@ -4,7 +4,7 @@
 #define EPS 1e-15
 
 int zmat2cart(int n, double r[3],
-              double a[3], double b[3], double c[3],
+              const double a[3], const double b[3], const double c[3],
               double R,  double phi, double theta){
 
   if(n == 0){

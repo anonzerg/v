@@ -74,7 +74,7 @@ static object * mode_read_try(FILE * f, object * ent, drawpars * dp){
   }
 }
 
-static FILE * acs_read_newfile(char * fname, object * acs, drawpars * dp){
+static FILE * acs_read_newfile(const char * fname, object * acs, const drawpars * dp){
   FILE * f;
   if(!strcmp(fname, "-")){
     f = stdin;
@@ -92,6 +92,7 @@ static FILE * acs_read_newfile(char * fname, object * acs, drawpars * dp){
 static object * ent_read(char * fname, drawpars * dp){
 
   object * acs = malloc(sizeof(object));
+  if(!acs) GOTOHELL;
   acs->Nmem = 0;
   acs->n = 0;
   acs->m = NULL;
@@ -173,7 +174,7 @@ object * read_files(allpars * ap){
 
 object * acs_from_var(int n, mol * m, vibr_t vib, allpars * ap){
   drawpars * dp = &ap->dp;
-  initpars * ip = &ap->ip;
+  const initpars * ip = &ap->ip;
 
   for(int i=0; i<ip->input_files_n; i++){
     PRINT_WARN("ignoring file '%s'\n", ip->input_files[i]);

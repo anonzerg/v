@@ -22,7 +22,7 @@ static inline double r3d2 (const double * u, const double * v){
          (u[2]-v[2])*(u[2]-v[2]);
 }
 
-static inline void r3x (double * w, double * u, double * v){
+static inline void r3x (double * w, const double * u, const double * v){
   w[0] =  u[1]*v[2]-u[2]*v[1];
   w[1] = -u[0]*v[2]+u[2]*v[0];
   w[2] =  u[0]*v[1]-u[1]*v[0];
@@ -78,7 +78,7 @@ static inline void r3sum (double * w, const double * u, const double * v){
   return;
 }
 
-static inline void r3diff (double * w, double * u, double * v){
+static inline void r3diff (double * w, const double * u, const double * v){
   w[0] = u[0] - v[0];
   w[1] = u[1] - v[1];
   w[2] = u[2] - v[2];

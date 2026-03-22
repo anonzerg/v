@@ -2,7 +2,7 @@
 #include "vecn.h"
 
 static inline int eat_line(FILE * f){
-  char c;
+  int c;
   do{
     c = fgetc(f);
     if(c==EOF){
@@ -12,7 +12,7 @@ static inline int eat_line(FILE * f){
   return 0;
 }
 
-int read_header(FILE * f, double cell[9]){
+static int read_header(FILE * f, double cell[9]){
 
   const char pattern[] = "Lattice=\"";
 

@@ -9,7 +9,7 @@ static void run_with_gui(char c, drawpars * dp, object * ent){
       case('f'):
         kp_film(ent, dp); break;
       case('m'):
-        kp_savepic(ent, dp); break;
+        kp_save_pic(ent, dp); break;
     }
     dp->ui.gui = gui;
   }
@@ -81,8 +81,8 @@ static void run_command(char c, drawpars * dp, object * ent){
 }
 
 void run_commands(FILE * f, char * command, drawpars * dp, object * ent){
-  char * com = command;
-  char c;
+  const char * com = command;
+  int c;
 
   while(1){
     if(command && command[0]){

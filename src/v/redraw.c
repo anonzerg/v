@@ -21,11 +21,11 @@ static void screen_text(object * ent, drawpars * dp){
   char text_point[32];
   const char * lines[MAX_LINES] = {};
   int lines_red[MAX_LINES] = {};
-  atcoord * m = ent->m[MOL_IDX(dp)];
-  int il=0;
+  const atcoord * m = ent->m[MOL_IDX(dp)];
+  int il = 0;
 
   if(dp->task==AT3COORDS){
-    setcaption(m->fname);
+    set_caption(m->fname);
     snprintf(text, sizeof(text), "%*d / %d", 1+(int)(log10(dp->N)), dp->n+1, dp->N);
   }
   else{
@@ -74,7 +74,7 @@ static void screen_text(object * ent, drawpars * dp){
     lines[il++] = text_input;
   }
 
-  textincorner(lines, lines_red);
+  put_text(lines, lines_red);
   return;
 }
 
@@ -89,7 +89,7 @@ void exp_redraw(object * ent, drawpars * dp){
     }
   }
   else if(dp->task==VIBRO){
-    double * dr = ent->vib->disp + dp->n * m->n*3;
+    const double * dr = ent->vib->disp + dp->n * m->n*3;
     vecsums(m->n*3, m->r, m->r0, dr, VIBR_AMP*sqrt(m->n)*sin(dp->anim.t * 2.0*M_PI/TMAX));
     rot3d_inplace(m->n, m->r, dp->rend.ac3rmx);
   }

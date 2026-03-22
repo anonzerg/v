@@ -34,7 +34,7 @@ static void init_keys(ptf kp[NKP]){
   ASSIGN_KEY( XK_x          ,  kp_print     );
   ASSIGN_KEY( XK_b          ,  kp_b_toggle  );
   ASSIGN_KEY( XK_n          ,  kp_n_toggle  );
-  ASSIGN_KEY( XK_m          ,  kp_savepic   );
+  ASSIGN_KEY( XK_m          ,  kp_save_pic  );
   ASSIGN_KEY( XK_End        ,  kp_zoom_out  );
   ASSIGN_KEY( XK_Up         ,  kp_rotx_r    );
   ASSIGN_KEY( XK_Page_Up    ,  kp_rotz_l    );
@@ -54,6 +54,7 @@ static void init_keys(ptf kp[NKP]){
 }
 
 static void version(FILE * f){
+  // cppcheck-suppress unknownMacro
   PRINTOUT(f, "built on "__TIMESTAMP__"\n"
               "user:      "BUILD_USER"\n"
               "directory: "BUILD_DIRECTORY"\n"
