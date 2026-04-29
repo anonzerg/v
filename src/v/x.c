@@ -15,7 +15,10 @@ void close_x(void) {
   XDestroyWindow (world.dis, world.win);
   XFreePixmap    (world.dis, world.px);
   if(world.fontInfo){
-    XFreeFont    (world.dis, world.fontInfo);
+    XftFontClose (world.dis, world.fontInfo);
+  }
+  if (world.xft_draw) {
+    XftDrawDestroy(world.xft_draw);
   }
   XCloseDisplay  (world.dis);
 };
@@ -103,17 +106,17 @@ void init_x(const char * const capt, const colorscheme_t colorscheme){
   return;
 };
 
-static void autosize_font(char * fontname){
+static void autosize_font(char * fontname, size_t size){
   const int screen_sizes[] = {1200, 1080, 960, 900, 840, 768};
   const int font_sizes[]   = {  24,   20,  18,  16,  15,  14}; //  font_size='ceil'(world.size) / 60
-  int font_size = 13;
+  int font_size = 24;
   for(int i=0; i<sizeof(screen_sizes)/sizeof(screen_sizes[0]); i++){
     if(world.size>screen_sizes[i]){
       font_size = font_sizes[i];
       break;
     }
   }
-  sprintf(fontname, "*x%d", font_size);
+  snprintf(fontname, size, "monospace:pixelsize=%d", font_size);
   return;
 }
 
@@ -121,21 +124,20 @@ void init_font(char * fontname){
   styp s;
   if(!fontname){
     fontname = s;
-    autosize_font(fontname);
+    autosize_font(fontname, sizeof(s));
   }
-  world.fontInfo = XLoadQueryFont(world.dis, fontname);
-  if(world.fontInfo){
-    XSetFont (world.dis, world.gc_black, world.fontInfo->fid);
-    XSetFont (world.dis, world.gc_red,   world.fontInfo->fid);
-  }
-  else{
+  world.fontInfo = XftFontOpenName(world.dis, DefaultScreen(world.dis), fontname);
+  if(!world.fontInfo){
     PRINT_WARN("cannot load font '%s'\n", fontname);
+    world.fontInfo = XftFontOpenName(world.dis, DefaultScreen(world.dis), "monospace:pixelsize=24");
   }
 
-  XCharStruct _o;
-  int _d, font_ascent, font_descent;
-  XQueryTextExtents(world.dis, XGContextFromGC(world.gc_black), ".", 1, &_d, &font_ascent, &font_descent, &_o);
-  world.font_height = font_ascent + font_descent;
+  world.xft_draw = XftDrawCreate(world.dis, world.canv, DefaultVisual(world.dis, DefaultScreen(world.dis)), DefaultColormap(world.dis, DefaultScreen(world.dis)));
+  XRenderColor color = {0, 0, 0, 65535};
+  XftColorAllocValue(world.dis, DefaultVisual(world.dis, DefaultScreen(world.dis)), DefaultColormap(world.dis, DefaultScreen(world.dis)), &color, &world.xft_color);
+  XGlyphInfo extents;
+  XftTextExtentsUtf8(world.dis, world.fontInfo, (const FcChar8 *)".", 1, &extents);
+  world.font_height = world.fontInfo->ascent + world.fontInfo->descent;
   return;
 }
 
@@ -144,8 +146,11 @@ void put_text(const char * const lines[MAX_LINES], const int red[MAX_LINES]){
   int hoffset = 10;
   for(int i=0; i<MAX_LINES; i++){
     if(lines[i]){
-      XDrawString(world.dis, world.canv, red[i] ? world.gc_red:world.gc_black, hoffset, voffset*(i+1), lines[i], strlen(lines[i]));
+      int x = hoffset;
+      int y = voffset + world.fontInfo->ascent;
+      XftDrawStringUtf8(world.xft_draw, &(world.xft_color), world.fontInfo, x, y, (const FcChar8 *)lines[i], strlen(lines[i]));
     }
+    voffset += world.fontInfo->height;
   }
   return;
 }
