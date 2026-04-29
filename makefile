@@ -98,6 +98,3 @@ include $(allmmd)
 cppcheck: cleancheck
 	-.github/cppcheck.bash 2> errors.xml
 	cppcheck-htmlreport --file=errors.xml --report-dir=cppcheck_html
-
-format:
-	git ls-files '*.c' '*.h' | xargs clang-format -i -style=file

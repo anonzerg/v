@@ -1,51 +1,37 @@
 #include "vecn.h"
 
-void
-vecset (size_t n, double *u, double s)
-{
-  for (size_t i = 0; i < n; i++)
-    {
-      u[i] = s;
-    }
+void vecset(size_t n, double * u, double s){
+  for(size_t i=0; i<n; i++){
+    u[i] = s;
+  }
   return;
 }
 
-void
-vecsums (size_t n, double *w, const double *u, const double *v, double s)
-{
-  for (size_t i = 0; i < n; i++)
-    {
-      w[i] = u[i] + v[i] * s;
-    }
+void vecsums(size_t n, double * w, const double * u, const double * v, double s){
+  for(size_t i=0; i<n; i++){
+    w[i] = u[i]+v[i]*s;
+  }
   return;
 }
 
-void
-vecadds (size_t n, double *u, const double *v, double s)
-{
-  for (size_t i = 0; i < n; i++)
-    {
-      u[i] += v[i] * s;
-    }
+void vecadds(size_t n, double * u, const double * v, double s){
+  for(size_t i=0; i<n; i++){
+    u[i] += v[i]*s;
+  }
   return;
 }
 
-void
-veccp (size_t n, double *u, const double *v)
-{
-  for (size_t i = 0; i < n; i++)
-    {
-      u[i] = v[i];
-    }
+void veccp(size_t n, double * u, const double * v){
+  for(size_t i=0; i<n; i++){
+    u[i] = v[i];
+  }
   return;
 }
 
-void
-vecscal (size_t n, double *u, double s)
-{
-  for (size_t i = 0; i < n; i++)
-    {
-      u[i] *= s;
-    }
+void vecscal(size_t n, double * u, double s){
+  for(size_t i=0; i<n; i++){
+    u[i] *= s;
+  }
   return;
 }
+

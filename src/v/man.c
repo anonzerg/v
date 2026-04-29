@@ -1,9 +1,7 @@
 #include "v.h"
 
-void
-printman (FILE *f, char *exename)
-{
-  PRINTOUT (f, "\
+void printman(FILE * f, char * exename){
+  PRINTOUT(f, "\
   \n\
  USAGE:\n\
   \n\
@@ -75,7 +73,7 @@ printman (FILE *f, char *exename)
   \n\
   q / esc                  quit                  \n\
   \n\
-",
-            exename, DEFAULT_TIMEOUT * MS_TO_S, DEFAULT_SYMTOL);
+", exename, DEFAULT_TIMEOUT*MS_TO_S, DEFAULT_SYMTOL);
   return;
 }
+
