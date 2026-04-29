@@ -106,7 +106,7 @@ void init_x(const char * const capt, const colorscheme_t colorscheme){
   return;
 };
 
-static void autosize_font(char * fontname, size_t size){
+static void autosize_font(char * fontname, size_t fontname_size){
   const int screen_sizes[] = {1200, 1080, 960, 900, 840, 768};
   const int font_sizes[]   = {  24,   20,  18,  16,  15,  14}; //  font_size='ceil'(world.size) / 60
   int font_size = 24;
@@ -116,7 +116,7 @@ static void autosize_font(char * fontname, size_t size){
       break;
     }
   }
-  snprintf(fontname, size, "monospace:pixelsize=%d", font_size);
+  snprintf(fontname, fontname_size, "monospace:pixelsize=%d", font_size);
   return;
 }
 
