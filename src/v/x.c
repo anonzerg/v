@@ -107,21 +107,16 @@ void init_x(const char * const capt, const colorscheme_t colorscheme){
 };
 
 void init_font(char * fontname){
-  if(!fontname){ // if fontname is empty string, it causes segfaults.
-    PRINT_ERR("option font: cannot be empty string\n");
-    exit(1);
-  }
-  // if fontname does not match, it falls back on default system font
-  world.font_info = XftFontOpenName(world.dis, DefaultScreen(world.dis), fontname);
-  if(!world.font_info){ // this rarely happens
-    PRINT_WARN("cannot load font '%s'\n", fontname);
-    // TODO: should fallback on default hardcoded font
+  if(!fontname){
+    PRINT_WARN("using system default monospace font\n");
     world.font_info = XftFontOpenName(world.dis, DefaultScreen(world.dis), "monospace:size=12");
+  } else {
+    world.font_info = XftFontOpenName(world.dis, DefaultScreen(world.dis), fontname);
+  }
 
-    if(!world.font_info){ // extreme case like there is no font on system
-      PRINT_ERR("cannot load any font");
-      exit(1);
-    }
+  if(!world.font_info){
+    PRINT_ERR("cannot load font %s\n", fontname);
+    exit(1);
   }
 
   world.xft_draw = XftDrawCreate(world.dis, world.canv, DefaultVisual(world.dis, DefaultScreen(world.dis)), DefaultColormap(world.dis, DefaultScreen(world.dis)));
@@ -133,8 +128,8 @@ void init_font(char * fontname){
 }
 
 void put_text(const char * const lines[MAX_LINES], const int red[MAX_LINES]){
-  int voffset = world.font_info->height + 10;
-  int hoffset = 10;
+  int voffset = world.font_info->height;
+  int hoffset = 16;
   for(int i=0; i<MAX_LINES; i++){
     if(lines[i]){
       int x = hoffset;
