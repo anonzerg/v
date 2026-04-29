@@ -1,407 +1,548 @@
-#include "v.h"
 #include "evr.h"
-#include "vec3.h"
 #include "3d.h"
+#include "v.h"
+#include "vec3.h"
 
-void kp_readmore(object * ent, drawpars * dp){
-  if(dp->task == AT3COORDS){
-    if(!dp->read.f){
-      PRINT_ERR("cannot read from the file '%s'\n", dp->read.fname);
-      return;
+void
+kp_readmore (object *ent, drawpars *dp)
+{
+  if (dp->task == AT3COORDS)
+    {
+      if (!dp->read.f)
+        {
+          PRINT_ERR ("cannot read from the file '%s'\n", dp->read.fname);
+          return;
+        }
+      fseek (dp->read.f, 0, SEEK_CUR);
+      acs_readmore (dp->read, dp->rend.bonds, dp->geom, ent);
+      dp->N = ent->n;
+      exp_redraw (ent, dp);
     }
-    fseek(dp->read.f, 0, SEEK_CUR);
-    acs_readmore(dp->read, dp->rend.bonds, dp->geom, ent);
-    dp->N = ent->n;
-    exp_redraw (ent, dp);
-  }
   return;
 }
 
-void kp_readagain(object * ent, drawpars * dp){
-  if(dp->task == AT3COORDS){
+void
+kp_readagain (object *ent, drawpars *dp)
+{
+  if (dp->task == AT3COORDS)
+    {
 
-    if(!dp->read.f || !(fclose(dp->read.f), dp->read.f = fopen(dp->read.fname, "r"))){
-      PRINT_WARN("cannot reload the file '%s'\n", dp->read.fname);
-      return;
+      if (!dp->read.f
+          || !(fclose (dp->read.f), dp->read.f = fopen (dp->read.fname, "r")))
+        {
+          PRINT_WARN ("cannot reload the file '%s'\n", dp->read.fname);
+          return;
+        }
+
+      for (int i = 0; i < ent->n; i++)
+        {
+          free (ent->m[i]);
+        }
+      ent->n = dp->N = dp->n = 0;
+      acs_readmore (dp->read, dp->rend.bonds, dp->geom, ent);
+      dp->N = ent->n;
+      exp_redraw (ent, dp);
     }
+  return;
+}
 
-    for(int i=0; i<ent->n; i++){
-      free(ent->m[i]);
+void
+kp_print (object *ent, drawpars *dp)
+{
+  if (dp->task == AT3COORDS)
+    {
+      ac3_print (ent->m[dp->n], &dp->rend);
     }
-    ent->n = dp->N = dp->n = 0;
-    acs_readmore(dp->read, dp->rend.bonds, dp->geom, ent);
-    dp->N = ent->n;
-    exp_redraw (ent, dp);
-  }
   return;
 }
 
-void kp_print(object * ent, drawpars * dp){
-  if (dp->task == AT3COORDS){
-    ac3_print(ent->m[dp->n], &dp->rend);
-  }
+void
+kp_print_xyz (object *ent, drawpars *dp)
+{
+  if (dp->task == AT3COORDS)
+    {
+      ac3_print_xyz (ent->m[dp->n], &dp->rend);
+    }
   return;
 }
 
-void kp_print_xyz(object * ent, drawpars * dp){
-  if (dp->task == AT3COORDS){
-    ac3_print_xyz(ent->m[dp->n], &dp->rend);
-  }
+void
+kp_print2fig (object *ent, drawpars *dp)
+{
+  if (dp->task == AT3COORDS)
+    {
+      ac3_print2fig (ent->m[dp->n], &dp->rend);
+    }
   return;
 }
 
-void kp_print2fig(object * ent, drawpars * dp){
-  if (dp->task == AT3COORDS){
-    ac3_print2fig(ent->m[dp->n], &dp->rend);
-  }
+void
+kp_printrot (object *ent __attribute__ ((unused)), drawpars *dp)
+{
+  double *U = dp->rend.ac3rmx;
+  for (int i = 0; i < 3; i++)
+    {
+      PRINTOUT (stdout, "rotation> % 20.15lf % 20.15lf % 20.15lf\n", U[i * 3],
+                U[i * 3 + 1], U[i * 3 + 2]);
+    }
+  PRINTOUT (stdout, "rot:%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n\n", U[0], U[1],
+            U[2], U[3], U[4], U[5], U[6], U[7], U[8]);
   return;
 }
 
-void kp_printrot(object * ent __attribute__ ((unused)), drawpars * dp){
-  double * U = dp->rend.ac3rmx;
-  for(int i=0; i<3; i++){
-    PRINTOUT(stdout, "rotation> % 20.15lf % 20.15lf % 20.15lf\n", U[i*3], U[i*3+1], U[i*3+2]);
-  }
-  PRINTOUT(stdout, "rot:%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n\n",
-      U[0], U[1], U[2], U[3], U[4], U[5], U[6], U[7], U[8]);
+static void
+rl_changed (object *ent, drawpars *dp)
+{
+  for (int i = 0; i < ent->n; i++)
+    {
+      ent->m[i]->bonds.flag = 0;
+    }
+  exp_redraw (ent, dp);
   return;
 }
 
-static void rl_changed(object * ent, drawpars * dp){
-  for(int i=0; i<ent->n; i++){
-    ent->m[i]->bonds.flag = 0;
-  }
-  exp_redraw(ent, dp);
+void
+kp_rl_dec (object *ent, drawpars *dp)
+{
+  if (dp->rend.bonds > 0)
+    {
+      dp->bond.rl /= STEP_R;
+      rl_changed (ent, dp);
+    }
   return;
 }
 
-void kp_rl_dec(object * ent, drawpars * dp){
-  if(dp->rend.bonds>0){
-    dp->bond.rl /= STEP_R;
-    rl_changed(ent, dp);
-  }
+void
+kp_rl_inc (object *ent, drawpars *dp)
+{
+  if (dp->rend.bonds > 0)
+    {
+      dp->bond.rl *= STEP_R;
+      rl_changed (ent, dp);
+    }
   return;
 }
 
-void kp_rl_inc(object * ent, drawpars * dp){
-  if(dp->rend.bonds>0){
-    dp->bond.rl *= STEP_R;
-    rl_changed(ent, dp);
-  }
-  return;
-}
-
-void kp_r_dec(object * ent, drawpars * dp){
+void
+kp_r_dec (object *ent, drawpars *dp)
+{
   dp->rend.r /= STEP_R;
-  exp_redraw(ent, dp);
+  exp_redraw (ent, dp);
   return;
 }
 
-void kp_r_inc(object * ent, drawpars * dp){
+void
+kp_r_inc (object *ent, drawpars *dp)
+{
   dp->rend.r *= STEP_R;
-  exp_redraw(ent, dp);
+  exp_redraw (ent, dp);
   return;
 }
 
-void kp_zoom_out(object * ent, drawpars * dp){
+void
+kp_zoom_out (object *ent, drawpars *dp)
+{
   dp->rend.scale /= STEP_ZOOM;
-  exp_redraw(ent, dp);
+  exp_redraw (ent, dp);
   return;
 }
 
-void kp_zoom_in(object * ent, drawpars * dp){
+void
+kp_zoom_in (object *ent, drawpars *dp)
+{
   dp->rend.scale *= STEP_ZOOM;
-  exp_redraw(ent, dp);
+  exp_redraw (ent, dp);
   return;
 }
 
-void kp_frame_inc(object * ent, drawpars * dp){
-  if (dp->n < dp->N-1){
-    dp->n++;
-    exp_redraw(ent, dp);
-  }
-  if (dp->n == dp->N-1 && dp->task == AT3COORDS){
-    dp->anim.dir = 0;
-  }
+void
+kp_frame_inc (object *ent, drawpars *dp)
+{
+  if (dp->n < dp->N - 1)
+    {
+      dp->n++;
+      exp_redraw (ent, dp);
+    }
+  if (dp->n == dp->N - 1 && dp->task == AT3COORDS)
+    {
+      dp->anim.dir = 0;
+    }
   return;
 }
 
-void kp_frame_dec(object * ent, drawpars * dp){
-  if (dp->n > 0){
-    dp->n--;
-    exp_redraw(ent, dp);
-  }
-  if (dp->n == 0 && dp->task == AT3COORDS){
-    dp->anim.dir = 0;
-  }
+void
+kp_frame_dec (object *ent, drawpars *dp)
+{
+  if (dp->n > 0)
+    {
+      dp->n--;
+      exp_redraw (ent, dp);
+    }
+  if (dp->n == 0 && dp->task == AT3COORDS)
+    {
+      dp->anim.dir = 0;
+    }
   return;
 }
 
-void rot_ent_pointer(object * ent, drawpars * dp, int dx, int dy, double speed){
+void
+rot_ent_pointer (object *ent, drawpars *dp, int dx, int dy, double speed)
+{
   double mx[9];
-  rot_around_perp(mx, (double)dx, (double)dy, speed);
-  mx3_lmultmx(mx, dp->rend.ac3rmx);
-  for(int i=0; i<ent->n; i++){
-    ent->m[i]->rotated = 0;
-  }
+  rot_around_perp (mx, (double)dx, (double)dy, speed);
+  mx3_lmultmx (mx, dp->rend.ac3rmx);
+  for (int i = 0; i < ent->n; i++)
+    {
+      ent->m[i]->rotated = 0;
+    }
   return;
 }
 
-static void rot_ent(object * ent, drawpars * dp, int axis, double angle){
-  if(dp->ui.modkey){
-    angle *= STEP_MOD;
-  }
-  rotmx0_update(dp->rend.ac3rmx, angle, axis);
-  for(int i=0; i<ent->n; i++){
-    ent->m[i]->rotated = 0;
-  }
+static void
+rot_ent (object *ent, drawpars *dp, int axis, double angle)
+{
+  if (dp->ui.modkey)
+    {
+      angle *= STEP_MOD;
+    }
+  rotmx0_update (dp->rend.ac3rmx, angle, axis);
+  for (int i = 0; i < ent->n; i++)
+    {
+      ent->m[i]->rotated = 0;
+    }
   return;
 }
 
-void kp_rotx_l(object * ent, drawpars * dp){
-  rot_ent(ent, dp, 0, +STEP_ROT);
-  exp_redraw(ent, dp);
+void
+kp_rotx_l (object *ent, drawpars *dp)
+{
+  rot_ent (ent, dp, 0, +STEP_ROT);
+  exp_redraw (ent, dp);
   return;
 }
 
-void kp_rotx_r(object * ent, drawpars * dp){
-  rot_ent(ent, dp, 0, -STEP_ROT);
-  exp_redraw(ent, dp);
+void
+kp_rotx_r (object *ent, drawpars *dp)
+{
+  rot_ent (ent, dp, 0, -STEP_ROT);
+  exp_redraw (ent, dp);
   return;
 }
 
-void kp_roty_l(object * ent, drawpars * dp){
-  rot_ent(ent, dp, 1, +STEP_ROT);
-  exp_redraw(ent, dp);
+void
+kp_roty_l (object *ent, drawpars *dp)
+{
+  rot_ent (ent, dp, 1, +STEP_ROT);
+  exp_redraw (ent, dp);
   return;
 }
 
-void kp_roty_r(object * ent, drawpars * dp){
-  rot_ent(ent, dp, 1, -STEP_ROT);
-  exp_redraw(ent, dp);
+void
+kp_roty_r (object *ent, drawpars *dp)
+{
+  rot_ent (ent, dp, 1, -STEP_ROT);
+  exp_redraw (ent, dp);
   return;
 }
 
-void kp_rotz_l(object * ent, drawpars * dp){
-  rot_ent(ent, dp, 2, +STEP_ROT);
-  exp_redraw(ent, dp);
+void
+kp_rotz_l (object *ent, drawpars *dp)
+{
+  rot_ent (ent, dp, 2, +STEP_ROT);
+  exp_redraw (ent, dp);
   return;
 }
 
-void kp_rotz_r(object * ent, drawpars * dp){
-  rot_ent(ent, dp, 2, -STEP_ROT);
-  exp_redraw(ent, dp);
+void
+kp_rotz_r (object *ent, drawpars *dp)
+{
+  rot_ent (ent, dp, 2, -STEP_ROT);
+  exp_redraw (ent, dp);
   return;
 }
 
-static void move_pbc(atcoord * m, const drawpars * dp, const double dr[3]){
-  for(int j=0; j<m->n; j++){
-    r3add(m->r0+j*3, dr);
-  }
-  mol2cell(m);
+static void
+move_pbc (atcoord *m, const drawpars *dp, const double dr[3])
+{
+  for (int j = 0; j < m->n; j++)
+    {
+      r3add (m->r0 + j * 3, dr);
+    }
+  mol2cell (m);
   m->rotated = 0;
-  if(dp->rend.bonds>0){
-    m->bonds.flag = 0;
-    m->bonds.rl *= RL_MOVE_PBC_SCALE;
-  }
+  if (dp->rend.bonds > 0)
+    {
+      m->bonds.flag = 0;
+      m->bonds.rl *= RL_MOVE_PBC_SCALE;
+    }
   return;
 }
 
-static void move_ent(object * ent, drawpars * dp, int dir, double step){
-  atcoord * m = ent->m[dp->n];
+static void
+move_ent (object *ent, drawpars *dp, int dir, double step)
+{
+  atcoord *m = ent->m[dp->n];
 
-  if(dp->ui.modkey){
-    step *= STEP_MOD;
-  }
+  if (dp->ui.modkey)
+    {
+      step *= STEP_MOD;
+    }
 
-  if((dp->task==VIBRO) || (m->cell.boundary != CELL)){
-    dp->rend.xy0[dir] += step;
-    return;
-  }
+  if ((dp->task == VIBRO) || (m->cell.boundary != CELL))
+    {
+      dp->rend.xy0[dir] += step;
+      return;
+    }
 
   double dr[3], v[3] = {};
-  v[dir] = step;  // translation in the view basis
-  r3mxt(dr, v, dp->rend.ac3rmx);  // translation in the mol basis.
-                                  // not true if the initial "rotation" from CLI is not unitary, but ignore this
+  v[dir] = step;                  // translation in the view basis
+  r3mxt (dr, v, dp->rend.ac3rmx); // translation in the mol basis.
+                                  // not true if the initial "rotation" from
+                                  // CLI is not unitary, but ignore this
 
-  if(dp->geom.boundary==CELL){
-    // all have the same cell -> move together, otherwise move separately
-    for(int i=0; i<ent->n; i++){
-      move_pbc(ent->m[i], dp, dr);
+  if (dp->geom.boundary == CELL)
+    {
+      // all have the same cell -> move together, otherwise move separately
+      for (int i = 0; i < ent->n; i++)
+        {
+          move_pbc (ent->m[i], dp, dr);
+        }
     }
-  }
-  else{
-    move_pbc(m, dp, dr);
-  }
+  else
+    {
+      move_pbc (m, dp, dr);
+    }
   return;
 }
 
-void kp_move_l(object * ent, drawpars * dp){
-  move_ent(ent, dp, 0, -STEP_MOVE);
-  exp_redraw(ent, dp);
+void
+kp_move_l (object *ent, drawpars *dp)
+{
+  move_ent (ent, dp, 0, -STEP_MOVE);
+  exp_redraw (ent, dp);
   return;
 }
 
-void kp_move_r(object * ent, drawpars * dp){
-  move_ent(ent, dp, 0, +STEP_MOVE);
-  exp_redraw(ent, dp);
+void
+kp_move_r (object *ent, drawpars *dp)
+{
+  move_ent (ent, dp, 0, +STEP_MOVE);
+  exp_redraw (ent, dp);
   return;
 }
 
-void kp_move_u(object * ent, drawpars * dp){
-  move_ent(ent, dp, 1, +STEP_MOVE);
-  exp_redraw(ent, dp);
+void
+kp_move_u (object *ent, drawpars *dp)
+{
+  move_ent (ent, dp, 1, +STEP_MOVE);
+  exp_redraw (ent, dp);
   return;
 }
 
-void kp_move_d(object * ent, drawpars * dp){
-  move_ent(ent, dp, 1, -STEP_MOVE);
-  exp_redraw(ent, dp);
+void
+kp_move_d (object *ent, drawpars *dp)
+{
+  move_ent (ent, dp, 1, -STEP_MOVE);
+  exp_redraw (ent, dp);
   return;
 }
 
-void kp_exit(object * ent, drawpars * dp){
-  run_commands(NULL, dp->ui.on_exit, dp, ent);
-  obj_free(ent);
-  close_x();
-  CLOSE0(dp->read.f);
+void
+kp_exit (object *ent, drawpars *dp)
+{
+  run_commands (NULL, dp->ui.on_exit, dp, ent);
+  obj_free (ent);
+  close_x ();
+  CLOSE0 (dp->read.f);
   dp->ui.closed = READY_TO_EXIT;
 }
 
-void kp_fw_toggle(object * ent __attribute__ ((unused)), drawpars * dp){
+void
+kp_fw_toggle (object *ent __attribute__ ((unused)), drawpars *dp)
+{
   dp->anim.dir = (dp->anim.dir == 1) ? 0 : 1;
   return;
 }
 
-void kp_bw_toggle(object * ent __attribute__ ((unused)), drawpars * dp){
-  if (dp->task == AT3COORDS){
-    dp->anim.dir = (dp->anim.dir == -1) ? 0 : -1;
-  }
-  return;
-}
-
-void kp_l_toggle(object * ent, drawpars * dp){
-  if(dp->rend.bonds>0){
-    dp->rend.bonds = dp->rend.bonds==SHOW_BONDS ? SHOW_LENGTHS : SHOW_BONDS;
-    exp_redraw(ent, dp);
-  }
-  return;
-}
-
-void kp_b_toggle(object * ent, drawpars * dp){
-  if(dp->rend.bonds!=DISABLE_BONDS){
-    dp->rend.bonds = dp->rend.bonds==NO_BONDS ? SHOW_BONDS : NO_BONDS;
-    exp_redraw(ent, dp);
-  }
-  return;
-}
-
-void kp_n_toggle(object * ent, drawpars * dp){
-  dp->rend.num = (dp->rend.num == SHOW_NUMBERS) ? NO_ATOM_NUMBERS : SHOW_NUMBERS;
-  exp_redraw(ent, dp);
-  return;
-}
-
-void kp_t_toggle(object * ent, drawpars * dp){
-  dp->rend.num = (dp->rend.num == SHOW_TYPES)   ? NO_ATOM_NUMBERS : SHOW_TYPES;
-  exp_redraw(ent, dp);
-  return;
-}
-
-void kp_goto_last(object * ent, drawpars * dp){
-  if (dp->n < dp->N-1){
-    dp->n=dp->N-1;
-    exp_redraw(ent, dp);
-  }
-  return;
-}
-
-void kp_goto_1st(object * ent, drawpars * dp){
-  if (dp->n > 0){
-    dp->n = 0;
-    exp_redraw(ent, dp);
-  }
-  return;
-}
-
-void time_gone(object * ent, drawpars * dp){
-  if(dp->task == VIBRO){
-    if(dp->anim.t >= TMAX){
-      dp->anim.t = dp->anim.t-TMAX;
+void
+kp_bw_toggle (object *ent __attribute__ ((unused)), drawpars *dp)
+{
+  if (dp->task == AT3COORDS)
+    {
+      dp->anim.dir = (dp->anim.dir == -1) ? 0 : -1;
     }
-    exp_redraw(ent, dp);
-  }
   return;
 }
 
-static void savevib(const drawpars * dp, int c){
-  char s[STRLEN];
-  int  l = (int)(log10( dp->N + 0.5 )) + 1;
-  snprintf(s, sizeof(s), "%s_%0*d_%02d.xpm", dp->read.fname, l, dp->n+1, c);
-  if(save_pic(s)){
-    fprintf(stderr, "%s\n", s);
-  }
-  else{
-    PRINT_ERR("cannot save '%s'\n", s);
-  }
-  return;
-}
-
-void kp_save_pic(object * ent, drawpars * dp){
-  char s[STRLEN];
-  int  l = (int)(log10(dp->N+0.5))+1;
-  const atcoord * m = ent->m[dp->n];
-  if(m->cell.boundary==CELL){
-    static int i = 0;
-    snprintf(s, sizeof(s), "%s_%0*d.%02d.xpm", m->fname, l, dp->n+1, i++);
-  }
-  else{
-    snprintf(s, sizeof(s), "%s_%0*d.xpm", m->fname, l, dp->n+1);
-  }
-  exp_redraw(ent, dp);
-  if(save_pic(s)){
-    fprintf(stderr, "%s\n", s);
-  }
-  else{
-    PRINT_ERR("cannot save '%s'\n", s);
-  }
-  return;
-}
-
-void kp_film(object * ent, drawpars * dp){
-  if(dp->task != VIBRO){
-    kp_save_pic    (ent, dp);
-    while(dp->n<dp->N-1){
-      kp_frame_inc(ent, dp);
-      kp_save_pic  (ent, dp);
+void
+kp_l_toggle (object *ent, drawpars *dp)
+{
+  if (dp->rend.bonds > 0)
+    {
+      dp->rend.bonds
+          = dp->rend.bonds == SHOW_BONDS ? SHOW_LENGTHS : SHOW_BONDS;
+      exp_redraw (ent, dp);
     }
-  }
-  else{
-    int c = 0;
-    dp->anim.t = 0;
-    do{
-      exp_redraw(ent, dp);
-      savevib(dp, c);
-      dp->anim.t++;
-      time_gone(ent, dp);
-    } while(++c<TMAX);
-  }
   return;
 }
 
-void kp_pg(object * ent, drawpars * dp){
-  atcoord * m = ent->m[MOL_IDX(dp)];
-  if(!m->sym[0]){
-    pg(m, dp->anal.symtol);
-    exp_redraw(ent, dp);
-  }
+void
+kp_b_toggle (object *ent, drawpars *dp)
+{
+  if (dp->rend.bonds != DISABLE_BONDS)
+    {
+      dp->rend.bonds = dp->rend.bonds == NO_BONDS ? SHOW_BONDS : NO_BONDS;
+      exp_redraw (ent, dp);
+    }
   return;
 }
 
-void kp_jump(object * ent, drawpars * dp){
-  if(dp->ui.input==NO_INPUT){
-    dp->ui.input = INPUT_JUMP;
-    exp_redraw(ent, dp);
-  }
+void
+kp_n_toggle (object *ent, drawpars *dp)
+{
+  dp->rend.num
+      = (dp->rend.num == SHOW_NUMBERS) ? NO_ATOM_NUMBERS : SHOW_NUMBERS;
+  exp_redraw (ent, dp);
+  return;
+}
+
+void
+kp_t_toggle (object *ent, drawpars *dp)
+{
+  dp->rend.num = (dp->rend.num == SHOW_TYPES) ? NO_ATOM_NUMBERS : SHOW_TYPES;
+  exp_redraw (ent, dp);
+  return;
+}
+
+void
+kp_goto_last (object *ent, drawpars *dp)
+{
+  if (dp->n < dp->N - 1)
+    {
+      dp->n = dp->N - 1;
+      exp_redraw (ent, dp);
+    }
+  return;
+}
+
+void
+kp_goto_1st (object *ent, drawpars *dp)
+{
+  if (dp->n > 0)
+    {
+      dp->n = 0;
+      exp_redraw (ent, dp);
+    }
+  return;
+}
+
+void
+time_gone (object *ent, drawpars *dp)
+{
+  if (dp->task == VIBRO)
+    {
+      if (dp->anim.t >= TMAX)
+        {
+          dp->anim.t = dp->anim.t - TMAX;
+        }
+      exp_redraw (ent, dp);
+    }
+  return;
+}
+
+static void
+savevib (const drawpars *dp, int c)
+{
+  char s[STRLEN];
+  int l = (int)(log10 (dp->N + 0.5)) + 1;
+  snprintf (s, sizeof (s), "%s_%0*d_%02d.xpm", dp->read.fname, l, dp->n + 1,
+            c);
+  if (save_pic (s))
+    {
+      fprintf (stderr, "%s\n", s);
+    }
+  else
+    {
+      PRINT_ERR ("cannot save '%s'\n", s);
+    }
+  return;
+}
+
+void
+kp_save_pic (object *ent, drawpars *dp)
+{
+  char s[STRLEN];
+  int l = (int)(log10 (dp->N + 0.5)) + 1;
+  const atcoord *m = ent->m[dp->n];
+  if (m->cell.boundary == CELL)
+    {
+      static int i = 0;
+      snprintf (s, sizeof (s), "%s_%0*d.%02d.xpm", m->fname, l, dp->n + 1,
+                i++);
+    }
+  else
+    {
+      snprintf (s, sizeof (s), "%s_%0*d.xpm", m->fname, l, dp->n + 1);
+    }
+  exp_redraw (ent, dp);
+  if (save_pic (s))
+    {
+      fprintf (stderr, "%s\n", s);
+    }
+  else
+    {
+      PRINT_ERR ("cannot save '%s'\n", s);
+    }
+  return;
+}
+
+void
+kp_film (object *ent, drawpars *dp)
+{
+  if (dp->task != VIBRO)
+    {
+      kp_save_pic (ent, dp);
+      while (dp->n < dp->N - 1)
+        {
+          kp_frame_inc (ent, dp);
+          kp_save_pic (ent, dp);
+        }
+    }
+  else
+    {
+      int c = 0;
+      dp->anim.t = 0;
+      do
+        {
+          exp_redraw (ent, dp);
+          savevib (dp, c);
+          dp->anim.t++;
+          time_gone (ent, dp);
+        }
+      while (++c < TMAX);
+    }
+  return;
+}
+
+void
+kp_pg (object *ent, drawpars *dp)
+{
+  atcoord *m = ent->m[MOL_IDX (dp)];
+  if (!m->sym[0])
+    {
+      pg (m, dp->anal.symtol);
+      exp_redraw (ent, dp);
+    }
+  return;
+}
+
+void
+kp_jump (object *ent, drawpars *dp)
+{
+  if (dp->ui.input == NO_INPUT)
+    {
+      dp->ui.input = INPUT_JUMP;
+      exp_redraw (ent, dp);
+    }
   return;
 }
