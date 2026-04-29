@@ -11,7 +11,7 @@ static void draw_label(Display *dpy, Drawable drawable, int x, int y, const char
   XGlyphInfo extents;
   XftTextExtentsUtf8(world.dis, world.fontInfo, (const FcChar8*) text, strlen(text), &extents);
   XftDrawStringUtf8(world.xft_draw, &world.xft_color, world.fontInfo,
-                    x - extents.xOff / 2, y + ((world.fontInfo->ascent - world.fontInfo->descent) / 2), (const FcChar8 *)text, strlen(text));
+                    x - extents.xOff / 2, y + extents.height / 2, (const FcChar8 *)text, strlen(text));
   return;
 }
 
