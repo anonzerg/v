@@ -17,9 +17,8 @@ typedef struct {
   GC        gc_white, gc_black, gc_red, gc_dot[2], gcc[NCOLORS];
   Pixmap    px;
   Drawable  canv;
-  XftFont * fontInfo;
+  XftFont * font_info;
   XftDraw * xft_draw;
   XftColor  xft_color;
-  int       font_height;
   int       W, H, size;
 } draw_world_t;

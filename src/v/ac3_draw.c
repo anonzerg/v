@@ -7,11 +7,14 @@
 
 extern draw_world_t world;
 
-static void draw_label(Display *dpy, Drawable drawable, int x, int y, const char *text) {
+static void draw_label(int x, int y, const char *text) {
   XGlyphInfo extents;
-  XftTextExtentsUtf8(world.dis, world.fontInfo, (const FcChar8*) text, strlen(text), &extents);
-  XftDrawStringUtf8(world.xft_draw, &world.xft_color, world.fontInfo,
-                    x - extents.xOff / 2, y + extents.height / 2, (const FcChar8 *)text, strlen(text));
+  XftTextExtentsUtf8(world.dis, world.font_info, (const FcChar8*) text,
+                     strlen(text), &extents);
+
+  XftDrawStringUtf8(world.xft_draw, &world.xft_color, world.font_info,
+                    x - extents.xOff / 2, y + extents.height / 2,
+                    (const FcChar8 *)text, strlen(text));
   return;
 }
 
@@ -73,13 +76,13 @@ void ac3_draw(atcoord * ac, rendpars * rend){
     if(rend->num == SHOW_NUMBERS){
       char text[16];
       snprintf(text, sizeof(text), "%d", k+1);
-      draw_label(world.dis, world.canv, x, y, text);
+      draw_label(x, y, text);
     }
     else if(rend->num == SHOW_TYPES){
       char text[16];
       const char * s = get_name(q);
       s ? snprintf(text, sizeof(text), "%s", s) :  snprintf(text, sizeof(text), "%d", q );
-      draw_label(world.dis, world.canv, x, y, text);
+      draw_label(x, y, text);
     }
 
     if(rend->bonds>0){
@@ -104,7 +107,7 @@ void ac3_draw(atcoord * ac, rendpars * rend){
         if(rend->bonds==SHOW_LENGTHS){
           char text[16];
           snprintf(text, sizeof(text), "%.3lf", ac->bonds.r[j]);
-          draw_label(world.dis, world.canv, x+dx/2, y+dy/2, text);
+          draw_label(x+dx/2, y+dy/2, text);
         }
       }
     }

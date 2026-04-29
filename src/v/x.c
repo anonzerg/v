@@ -14,8 +14,8 @@ void close_x(void) {
   }
   XDestroyWindow (world.dis, world.win);
   XFreePixmap    (world.dis, world.px);
-  if(world.fontInfo){
-    XftFontClose (world.dis, world.fontInfo);
+  if(world.font_info){
+    XftFontClose (world.dis, world.font_info);
   }
   if (world.xft_draw) {
     XftDrawDestroy(world.xft_draw);
@@ -106,51 +106,42 @@ void init_x(const char * const capt, const colorscheme_t colorscheme){
   return;
 };
 
-static void autosize_font(char * fontname, size_t fontname_size){
-  const int screen_sizes[] = {1200, 1080, 960, 900, 840, 768};
-  const int font_sizes[]   = {  24,   20,  18,  16,  15,  14}; //  font_size='ceil'(world.size) / 60
-  int font_size = 24;
-  for(int i=0; i<sizeof(screen_sizes)/sizeof(screen_sizes[0]); i++){
-    if(world.size>screen_sizes[i]){
-      font_size = font_sizes[i];
-      break;
-    }
-  }
-  snprintf(fontname, fontname_size, "monospace:pixelsize=%d", font_size);
-  return;
-}
-
 void init_font(char * fontname){
-  styp s;
-  if(!fontname){
-    fontname = s;
-    autosize_font(fontname, sizeof(s));
+  if(!fontname){ // if fontname is empty string, it causes segfaults.
+    PRINT_ERR("option font: cannot be empty string\n");
+    exit(1);
   }
-  world.fontInfo = XftFontOpenName(world.dis, DefaultScreen(world.dis), fontname);
-  if(!world.fontInfo){
+  // if fontname does not match, it falls back on default system font
+  world.font_info = XftFontOpenName(world.dis, DefaultScreen(world.dis), fontname);
+  if(!world.font_info){ // this rarely happens
     PRINT_WARN("cannot load font '%s'\n", fontname);
-    world.fontInfo = XftFontOpenName(world.dis, DefaultScreen(world.dis), "monospace:pixelsize=24");
+    // TODO: should fallback on default hardcoded font
+    world.font_info = XftFontOpenName(world.dis, DefaultScreen(world.dis), "monospace:size=12");
+
+    if(!world.font_info){ // extreme case like there is no font on system
+      PRINT_ERR("cannot load any font");
+      exit(1);
+    }
   }
 
   world.xft_draw = XftDrawCreate(world.dis, world.canv, DefaultVisual(world.dis, DefaultScreen(world.dis)), DefaultColormap(world.dis, DefaultScreen(world.dis)));
   XRenderColor color = {0, 0, 0, 65535};
   XftColorAllocValue(world.dis, DefaultVisual(world.dis, DefaultScreen(world.dis)), DefaultColormap(world.dis, DefaultScreen(world.dis)), &color, &world.xft_color);
   XGlyphInfo extents;
-  XftTextExtentsUtf8(world.dis, world.fontInfo, (const FcChar8 *)".", 1, &extents);
-  world.font_height = world.fontInfo->ascent + world.fontInfo->descent;
+  XftTextExtentsUtf8(world.dis, world.font_info, (const FcChar8 *)".", 1, &extents);
   return;
 }
 
 void put_text(const char * const lines[MAX_LINES], const int red[MAX_LINES]){
-  int voffset = world.font_height + 5;
+  int voffset = world.font_info->height + 10;
   int hoffset = 10;
   for(int i=0; i<MAX_LINES; i++){
     if(lines[i]){
       int x = hoffset;
-      int y = voffset + world.fontInfo->ascent;
-      XftDrawStringUtf8(world.xft_draw, &(world.xft_color), world.fontInfo, x, y, (const FcChar8 *)lines[i], strlen(lines[i]));
+      int y = voffset + world.font_info->ascent;
+      XftDrawStringUtf8(world.xft_draw, &(world.xft_color), world.font_info, x, y, (const FcChar8 *)lines[i], strlen(lines[i]));
     }
-    voffset += world.fontInfo->height;
+    voffset += world.font_info->height;
   }
   return;
 }
